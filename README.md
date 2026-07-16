@@ -126,6 +126,23 @@ The combination below is the project's core bet:
 
 ---
 
+## Context windows are memory, not a model spec
+
+Most AI tools treat "context window" as a fixed number on a model card. FAM_OS treats context as a **scheduled memory allocation**:
+
+- It reads the machine's actual **cgroup limits** instead of trusting the memory number reported by an inference engine.
+- It budgets prompt tokens, KV cache, model weights, and working set across **RAM, GPU/VRAM, and SSD-backed cache**.
+- It can page a small expert out and load a larger one only when verification evidence justifies the cost, but it never silently counts SSD capacity as RAM.
+- A stronger host exposes its full CPU, RAM, accelerator memory, and storage tiers to the scheduler with explicit OS headroom, so a 1.7B model can answer a quick question, be evicted, and then a 26B model can be loaded for a harder one — without everything resident at once or crashing into swap.
+
+In short: FAM_OS schedules intelligence like an operating system schedules processes, because that is exactly what it is.
+
+`@/home/demimagic/Desktop/NewLLM/FAM_OS/AGENTS.md:102-109`
+
+`@/home/demimagic/Desktop/NewLLM/FAM_OS/MASTER_PLAN.md:34-36`
+
+---
+
 ## Current status
 
 FAM_OS is a working prototype, not a packaged product.
