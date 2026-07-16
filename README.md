@@ -40,7 +40,7 @@ Today's AI assistants are usually one of the following:
 - **Screen-control agents** that click and type by watching pixels, with no real understanding of application state.
 - **New AI-native operating systems** that want to replace the kernel and start from scratch.
 
-FAM_OS takes a different path: **augment the Linux desktop you already have**. It turns existing programs into permissioned AI capabilities, verifies results before showing them to you, and schedules work across your CPU, RAM, GPU/VRAM, and SSD with explicit resource budgets.
+FAM_OS takes a different path: **augment the Linux desktop you already have**. It turns existing programs into permissioned AI capabilities, verifies results before showing them to you, and schedules work across your CPU, RAM, GPU/VRAM, NPU, and SSD with explicit resource budgets.
 
 ---
 
