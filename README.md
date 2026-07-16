@@ -147,6 +147,18 @@ FAM_OS is a working prototype, not a packaged product.
 
 - **Phases 1–6 are complete.** This includes the FAM Shell terminal UI, the Application Fabric, MCP client/server adapters, Linux accessibility and discovery bridges, deterministic tool adapters, action safety, a real cross-application acceptance demo, and the Expert Fabric manifest schema, capability namespace, and local registry.
 
+### Evidence snapshot
+
+These numbers come from local runs on the `full-reference-workstation` profile. Absolute paths, usernames, hostnames, and raw model outputs have been removed.
+
+| Milestone | Result |
+|---|---|
+| Unit + contract test suite | **551 passed** |
+| Cross-application acceptance demo (Phase 5.12) | **Passed**: accessibility 2/2, MCP 1/1, OS/tool 5/5, native semantic 4/4 |
+| Strong-model quality rerun (Phase 2.14) | `laguna-xs.2:q4_K_M` **passed after one repair**; `gemma4:26b` **passed on first attempt** |
+| Original 7B/14B smoke baseline | **Preserved as failed baseline** for comparison; verification requirements were not weakened |
+| Resource discipline | **Zero swap**, **zero OOM kills**; CPU/RAM/VRAM/SSD measured per run |
+
 Full architecture records, implementation handoffs, and decision records are kept inside the repository under `docs/` and `handoffs/`.
 
 ## Future work
