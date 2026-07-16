@@ -68,6 +68,28 @@ If the VS Code: extension is not running, the same task degrades gracefully: FAM
 
 ---
 
+## Routing example: small expert, bigger fallback, graceful degradation
+
+You ask the FAM Shell:
+
+> "Explain this Python traceback in my terminal."
+
+FAM_OS does not reach for the biggest model first. Its router treats experts as a scheduled fabric:
+
+1. **Estimate complexity.** A short traceback is routed to a small, fast code-explanation expert, for example `qwen3:1.7b`.
+2. **Run the small expert.** It loads quickly and stays within a tight RAM/VRAM budget.
+3. **Verify.** If the explanation passes the verifier — correct schema, no invented file paths, consistent with the traceback — it is released immediately.
+4. **Escalate only if needed.** If the small expert fails verification, the router evicts it, checks the current `full-reference-workstation` profile, and tries a stronger model such as `qwen2.5-coder:14b` within the remaining GPU/VRAM budget.
+5. **Degrade safely.** If the stronger model also fails, FAM_OS returns a deterministic traceback parse and a structured failure instead of a guessed answer. If the GPU is already full, it falls back to the `compat-cpu-16gb` profile. If nothing can satisfy the task, it declines and records the reason in the audit log.
+
+This is the opposite of both "always call the biggest model" and "always call the smallest model": FAM_OS picks the smallest model that can be *verified* for the task, and every fallback is explicit.
+
+`@/home/demimagic/Desktop/NewLLM/FAM_OS/docs/protocols/CORE_ROUTING_LIFECYCLE.md:1-16`
+
+`@/home/demimagic/Desktop/NewLLM/FAM_OS/docs/architecture/HARDWARE_VALIDATION_PROFILES.md:1-81`
+
+---
+
 ## The landscape — what else exists?
 
 FAM_OS overlaps with several active areas. None of the projects below is a direct equivalent, but they cover pieces of the same space.
