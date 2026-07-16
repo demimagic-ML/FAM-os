@@ -184,6 +184,14 @@ These numbers come from local runs on the `full-reference-workstation` profile. 
 
 Full architecture records, implementation handoffs, and decision records are kept inside the repository under `docs/` and `handoffs/`.
 
+### Why Phases 7 and 8 matter
+
+**Phase 7 turned model loading from a free-for-all into a scheduled resource decision.** FAM_OS now reads actual cgroup limits, admits or evicts experts, splits loads between CPU and GPU/VRAM, pages weights to and from SSD-backed storage, probes the NPU as a real inference target, and uses cache telemetry plus bounded prefetching so a small expert can answer quickly and a large expert can be loaded only when verification evidence justifies the cost. A 16 GiB machine stays alive; a full-workstation machine exposes all of its tiers without artificial ceilings.
+
+**Phase 8 turned output trust from "the model said so" into "the verifier confirmed it."** Every result must pass declared acceptance gates before it reaches you: Python syntax, unit tests, Mypy, and Ruff; JavaScript/TypeScript and Rust compiler/tests; symbolic and numerical math checks; retrieval citation and provenance; and application-action pre/postconditions. If a verifier fails, a sandbox cannot isolate, or a repair/escalation budget is exhausted, the result is withheld — not laundered through a bigger model.
+
+Together they make the "smallest verified model first" strategy real: you can safely use a 1.7B expert because mistakes are caught, and you can run a 26B expert because the scheduler makes room without crashing.
+
 ---
 
 ## Roadmap
