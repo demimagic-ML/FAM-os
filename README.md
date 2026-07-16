@@ -108,6 +108,24 @@ In short: FAM_OS schedules intelligence like an operating system schedules proce
 
 ---
 
+## NPU as a first-class accelerator
+
+FAM_OS treats NPUs as optional acceleration tiers, not afterthoughts. On an Intel Arrow Lake NPU it has already run a deterministic intent-routing micro-expert through an OpenVINO container with device pass-through.
+
+Result:
+
+- `execution_devices: ["NPU"]` — no CPU fallback.
+- Expected class `code`, observed class `code`.
+- Confidence: 99.7%.
+- Compile time: ~52 ms.
+- First inference: ~8 ms.
+- Warm inferences: ~0.5–0.8 ms each.
+- `fallback_used: false`.
+
+This is a proof that a tiny router expert can run on an NPU inside a controlled container and return a verifiable result. Production NPU admission, scheduling, and quality gates remain later Expert Fabric work.
+
+---
+
 ## The landscape — what else exists?
 
 FAM_OS overlaps with several active areas. None of the projects below is a direct equivalent, but they cover pieces of the same space.
@@ -137,7 +155,7 @@ The combination below is the project's core bet:
 | **Verification-first** | Every result or action must satisfy a declared acceptance policy before it is released to you. |
 | **Observation ≠ action** | Seeing an app does not grant permission to change it. |
 | **Application weaving ladder** | Native semantic → OS/tool → accessibility → screen, degrading gracefully rather than defaulting to screenshots. |
-| **Resource-aware scheduling** | CPU/RAM/GPU-VRAM/SSD budgets with a constrained `compat-cpu-16gb` baseline and a `full-reference-workstation` profile. |
+| **Resource-aware scheduling** | CPU/RAM/GPU-VRAM/**NPU**/SSD budgets with a constrained `compat-cpu-16gb` baseline and a `full-reference-workstation` profile. |
 | **MCP as an adapter** | Not locked into one connector protocol. |
 | **Local-first and privacy-reviewed** | Workstation captures scrub identifiers and retain failed baselines as evidence. |
 | **Audit + approval as first-class** | Every action carries scope, reversibility, confirmation policy, and an audit event. |
@@ -160,7 +178,8 @@ These numbers come from local runs on the `full-reference-workstation` profile. 
 | Cross-application acceptance demo (Phase 5.12) | **Passed**: accessibility 2/2, MCP 1/1, OS/tool 5/5, native semantic 4/4 |
 | Strong-model quality rerun (Phase 2.14) | `laguna-xs.2:q4_K_M` **passed after one repair**; `gemma4:26b` **passed on first attempt** |
 | Original 7B/14B smoke baseline | **Preserved as failed baseline** for comparison; verification requirements were not weakened |
-| Resource discipline | **Zero swap**, **zero OOM kills**; CPU/RAM/VRAM/SSD measured per run |
+| Resource discipline | **Zero swap**, **zero OOM kills**; CPU/RAM/VRAM/NPU/SSD measured per run |
+| NPU feasibility (Phase 7.8) | Intel Arrow Lake NPU routing micro-expert executed with OpenVINO; `fallback_used: false` |
 
 Full architecture records, implementation handoffs, and decision records are kept inside the repository under `docs/` and `handoffs/`.
 
@@ -168,7 +187,7 @@ Full architecture records, implementation handoffs, and decision records are kep
 
 ## Roadmap
 
-- **Phase 7 — Hardware scheduler and neural pager:** Turn context length and model residency into scheduled memory allocations across CPU, RAM, GPU/VRAM, and SSD cache.
+- **Phase 7 — Hardware scheduler and neural pager:** Turn context length and model residency into scheduled memory allocations across CPU, RAM, GPU/VRAM, NPU, and SSD cache.
 - **Phase 8 — Verification Fabric:** Plug-in verifier packages, deterministic sandbox policy, and stronger postcondition checking.
 - **Phase 9 — Multi-task Expert Fabric:** Smaller, swappable experts coordinated by a router instead of one giant model per request.
 - **Phase 10 — Memory and retrieval fabric:** Permissioned short-term and long-term memory with provenance and retrieval.
