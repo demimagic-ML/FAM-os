@@ -12,7 +12,7 @@ Linux kernel
   -> Expert, Verification, Memory, and Hardware fabrics
 ```
 
-A simple way to think about it: FAM_OS tries to make your whole PC itself intelligent, while keeping every action **scoped, approved, verified, and auditable**.
+A simple way to think about it: FAM_OS makes your whole PC itself intelligent, while keeping every action **scoped, approved, verified, and auditable**.
 
 ---
 
@@ -26,6 +26,23 @@ Today's AI assistants are usually one of the following:
 - **New AI-native operating systems** that want to replace the kernel and start from scratch.
 
 FAM_OS takes a different path: **augment the Linux desktop you already have**. It turns existing programs into permissioned AI capabilities, verifies results before showing them to you, and schedules work across your CPU, RAM, GPU/VRAM, and SSD with explicit resource budgets.
+
+---
+
+## A simple, everyday example
+
+You type into the FAM Shell:
+
+> "Summarize the first five pages of the PDF in my Downloads folder and save a one-paragraph summary to my Desktop as `summary.txt`."
+
+FAM_OS:
+
+1. **Discovers** the Downloads and Desktop folders through scoped file capabilities.
+2. **Extracts** the PDF text using a deterministic tool rather than guessing from a screenshot.
+3. **Asks** you to confirm it can create `summary.txt` on the Desktop.
+4. **Writes** the file only after you approve.
+5. **Verifies** the file exists, is not empty, and matches the expected scope.
+6. **Returns** the summary and records the action in the audit log.
 
 ---
 
@@ -89,11 +106,20 @@ The combination below is the project's core bet:
 
 FAM_OS is a working prototype, not a packaged product.
 
-- **Phases 1–5 are complete.** This includes the FAM Shell terminal UI, the Application Fabric, MCP client/server adapters, Linux accessibility and discovery bridges, deterministic tool adapters, action safety, and a real cross-application acceptance demo.
-- **Phase 6.1–6.4 are complete.** The Expert Fabric manifest schema, capability namespace, and local registry are in place.
-- **Next step:** Phase 6.5 — install, update, disable, rollback, and remove lifecycles for expert packages.
+- **Phases 1–6 are complete.** This includes the FAM Shell terminal UI, the Application Fabric, MCP client/server adapters, Linux accessibility and discovery bridges, deterministic tool adapters, action safety, a real cross-application acceptance demo, and the Expert Fabric manifest schema, capability namespace, and local registry.
 
 Full architecture records, implementation handoffs, and decision records are kept inside the repository under `docs/` and `handoffs/`.
+
+## Future work
+
+- **Phase 7 — Hardware scheduler and neural pager:** Turn context length and model residency into scheduled memory allocations across CPU, RAM, GPU/VRAM, and SSD cache.
+- **Phase 8 — Verification Fabric:** Plug-in verifier packages, deterministic sandbox policy, and stronger postcondition checking.
+- **Phase 9 — Multi-task Expert Fabric:** Smaller, swappable experts coordinated by a router instead of one giant model per request.
+- **Phase 10 — Memory and retrieval fabric:** Permissioned short-term and long-term memory with provenance and retrieval.
+- **Phase 11 — Local adaptation and predictive behavior:** Learn from your workflows without baking personal data into model weights.
+- **Phase 12 — Trusted multi-device fabric:** Extend the same supervised boundary to trusted local devices.
+- **Phase 13 — Expert Factory and hardware-aware training:** Tools to build, verify, and optimize experts for the target machine.
+- **Phase 14 — Reliability, security, and productization:** Hardening, packaging, and making FAM_OS installable as a real local service.
 
 ---
 
