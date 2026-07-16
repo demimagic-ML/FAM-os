@@ -1,5 +1,7 @@
 # FAM_OS — For All Mankind Operating System
 
+![FAM_OS profile photo](FamOS.jpeg)
+
 FAM_OS is an **always-on operating-system intelligence service** built above the Linux kernel. It weaves together local models, your real hardware, the applications you already use, deterministic tools, memory, and trusted devices into one supervised, privacy-first intelligence fabric.
 
 > **FAM_OS is not an LLM living inside the Linux kernel.** Linux still owns hardware, processes, memory, filesystems, networking, and drivers. FAM_OS adds a thin deterministic supervisor and unprivileged user-space services on top.
