@@ -1,0 +1,159 @@
+{
+  "$defs": {
+    "ArtifactDigest": {
+      "additionalProperties": false,
+      "properties": {
+        "algorithm": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "algorithm",
+        "value"
+      ],
+      "type": "object"
+    },
+    "PackageMetadata": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_digest": {
+          "$ref": "#/$defs/ArtifactDigest"
+        },
+        "license_id": {
+          "type": "string"
+        },
+        "package_id": {
+          "type": "string"
+        },
+        "package_version": {
+          "type": "string"
+        },
+        "publisher_id": {
+          "type": "string"
+        },
+        "signature_key_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "trust_level": {
+          "enum": [
+            "built_in",
+            "signed",
+            "local_unverified"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "package_id",
+        "package_version",
+        "publisher_id",
+        "license_id",
+        "trust_level",
+        "artifact_digest",
+        "signature_key_id"
+      ],
+      "type": "object"
+    },
+    "VerifierManifest": {
+      "additionalProperties": false,
+      "properties": {
+        "acceptance_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "candidate_schema_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "contract_version": {
+          "const": "fam.verifier.manifest/v1alpha1"
+        },
+        "determinism": {
+          "enum": [
+            "deterministic",
+            "bounded_nondeterminism",
+            "external_attestation"
+          ],
+          "type": "string"
+        },
+        "display_name": {
+          "type": "string"
+        },
+        "evidence_schema_id": {
+          "type": "string"
+        },
+        "network_access": {
+          "type": "boolean"
+        },
+        "package": {
+          "$ref": "#/$defs/PackageMetadata"
+        },
+        "required_isolation_capabilities": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "runner_contract_id": {
+          "type": "string"
+        },
+        "timeout_seconds": {
+          "type": "number"
+        },
+        "verifier_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "package",
+        "verifier_id",
+        "display_name",
+        "runner_contract_id",
+        "acceptance_ids",
+        "candidate_schema_ids",
+        "evidence_schema_id",
+        "determinism",
+        "required_isolation_capabilities",
+        "timeout_seconds",
+        "network_access",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.verifier.manifest/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.verifier.manifest/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/VerifierManifest"
+    },
+    "schema_id": {
+      "const": "fam.verifier.manifest/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Verifier manifest",
+  "type": "object"
+}

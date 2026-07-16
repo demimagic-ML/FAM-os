@@ -1,0 +1,87 @@
+{
+  "$defs": {
+    "ModelStorageArtifact": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.scheduler.storage-paging/v1alpha1"
+        },
+        "declared_bytes": {
+          "type": "integer"
+        },
+        "digest_sha256": {
+          "type": "string"
+        },
+        "filesystem_type": {
+          "type": "string"
+        },
+        "mmap_eligible": {
+          "type": "boolean"
+        },
+        "model_ref": {
+          "type": "string"
+        },
+        "observed_file_bytes": {
+          "type": "integer"
+        },
+        "path_disclosed": {
+          "type": "boolean"
+        },
+        "storage_bytes_excluded_from_ram_capacity": {
+          "type": "boolean"
+        },
+        "storage_id": {
+          "type": "string"
+        },
+        "storage_medium": {
+          "enum": [
+            "nvme",
+            "ssd",
+            "hdd",
+            "other"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "model_ref",
+        "digest_sha256",
+        "declared_bytes",
+        "observed_file_bytes",
+        "storage_id",
+        "storage_medium",
+        "filesystem_type",
+        "mmap_eligible",
+        "path_disclosed",
+        "storage_bytes_excluded_from_ram_capacity",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.scheduler.storage-artifact/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.scheduler.storage-paging/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/ModelStorageArtifact"
+    },
+    "schema_id": {
+      "const": "fam.scheduler.storage-artifact/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "SSD model storage artifact",
+  "type": "object"
+}

@@ -1,0 +1,203 @@
+{
+  "$defs": {
+    "CachePolicyRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.scheduler.cache-policy/v1alpha1"
+        },
+        "policy_version": {
+          "type": "string"
+        },
+        "pressures": {
+          "items": {
+            "$ref": "#/$defs/CacheTierPressure"
+          },
+          "type": "array"
+        },
+        "protected_artifact_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "snapshot": {
+          "$ref": "#/$defs/CacheTelemetrySnapshot"
+        }
+      },
+      "required": [
+        "request_id",
+        "snapshot",
+        "pressures",
+        "protected_artifact_ids",
+        "policy_version",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "CacheTelemetryEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_bytes": {
+          "type": "integer"
+        },
+        "artifact_id": {
+          "type": "string"
+        },
+        "evictable": {
+          "type": "boolean"
+        },
+        "hit_count": {
+          "type": "integer"
+        },
+        "last_accessed_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "miss_count": {
+          "type": "integer"
+        },
+        "observed_bytes": {
+          "type": "integer"
+        },
+        "reload_cost_ms": {
+          "type": "number"
+        },
+        "source_evidence_digest_sha256": {
+          "type": "string"
+        },
+        "state": {
+          "enum": [
+            "cold",
+            "warm",
+            "active"
+          ],
+          "type": "string"
+        },
+        "tier": {
+          "enum": [
+            "host_page_cache",
+            "provider_weights",
+            "accelerator_weights",
+            "npu_compiled"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "tier",
+        "state",
+        "artifact_bytes",
+        "observed_bytes",
+        "hit_count",
+        "miss_count",
+        "last_accessed_at",
+        "reload_cost_ms",
+        "evictable",
+        "source_evidence_digest_sha256"
+      ],
+      "type": "object"
+    },
+    "CacheTelemetrySnapshot": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.scheduler.cache-policy/v1alpha1"
+        },
+        "current_host_state_complete": {
+          "type": "boolean"
+        },
+        "entries": {
+          "items": {
+            "$ref": "#/$defs/CacheTelemetryEntry"
+          },
+          "type": "array"
+        },
+        "observed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "previous_snapshot_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sequence": {
+          "type": "integer"
+        },
+        "snapshot_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "snapshot_id",
+        "sequence",
+        "previous_snapshot_id",
+        "observed_at",
+        "entries",
+        "current_host_state_complete",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "CacheTierPressure": {
+      "additionalProperties": false,
+      "properties": {
+        "required_free_bytes": {
+          "type": "integer"
+        },
+        "tier": {
+          "enum": [
+            "host_page_cache",
+            "provider_weights",
+            "accelerator_weights",
+            "npu_compiled"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "tier",
+        "required_free_bytes"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.scheduler.cache-policy-request/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.scheduler.cache-policy/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/CachePolicyRequest"
+    },
+    "schema_id": {
+      "const": "fam.scheduler.cache-policy-request/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Cache retention policy request",
+  "type": "object"
+}

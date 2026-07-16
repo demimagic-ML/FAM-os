@@ -1,0 +1,184 @@
+{
+  "$defs": {
+    "ResourcePolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "accelerator_allowed": {
+          "type": "boolean"
+        },
+        "accelerator_memory_fraction": {
+          "type": "number"
+        },
+        "accelerator_reserved_memory_bytes": {
+          "type": "integer"
+        },
+        "cpu_quota_fraction": {
+          "type": "number"
+        },
+        "max_accelerator_memory_bytes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "max_cpu_cores": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "max_memory_bytes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "max_storage_cache_bytes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "max_swap_bytes": {
+          "type": "integer"
+        },
+        "memory_headroom_bytes": {
+          "type": "integer"
+        },
+        "memory_limit_fraction": {
+          "type": "number"
+        },
+        "reserved_logical_cpu_count": {
+          "type": "integer"
+        },
+        "storage_cache_fraction": {
+          "type": "number"
+        },
+        "storage_read_limit_bytes_per_second": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "storage_reserved_free_bytes": {
+          "type": "integer"
+        },
+        "storage_write_limit_bytes_per_second": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "cpu_quota_fraction",
+        "reserved_logical_cpu_count",
+        "memory_limit_fraction",
+        "memory_headroom_bytes",
+        "max_swap_bytes",
+        "accelerator_allowed",
+        "accelerator_memory_fraction",
+        "accelerator_reserved_memory_bytes",
+        "storage_cache_fraction",
+        "storage_reserved_free_bytes",
+        "max_cpu_cores",
+        "max_memory_bytes",
+        "max_accelerator_memory_bytes",
+        "max_storage_cache_bytes",
+        "storage_read_limit_bytes_per_second",
+        "storage_write_limit_bytes_per_second"
+      ],
+      "type": "object"
+    },
+    "SchedulerDefaults": {
+      "additionalProperties": false,
+      "properties": {
+        "configuration_id": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.configuration/v1alpha1"
+        },
+        "default_profile": {
+          "$ref": "#/$defs/ValidationProfileRef"
+        },
+        "policy": {
+          "$ref": "#/$defs/ResourcePolicy"
+        }
+      },
+      "required": [
+        "configuration_id",
+        "default_profile",
+        "policy",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "ValidationProfileRef": {
+      "additionalProperties": false,
+      "properties": {
+        "profile_id": {
+          "type": "string"
+        },
+        "purpose": {
+          "enum": [
+            "minimum_compatibility",
+            "full_host_capability",
+            "custom"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "profile_id",
+        "purpose"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.configuration.scheduler-defaults/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.configuration/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/SchedulerDefaults"
+    },
+    "schema_id": {
+      "const": "fam.configuration.scheduler-defaults/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Scheduler safe defaults",
+  "type": "object"
+}

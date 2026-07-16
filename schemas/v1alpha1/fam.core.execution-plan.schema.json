@@ -1,0 +1,192 @@
+{
+  "$defs": {
+    "ExecutionPlan": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.core/v1alpha1"
+        },
+        "entry_step_id": {
+          "type": "string"
+        },
+        "plan_id": {
+          "type": "string"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "route": {
+          "$ref": "#/$defs/RouteDecision"
+        },
+        "steps": {
+          "items": {
+            "$ref": "#/$defs/PlanStep"
+          },
+          "type": "array"
+        },
+        "transitions": {
+          "items": {
+            "$ref": "#/$defs/PlanTransition"
+          },
+          "type": "array"
+        },
+        "verification_required": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "plan_id",
+        "request_id",
+        "route",
+        "entry_step_id",
+        "steps",
+        "transitions",
+        "verification_required",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "PlanStep": {
+      "additionalProperties": false,
+      "properties": {
+        "acceptance_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "capability_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "description": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "observe",
+            "inference",
+            "deterministic_tool",
+            "prepare_action",
+            "confirm_action",
+            "execute_action",
+            "verify",
+            "finalize"
+          ],
+          "type": "string"
+        },
+        "step_id": {
+          "type": "string"
+        },
+        "terminal_disposition": {
+          "anyOf": [
+            {
+              "enum": [
+                "release",
+                "withhold",
+                "fail"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "step_id",
+        "kind",
+        "description",
+        "capability_ids",
+        "acceptance_ids",
+        "terminal_disposition"
+      ],
+      "type": "object"
+    },
+    "PlanTransition": {
+      "additionalProperties": false,
+      "properties": {
+        "outcome": {
+          "enum": [
+            "succeeded",
+            "failed",
+            "denied",
+            "unavailable",
+            "cancelled",
+            "expired"
+          ],
+          "type": "string"
+        },
+        "source_step_id": {
+          "type": "string"
+        },
+        "target_step_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_step_id",
+        "outcome",
+        "target_step_id"
+      ],
+      "type": "object"
+    },
+    "RouteDecision": {
+      "additionalProperties": false,
+      "properties": {
+        "confidence": {
+          "type": "number"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "required_capabilities": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "route": {
+          "enum": [
+            "kernel",
+            "code",
+            "math",
+            "retrieval"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "route",
+        "confidence",
+        "reason",
+        "required_capabilities"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.execution-plan/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/ExecutionPlan"
+    },
+    "schema_id": {
+      "const": "fam.core.execution-plan/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "FAM execution plan",
+  "type": "object"
+}

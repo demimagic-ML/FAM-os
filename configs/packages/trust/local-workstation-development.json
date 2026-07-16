@@ -1,0 +1,1 @@
+{"contract_version":"fam.registry.trust/v1alpha1","payload":{"allow_license_references":true,"allow_local_unverified":true,"allowed_license_expressions":["Apache-2.0","LicenseRef-Meta-Llama-3.2"],"built_in_anchors":[],"contract_version":"fam.registry.trust/v1alpha1","policy_id":"local-workstation-development","publisher_keys":[]},"schema_id":"fam.registry.trust-policy/v1alpha1"}

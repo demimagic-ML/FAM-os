@@ -1,0 +1,305 @@
+{
+  "$defs": {
+    "ArtifactCacheObservation": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.scheduler.storage-paging/v1alpha1"
+        },
+        "counted_in_cgroup_memory_when_mapped": {
+          "type": "boolean"
+        },
+        "file_bytes": {
+          "type": "integer"
+        },
+        "observation_id": {
+          "type": "string"
+        },
+        "observed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "page_count": {
+          "type": "integer"
+        },
+        "page_size_bytes": {
+          "type": "integer"
+        },
+        "resident_bytes_upper_bound": {
+          "type": "integer"
+        },
+        "resident_fraction": {
+          "type": "number"
+        },
+        "resident_page_count": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "observation_id",
+        "artifact_id",
+        "observed_at",
+        "file_bytes",
+        "page_size_bytes",
+        "page_count",
+        "resident_page_count",
+        "resident_bytes_upper_bound",
+        "resident_fraction",
+        "counted_in_cgroup_memory_when_mapped",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "ModelLoadIoBudget": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "type": "string"
+        },
+        "budget_id": {
+          "type": "string"
+        },
+        "cumulative_process_io_enforced": {
+          "type": "boolean"
+        },
+        "kernel_bandwidth_controller_available": {
+          "type": "boolean"
+        },
+        "maximum_physical_read_bytes": {
+          "type": "integer"
+        },
+        "maximum_physical_write_bytes": {
+          "type": "integer"
+        },
+        "read_bandwidth_limit_bytes_per_second": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "write_bandwidth_limit_bytes_per_second": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "budget_id",
+        "artifact_id",
+        "maximum_physical_read_bytes",
+        "maximum_physical_write_bytes",
+        "read_bandwidth_limit_bytes_per_second",
+        "write_bandwidth_limit_bytes_per_second",
+        "kernel_bandwidth_controller_available",
+        "cumulative_process_io_enforced"
+      ],
+      "type": "object"
+    },
+    "ModelLoadIoTrial": {
+      "additionalProperties": false,
+      "properties": {
+        "cache_after_load": {
+          "$ref": "#/$defs/ArtifactCacheObservation"
+        },
+        "cache_before_load": {
+          "$ref": "#/$defs/ArtifactCacheObservation"
+        },
+        "cache_eviction_effective": {
+          "type": "boolean"
+        },
+        "cache_eviction_requested": {
+          "type": "boolean"
+        },
+        "cache_state": {
+          "enum": [
+            "cold",
+            "warm"
+          ],
+          "type": "string"
+        },
+        "logical_read_bytes": {
+          "type": "integer"
+        },
+        "model_unloaded_after_trial": {
+          "type": "boolean"
+        },
+        "physical_read_bytes": {
+          "type": "integer"
+        },
+        "physical_write_bytes": {
+          "type": "integer"
+        },
+        "provider_load_seconds": {
+          "type": "number"
+        },
+        "provider_resident_bytes": {
+          "type": "integer"
+        },
+        "service_memory_peak_bytes": {
+          "type": "integer"
+        },
+        "trial_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "trial_id",
+        "cache_state",
+        "cache_before_load",
+        "cache_after_load",
+        "physical_read_bytes",
+        "physical_write_bytes",
+        "logical_read_bytes",
+        "provider_load_seconds",
+        "provider_resident_bytes",
+        "service_memory_peak_bytes",
+        "cache_eviction_requested",
+        "cache_eviction_effective",
+        "model_unloaded_after_trial"
+      ],
+      "type": "object"
+    },
+    "ModelStorageArtifact": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.scheduler.storage-paging/v1alpha1"
+        },
+        "declared_bytes": {
+          "type": "integer"
+        },
+        "digest_sha256": {
+          "type": "string"
+        },
+        "filesystem_type": {
+          "type": "string"
+        },
+        "mmap_eligible": {
+          "type": "boolean"
+        },
+        "model_ref": {
+          "type": "string"
+        },
+        "observed_file_bytes": {
+          "type": "integer"
+        },
+        "path_disclosed": {
+          "type": "boolean"
+        },
+        "storage_bytes_excluded_from_ram_capacity": {
+          "type": "boolean"
+        },
+        "storage_id": {
+          "type": "string"
+        },
+        "storage_medium": {
+          "enum": [
+            "nvme",
+            "ssd",
+            "hdd",
+            "other"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "model_ref",
+        "digest_sha256",
+        "declared_bytes",
+        "observed_file_bytes",
+        "storage_id",
+        "storage_medium",
+        "filesystem_type",
+        "mmap_eligible",
+        "path_disclosed",
+        "storage_bytes_excluded_from_ram_capacity",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "StoragePagingEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact": {
+          "$ref": "#/$defs/ModelStorageArtifact"
+        },
+        "budget": {
+          "$ref": "#/$defs/ModelLoadIoBudget"
+        },
+        "cache_before_eviction": {
+          "$ref": "#/$defs/ArtifactCacheObservation"
+        },
+        "cold_trial": {
+          "$ref": "#/$defs/ModelLoadIoTrial"
+        },
+        "contract_version": {
+          "const": "fam.scheduler.storage-paging/v1alpha1"
+        },
+        "evidence_id": {
+          "type": "string"
+        },
+        "final_loaded_model_refs": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "service_final_state": {
+          "type": "string"
+        },
+        "warm_trial": {
+          "$ref": "#/$defs/ModelLoadIoTrial"
+        }
+      },
+      "required": [
+        "evidence_id",
+        "artifact",
+        "budget",
+        "cache_before_eviction",
+        "cold_trial",
+        "warm_trial",
+        "service_final_state",
+        "final_loaded_model_refs",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.scheduler.storage-paging-evidence/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.scheduler.storage-paging/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/StoragePagingEvidence"
+    },
+    "schema_id": {
+      "const": "fam.scheduler.storage-paging-evidence/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "SSD paging and load I/O evidence",
+  "type": "object"
+}

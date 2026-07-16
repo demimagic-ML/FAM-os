@@ -1,0 +1,205 @@
+{
+  "$defs": {
+    "MemoryContentDigest": {
+      "additionalProperties": false,
+      "properties": {
+        "algorithm": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "algorithm",
+        "value"
+      ],
+      "type": "object"
+    },
+    "MemoryProvenance": {
+      "additionalProperties": false,
+      "properties": {
+        "captured_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "created_by": {
+          "type": "string"
+        },
+        "parent_record_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "source_id": {
+          "type": "string"
+        },
+        "source_kind": {
+          "enum": [
+            "user",
+            "application",
+            "import",
+            "derived",
+            "system"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_kind",
+        "source_id",
+        "created_by",
+        "captured_at",
+        "parent_record_ids"
+      ],
+      "type": "object"
+    },
+    "MemoryRecordManifest": {
+      "additionalProperties": false,
+      "properties": {
+        "content_digest": {
+          "$ref": "#/$defs/MemoryContentDigest"
+        },
+        "content_media_type": {
+          "type": "string"
+        },
+        "content_schema_id": {
+          "type": "string"
+        },
+        "content_size_bytes": {
+          "type": "integer"
+        },
+        "contract_version": {
+          "const": "fam.memory.record/v1alpha1"
+        },
+        "created_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "expires_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "kind": {
+          "enum": [
+            "session",
+            "working",
+            "document_chunk",
+            "preference",
+            "event",
+            "summary"
+          ],
+          "type": "string"
+        },
+        "provenance": {
+          "$ref": "#/$defs/MemoryProvenance"
+        },
+        "record_id": {
+          "type": "string"
+        },
+        "retention_policy_id": {
+          "type": "string"
+        },
+        "scope": {
+          "$ref": "#/$defs/MemoryScope"
+        },
+        "sensitivity": {
+          "enum": [
+            "private",
+            "restricted"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "record_id",
+        "kind",
+        "created_at",
+        "content_schema_id",
+        "content_media_type",
+        "content_size_bytes",
+        "content_digest",
+        "scope",
+        "provenance",
+        "sensitivity",
+        "retention_policy_id",
+        "expires_at",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "MemoryScope": {
+      "additionalProperties": false,
+      "properties": {
+        "application_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "owner_id": {
+          "type": "string"
+        },
+        "purpose_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "session_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "workspace_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "owner_id",
+        "purpose_ids",
+        "application_ids",
+        "workspace_ids",
+        "session_id"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.memory.record/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.memory.record/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/MemoryRecordManifest"
+    },
+    "schema_id": {
+      "const": "fam.memory.record/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Memory record manifest",
+  "type": "object"
+}

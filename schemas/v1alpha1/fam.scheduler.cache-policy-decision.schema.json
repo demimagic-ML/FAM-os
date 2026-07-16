@@ -1,0 +1,131 @@
+{
+  "$defs": {
+    "CacheEvictionDecision": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "type": "string"
+        },
+        "rank": {
+          "type": "integer"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "reclaimable_bytes": {
+          "type": "integer"
+        },
+        "tier": {
+          "enum": [
+            "host_page_cache",
+            "provider_weights",
+            "accelerator_weights",
+            "npu_compiled"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "tier",
+        "artifact_id",
+        "rank",
+        "reclaimable_bytes",
+        "reason"
+      ],
+      "type": "object"
+    },
+    "CachePolicyDecision": {
+      "additionalProperties": false,
+      "properties": {
+        "all_pressures_satisfied": {
+          "type": "boolean"
+        },
+        "contract_version": {
+          "const": "fam.scheduler.cache-policy/v1alpha1"
+        },
+        "decision_id": {
+          "type": "string"
+        },
+        "evictions": {
+          "items": {
+            "$ref": "#/$defs/CacheEvictionDecision"
+          },
+          "type": "array"
+        },
+        "policy_version": {
+          "type": "string"
+        },
+        "reclaims": {
+          "items": {
+            "$ref": "#/$defs/CacheTierReclaim"
+          },
+          "type": "array"
+        },
+        "request_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "decision_id",
+        "request_id",
+        "evictions",
+        "reclaims",
+        "all_pressures_satisfied",
+        "policy_version",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "CacheTierReclaim": {
+      "additionalProperties": false,
+      "properties": {
+        "required_free_bytes": {
+          "type": "integer"
+        },
+        "satisfied": {
+          "type": "boolean"
+        },
+        "selected_bytes": {
+          "type": "integer"
+        },
+        "tier": {
+          "enum": [
+            "host_page_cache",
+            "provider_weights",
+            "accelerator_weights",
+            "npu_compiled"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "tier",
+        "required_free_bytes",
+        "selected_bytes",
+        "satisfied"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.scheduler.cache-policy-decision/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.scheduler.cache-policy/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/CachePolicyDecision"
+    },
+    "schema_id": {
+      "const": "fam.scheduler.cache-policy-decision/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Cache retention policy decision",
+  "type": "object"
+}

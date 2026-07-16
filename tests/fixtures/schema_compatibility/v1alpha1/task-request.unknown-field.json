@@ -1,0 +1,14 @@
+{
+  "contract_version": "fam.core/v1alpha1",
+  "payload": {
+    "contract_version": "fam.core/v1alpha1",
+    "prompt": "Compatibility fixture",
+    "request_id": "fixture-request-1",
+    "required_capabilities": [
+      "chat.respond"
+    ],
+    "unknown_field": true,
+    "verification_required": false
+  },
+  "schema_id": "fam.core.task-request/v1alpha1"
+}

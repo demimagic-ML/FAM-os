@@ -1,0 +1,191 @@
+{
+  "$defs": {
+    "ArtifactDigest": {
+      "additionalProperties": false,
+      "properties": {
+        "algorithm": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "algorithm",
+        "value"
+      ],
+      "type": "object"
+    },
+    "ExpertManifestV1Alpha1": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "capabilities": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "contract_version": {
+          "const": "fam.expert.manifest/v1alpha1"
+        },
+        "display_name": {
+          "type": "string"
+        },
+        "expert_id": {
+          "type": "string"
+        },
+        "package": {
+          "$ref": "#/$defs/PackageMetadata"
+        },
+        "required_verifier_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "resources": {
+          "$ref": "#/$defs/ExpertResourceRequirements"
+        },
+        "runtime_contract_id": {
+          "type": "string"
+        },
+        "tier": {
+          "enum": [
+            "micro",
+            "economical",
+            "escalation",
+            "remote"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "package",
+        "expert_id",
+        "display_name",
+        "tier",
+        "capabilities",
+        "runtime_contract_id",
+        "artifact_ids",
+        "resources",
+        "required_verifier_ids",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "ExpertResourceRequirements": {
+      "additionalProperties": false,
+      "properties": {
+        "accelerator_optional": {
+          "type": "boolean"
+        },
+        "estimated_resident_bytes": {
+          "type": "integer"
+        },
+        "max_context_tokens": {
+          "type": "integer"
+        },
+        "minimum_accelerator_memory_bytes": {
+          "type": "integer"
+        },
+        "minimum_system_memory_bytes": {
+          "type": "integer"
+        },
+        "storage_bytes": {
+          "type": "integer"
+        },
+        "supported_architectures": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "estimated_resident_bytes",
+        "storage_bytes",
+        "max_context_tokens",
+        "minimum_system_memory_bytes",
+        "minimum_accelerator_memory_bytes",
+        "accelerator_optional",
+        "supported_architectures"
+      ],
+      "type": "object"
+    },
+    "PackageMetadata": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_digest": {
+          "$ref": "#/$defs/ArtifactDigest"
+        },
+        "license_id": {
+          "type": "string"
+        },
+        "package_id": {
+          "type": "string"
+        },
+        "package_version": {
+          "type": "string"
+        },
+        "publisher_id": {
+          "type": "string"
+        },
+        "signature_key_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "trust_level": {
+          "enum": [
+            "built_in",
+            "signed",
+            "local_unverified"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "package_id",
+        "package_version",
+        "publisher_id",
+        "license_id",
+        "trust_level",
+        "artifact_digest",
+        "signature_key_id"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.expert.manifest/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.expert.manifest/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/ExpertManifestV1Alpha1"
+    },
+    "schema_id": {
+      "const": "fam.expert.manifest/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Legacy expert manifest",
+  "type": "object"
+}

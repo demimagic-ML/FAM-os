@@ -1,0 +1,202 @@
+{
+  "$defs": {
+    "ExpertResidencyCatalog": {
+      "additionalProperties": false,
+      "properties": {
+        "catalog_id": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.scheduler.expert-residency/v1alpha1"
+        },
+        "records": {
+          "items": {
+            "$ref": "#/$defs/ExpertResidencyRecord"
+          },
+          "type": "array"
+        },
+        "revision": {
+          "type": "integer"
+        },
+        "updated_at": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "catalog_id",
+        "revision",
+        "updated_at",
+        "records",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "ExpertResidencyIdentity": {
+      "additionalProperties": false,
+      "properties": {
+        "expert_id": {
+          "type": "string"
+        },
+        "runtime_artifact_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "expert_id",
+        "runtime_artifact_id"
+      ],
+      "type": "object"
+    },
+    "ExpertResidencyRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "accelerator_bytes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "active_leases": {
+          "items": {
+            "$ref": "#/$defs/ResidencyLease"
+          },
+          "type": "array"
+        },
+        "context_tokens": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "eviction_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "identity": {
+          "$ref": "#/$defs/ExpertResidencyIdentity"
+        },
+        "provider_observed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "record_revision": {
+          "type": "integer"
+        },
+        "resident_bytes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "state": {
+          "enum": [
+            "cold",
+            "warm",
+            "active",
+            "evicting"
+          ],
+          "type": "string"
+        },
+        "transition_reason": {
+          "enum": [
+            "registered_cold",
+            "provider_loaded",
+            "provider_absent",
+            "provider_refreshed",
+            "lease_acquired",
+            "lease_released",
+            "leases_expired",
+            "eviction_started",
+            "eviction_confirmed",
+            "eviction_aborted"
+          ],
+          "type": "string"
+        },
+        "transitioned_at": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "identity",
+        "state",
+        "record_revision",
+        "active_leases",
+        "eviction_id",
+        "provider_observed_at",
+        "resident_bytes",
+        "accelerator_bytes",
+        "context_tokens",
+        "transitioned_at",
+        "transition_reason"
+      ],
+      "type": "object"
+    },
+    "ResidencyLease": {
+      "additionalProperties": false,
+      "properties": {
+        "acquired_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "expires_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "lease_id": {
+          "type": "string"
+        },
+        "request_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "lease_id",
+        "request_id",
+        "acquired_at",
+        "expires_at"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.scheduler.expert-residency/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.scheduler.expert-residency/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/ExpertResidencyCatalog"
+    },
+    "schema_id": {
+      "const": "fam.scheduler.expert-residency/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Expert residency catalog",
+  "type": "object"
+}

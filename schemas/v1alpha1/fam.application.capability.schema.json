@@ -1,0 +1,97 @@
+{
+  "$defs": {
+    "CapabilityDescriptor": {
+      "additionalProperties": false,
+      "properties": {
+        "capability_id": {
+          "type": "string"
+        },
+        "confirmation": {
+          "enum": [
+            "not_required",
+            "when_required",
+            "always"
+          ],
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "display_name": {
+          "type": "string"
+        },
+        "input_schema_id": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "observation",
+            "action"
+          ],
+          "type": "string"
+        },
+        "output_schema_id": {
+          "type": "string"
+        },
+        "postcondition_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "required_authority": {
+          "enum": [
+            "observe",
+            "propose",
+            "modify",
+            "execute"
+          ],
+          "type": "string"
+        },
+        "reversibility": {
+          "enum": [
+            "not_applicable",
+            "reversible",
+            "compensatable",
+            "irreversible"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "capability_id",
+        "display_name",
+        "description",
+        "kind",
+        "required_authority",
+        "input_schema_id",
+        "output_schema_id",
+        "reversibility",
+        "confirmation",
+        "postcondition_ids"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.application.capability/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.applications/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/CapabilityDescriptor"
+    },
+    "schema_id": {
+      "const": "fam.application.capability/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Application capability",
+  "type": "object"
+}

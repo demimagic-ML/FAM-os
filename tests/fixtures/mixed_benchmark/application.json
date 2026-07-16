@@ -1,0 +1,1 @@
+{"workflow":"prepare-confirm-execute-verify-audit-release","required_precondition":"document.revision","required_postcondition":"document.hash","expected_status":"verified"}

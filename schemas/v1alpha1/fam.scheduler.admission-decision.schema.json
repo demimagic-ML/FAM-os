@@ -1,0 +1,95 @@
+{
+  "$defs": {
+    "AdmissionDecision": {
+      "additionalProperties": false,
+      "properties": {
+        "available_after_bytes": {
+          "type": "integer"
+        },
+        "available_before_bytes": {
+          "type": "integer"
+        },
+        "context_increment_bytes": {
+          "type": "integer"
+        },
+        "contract_version": {
+          "const": "fam.scheduler.admission/v1alpha1"
+        },
+        "decision_id": {
+          "type": "string"
+        },
+        "eviction_expert_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "reclaim_required_bytes": {
+          "type": "integer"
+        },
+        "reclaimed_bytes": {
+          "type": "integer"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "admitted",
+            "rejected"
+          ],
+          "type": "string"
+        },
+        "total_increment_bytes": {
+          "type": "integer"
+        },
+        "weight_increment_bytes": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "decision_id",
+        "request_id",
+        "status",
+        "weight_increment_bytes",
+        "context_increment_bytes",
+        "total_increment_bytes",
+        "available_before_bytes",
+        "reclaim_required_bytes",
+        "eviction_expert_ids",
+        "reclaimed_bytes",
+        "available_after_bytes",
+        "reason_codes",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.scheduler.admission-decision/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.scheduler.admission/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/AdmissionDecision"
+    },
+    "schema_id": {
+      "const": "fam.scheduler.admission-decision/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Scheduler admission decision",
+  "type": "object"
+}

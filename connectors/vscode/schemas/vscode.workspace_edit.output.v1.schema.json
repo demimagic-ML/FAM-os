@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vscode.workspace_edit.output.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["applied_edits"],
+  "properties": {
+    "applied_edits": {"type": "integer", "minimum": 1, "maximum": 64}
+  }
+}

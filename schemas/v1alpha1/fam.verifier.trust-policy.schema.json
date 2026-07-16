@@ -1,0 +1,68 @@
+{
+  "$defs": {
+    "VerifierTrustPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "allowed_runner_contract_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "allowed_verifier_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "contract_version": {
+          "const": "fam.verifier.trust-policy/v1alpha1"
+        },
+        "minimum_trust": {
+          "enum": [
+            "built_in",
+            "signed",
+            "local_unverified"
+          ],
+          "type": "string"
+        },
+        "policy_id": {
+          "type": "string"
+        },
+        "require_network_denied": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "policy_id",
+        "allowed_verifier_ids",
+        "allowed_runner_contract_ids",
+        "minimum_trust",
+        "require_network_denied",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.verifier.trust-policy/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.verifier.trust-policy/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/VerifierTrustPolicy"
+    },
+    "schema_id": {
+      "const": "fam.verifier.trust-policy/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Verifier trust policy",
+  "type": "object"
+}

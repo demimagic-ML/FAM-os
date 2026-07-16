@@ -1,0 +1,66 @@
+{
+  "$defs": {
+    "RetrievalVerificationReport": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.verifier.retrieval/v1alpha1"
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "rejected_claim_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "verification_id": {
+          "type": "string"
+        },
+        "verified_claim_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "verification_id",
+        "verified_claim_ids",
+        "rejected_claim_ids",
+        "reason_codes",
+        "passed",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.verifier.retrieval-report/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.verifier.retrieval/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/RetrievalVerificationReport"
+    },
+    "schema_id": {
+      "const": "fam.verifier.retrieval-report/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Retrieval verification report",
+  "type": "object"
+}

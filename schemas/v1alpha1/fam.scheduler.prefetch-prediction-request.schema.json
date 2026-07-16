@@ -1,0 +1,142 @@
+{
+  "$defs": {
+    "ArtifactAccessSequence": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "observed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "sequence_id": {
+          "type": "string"
+        },
+        "source_evidence_digest_sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "sequence_id",
+        "observed_at",
+        "artifact_ids",
+        "source_evidence_digest_sha256"
+      ],
+      "type": "object"
+    },
+    "PrefetchCandidate": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_bytes": {
+          "type": "integer"
+        },
+        "artifact_id": {
+          "type": "string"
+        },
+        "expected_reload_cost_ms": {
+          "type": "number"
+        },
+        "requested_prefetch_bytes": {
+          "type": "integer"
+        },
+        "tier": {
+          "enum": [
+            "host_page_cache",
+            "provider_weights",
+            "accelerator_weights",
+            "npu_compiled"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "tier",
+        "artifact_bytes",
+        "requested_prefetch_bytes",
+        "expected_reload_cost_ms"
+      ],
+      "type": "object"
+    },
+    "PrefetchPredictionRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "candidates": {
+          "items": {
+            "$ref": "#/$defs/PrefetchCandidate"
+          },
+          "type": "array"
+        },
+        "contract_version": {
+          "const": "fam.scheduler.predictive-prefetch/v1alpha1"
+        },
+        "current_artifact_id": {
+          "type": "string"
+        },
+        "history": {
+          "items": {
+            "$ref": "#/$defs/ArtifactAccessSequence"
+          },
+          "type": "array"
+        },
+        "horizon_seconds": {
+          "type": "integer"
+        },
+        "minimum_confidence": {
+          "type": "number"
+        },
+        "minimum_transition_observations": {
+          "type": "integer"
+        },
+        "predictor_version": {
+          "type": "string"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "requested_at": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "current_artifact_id",
+        "requested_at",
+        "candidates",
+        "history",
+        "minimum_transition_observations",
+        "minimum_confidence",
+        "horizon_seconds",
+        "predictor_version",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.scheduler.prefetch-prediction-request/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.scheduler.predictive-prefetch/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/PrefetchPredictionRequest"
+    },
+    "schema_id": {
+      "const": "fam.scheduler.prefetch-prediction-request/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Bounded prefetch prediction request",
+  "type": "object"
+}

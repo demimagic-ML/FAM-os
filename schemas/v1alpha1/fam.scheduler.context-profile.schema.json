@@ -1,0 +1,142 @@
+{
+  "$defs": {
+    "ContextMemoryModelProfile": {
+      "additionalProperties": false,
+      "properties": {
+        "architecture": {
+          "type": "string"
+        },
+        "assumption_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "attention_head_count": {
+          "type": "integer"
+        },
+        "contract_version": {
+          "const": "fam.scheduler.context-memory/v1alpha1"
+        },
+        "embedding_dimension": {
+          "type": "integer"
+        },
+        "expert_id": {
+          "type": "string"
+        },
+        "fixed_runtime_overhead_bytes": {
+          "type": "integer"
+        },
+        "key_dimension": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "key_value_head_count": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "layer_count": {
+          "type": "integer"
+        },
+        "maximum_context_tokens": {
+          "type": "integer"
+        },
+        "per_sequence_workspace_bytes": {
+          "type": "integer"
+        },
+        "profile_id": {
+          "type": "string"
+        },
+        "runtime_artifact_id": {
+          "type": "string"
+        },
+        "safety_margin_basis_points": {
+          "type": "integer"
+        },
+        "scalar_bytes": {
+          "type": "integer"
+        },
+        "source": {
+          "enum": [
+            "observed_metadata",
+            "calibrated",
+            "declared_conservative"
+          ],
+          "type": "string"
+        },
+        "strategy": {
+          "enum": [
+            "autoregressive_kv",
+            "encoder_activation_bound"
+          ],
+          "type": "string"
+        },
+        "value_dimension": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "profile_id",
+        "expert_id",
+        "runtime_artifact_id",
+        "architecture",
+        "strategy",
+        "maximum_context_tokens",
+        "layer_count",
+        "embedding_dimension",
+        "attention_head_count",
+        "key_value_head_count",
+        "key_dimension",
+        "value_dimension",
+        "scalar_bytes",
+        "fixed_runtime_overhead_bytes",
+        "per_sequence_workspace_bytes",
+        "safety_margin_basis_points",
+        "source",
+        "assumption_codes",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.scheduler.context-profile/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.scheduler.context-memory/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/ContextMemoryModelProfile"
+    },
+    "schema_id": {
+      "const": "fam.scheduler.context-profile/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Context memory model profile",
+  "type": "object"
+}

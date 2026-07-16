@@ -1,0 +1,81 @@
+{
+  "$defs": {
+    "ArtifactDigest": {
+      "additionalProperties": false,
+      "properties": {
+        "algorithm": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "algorithm",
+        "value"
+      ],
+      "type": "object"
+    },
+    "VerifierRuntimeBinding": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.verifier.runtime-binding/v1alpha1"
+        },
+        "entry_point": {
+          "type": "string"
+        },
+        "expected_artifact_digest": {
+          "$ref": "#/$defs/ArtifactDigest"
+        },
+        "package_id": {
+          "type": "string"
+        },
+        "package_version": {
+          "type": "string"
+        },
+        "runner_contract_id": {
+          "type": "string"
+        },
+        "runtime_adapter_id": {
+          "type": "string"
+        },
+        "verifier_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "package_id",
+        "package_version",
+        "verifier_id",
+        "runner_contract_id",
+        "runtime_adapter_id",
+        "entry_point",
+        "expected_artifact_digest",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.verifier.runtime-binding/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.verifier.runtime-binding/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/VerifierRuntimeBinding"
+    },
+    "schema_id": {
+      "const": "fam.verifier.runtime-binding/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Verifier runtime binding",
+  "type": "object"
+}

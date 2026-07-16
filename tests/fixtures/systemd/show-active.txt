@@ -1,0 +1,5 @@
+ActiveState=active
+SubState=running
+Result=success
+MainPID=4242
+ControlGroup=/user.slice/user-1000.slice/user@1000.service/app.slice/fam-test.service

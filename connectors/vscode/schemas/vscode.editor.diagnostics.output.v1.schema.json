@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vscode.editor.diagnostics.output.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["document_uri", "diagnostics", "truncated"],
+  "properties": {
+    "document_uri": {"type": "string"},
+    "diagnostics": {"type": "array", "maxItems": 200, "items": {"$ref": "#/$defs/diagnostic"}},
+    "truncated": {"type": "boolean"}
+  },
+  "$defs": {
+    "position": {
+      "type": "object", "additionalProperties": false,
+      "required": ["line", "character"],
+      "properties": {"line": {"type": "integer", "minimum": 0}, "character": {"type": "integer", "minimum": 0}}
+    },
+    "range": {
+      "type": "object", "additionalProperties": false,
+      "required": ["start", "end"],
+      "properties": {"start": {"$ref": "#/$defs/position"}, "end": {"$ref": "#/$defs/position"}}
+    },
+    "diagnostic": {
+      "type": "object", "additionalProperties": false,
+      "required": ["range", "severity", "message", "source", "code"],
+      "properties": {
+        "range": {"$ref": "#/$defs/range"},
+        "severity": {"type": "integer", "minimum": 0, "maximum": 3},
+        "message": {"type": "string", "maxLength": 2048},
+        "source": {"type": ["string", "null"], "maxLength": 128},
+        "code": {"type": ["string", "null"], "maxLength": 128}
+      }
+    }
+  }
+}

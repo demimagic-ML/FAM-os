@@ -1,0 +1,17 @@
+{
+  "ollama_url": "http://127.0.0.1:11435",
+  "kernel_model": "granite3.3:2b",
+  "economical_expert": "qwen2.5-coder:7b",
+  "escalation_expert": "qwen2.5-coder:14b",
+  "context_length": 4096,
+  "expert_num_predict": 1200,
+  "repair_attempts": 2,
+  "escalation_repair_attempts": 3,
+  "escalate_on_failure": true,
+  "evict_before_escalation": true,
+  "timeout_seconds": 600,
+  "keep_alive": "5m",
+  "tests_file": "evaluations/verifiers/stable_topological_sort.py",
+  "repair_guidance": "Do not mutate graph and do not construct a set. Use graph.get(node, ()) for neighbor-only nodes. Preserve first-discovery order in an ordered_nodes list, use list-valued adjacency, compute indegree for every ordered node, always select the earliest ready node in ordered_nodes, and compare result length with ordered_nodes rather than graph. Keep the complete function under 50 lines.",
+  "prompt": "Write a concise Python function named stable_topological_sort that accepts a mapping of nodes to outgoing neighbors. Do not mutate graph and do not use a set. Preserve input and first-discovery order whenever multiple nodes are ready, include neighbor-only nodes, use graph.get for them, select the earliest ready node in the complete ordered node list, and raise ValueError only when that complete graph contains a cycle. Return only one complete Python code block under 50 lines."
+}

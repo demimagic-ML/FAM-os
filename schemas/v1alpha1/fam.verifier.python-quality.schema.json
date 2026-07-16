@@ -1,0 +1,93 @@
+{
+  "$defs": {
+    "AnalyzerResult": {
+      "additionalProperties": false,
+      "properties": {
+        "analyzer_id": {
+          "type": "string"
+        },
+        "exit_code": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "output": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "passed",
+            "failed",
+            "error"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "analyzer_id",
+        "status",
+        "exit_code",
+        "output"
+      ],
+      "type": "object"
+    },
+    "PythonQualityReport": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.verifier.python-quality/v1alpha1"
+        },
+        "static_analysis": {
+          "$ref": "#/$defs/AnalyzerResult"
+        },
+        "syntax": {
+          "$ref": "#/$defs/AnalyzerResult"
+        },
+        "typing": {
+          "$ref": "#/$defs/AnalyzerResult"
+        },
+        "unit_tests": {
+          "$ref": "#/$defs/AnalyzerResult"
+        },
+        "verification_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "verification_id",
+        "syntax",
+        "unit_tests",
+        "typing",
+        "static_analysis",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.verifier.python-quality/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.verifier.python-quality/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/PythonQualityReport"
+    },
+    "schema_id": {
+      "const": "fam.verifier.python-quality/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Python quality verification report",
+  "type": "object"
+}

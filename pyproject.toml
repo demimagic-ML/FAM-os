@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fam-os"
+version = "0.1.0"
+description = "Hardware-aware operating-system intelligence service"
+requires-python = ">=3.12"
+dependencies = [
+    "cryptography>=41,<47",
+    "jsonschema>=4.10,<5",
+    "mcp>=1.27,<2",
+]
+
+[project.optional-dependencies]
+verification = [
+    "mypy>=1.10,<2",
+    "ruff>=0.5,<1",
+]
+math-verification = [
+    "sympy>=1.13,<2",
+]
+
+[project.scripts]
+fam-shell = "fam_os.adapters.shell.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["fam_os*"]

@@ -1,0 +1,124 @@
+{
+  "$defs": {
+    "InferenceMetrics": {
+      "additionalProperties": false,
+      "properties": {
+        "generation_tokens_per_second": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "load_seconds": {
+          "type": "number"
+        },
+        "model_ref": {
+          "type": "string"
+        },
+        "output_tokens": {
+          "type": "integer"
+        },
+        "prompt_tokens": {
+          "type": "integer"
+        },
+        "wall_seconds": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "model_ref",
+        "wall_seconds",
+        "load_seconds",
+        "prompt_tokens",
+        "output_tokens",
+        "generation_tokens_per_second"
+      ],
+      "type": "object"
+    },
+    "RouteDecision": {
+      "additionalProperties": false,
+      "properties": {
+        "confidence": {
+          "type": "number"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "required_capabilities": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "route": {
+          "enum": [
+            "kernel",
+            "code",
+            "math",
+            "retrieval"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "route",
+        "confidence",
+        "reason",
+        "required_capabilities"
+      ],
+      "type": "object"
+    },
+    "RoutingResult": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.routing/v1alpha1"
+        },
+        "decision": {
+          "$ref": "#/$defs/RouteDecision"
+        },
+        "metrics": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/InferenceMetrics"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "decision",
+        "metrics",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.routing.result/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.routing/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/RoutingResult"
+    },
+    "schema_id": {
+      "const": "fam.routing.result/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Routing result",
+  "type": "object"
+}

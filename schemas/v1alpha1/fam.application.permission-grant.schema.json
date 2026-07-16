@@ -1,0 +1,123 @@
+{
+  "$defs": {
+    "PermissionGrant": {
+      "additionalProperties": false,
+      "properties": {
+        "authorities": {
+          "items": {
+            "enum": [
+              "observe",
+              "propose",
+              "modify",
+              "execute"
+            ],
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "expires_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "grant_id": {
+          "type": "string"
+        },
+        "issued_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "revoked_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "scope": {
+          "$ref": "#/$defs/PermissionScope"
+        },
+        "subject_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "grant_id",
+        "subject_id",
+        "authorities",
+        "scope",
+        "issued_at",
+        "expires_at",
+        "revoked_at"
+      ],
+      "type": "object"
+    },
+    "PermissionScope": {
+      "additionalProperties": false,
+      "properties": {
+        "application_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "capability_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "instance_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "resource_uris": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "application_ids",
+        "instance_ids",
+        "capability_ids",
+        "resource_uris"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.application.permission-grant/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.applications/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/PermissionGrant"
+    },
+    "schema_id": {
+      "const": "fam.application.permission-grant/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Application permission grant",
+  "type": "object"
+}

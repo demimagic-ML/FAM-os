@@ -1,0 +1,57 @@
+{
+  "$defs": {
+    "ContextMemoryReservation": {
+      "additionalProperties": false,
+      "properties": {
+        "concurrent_sequences": {
+          "type": "integer"
+        },
+        "contract_version": {
+          "const": "fam.scheduler.context-memory/v1alpha1"
+        },
+        "input_token_upper_bound": {
+          "type": "integer"
+        },
+        "output_token_reservation": {
+          "type": "integer"
+        },
+        "profile_id": {
+          "type": "string"
+        },
+        "reservation_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "reservation_id",
+        "profile_id",
+        "input_token_upper_bound",
+        "output_token_reservation",
+        "concurrent_sequences",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.scheduler.context-reservation/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.scheduler.context-memory/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/ContextMemoryReservation"
+    },
+    "schema_id": {
+      "const": "fam.scheduler.context-reservation/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Context memory reservation",
+  "type": "object"
+}

@@ -1,0 +1,217 @@
+{
+  "$defs": {
+    "ActionResult": {
+      "additionalProperties": false,
+      "properties": {
+        "after_revision": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "before_revision": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "completed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "error": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ApplicationFailure"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "output": {
+          "additionalProperties": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "type": "object"
+        },
+        "postcondition_evidence": {
+          "items": {
+            "$ref": "#/$defs/ConditionEvidence"
+          },
+          "type": "array"
+        },
+        "proposal_id": {
+          "type": "string"
+        },
+        "reversal_token": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "status": {
+          "enum": [
+            "verified",
+            "denied",
+            "precondition_failed",
+            "execution_failed",
+            "postcondition_failed",
+            "cancelled"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "proposal_id",
+        "status",
+        "completed_at",
+        "postcondition_evidence",
+        "output",
+        "before_revision",
+        "after_revision",
+        "reversal_token",
+        "error"
+      ],
+      "type": "object"
+    },
+    "ApplicationFailure": {
+      "additionalProperties": false,
+      "properties": {
+        "category": {
+          "enum": [
+            "permission_denied",
+            "unavailable",
+            "precondition_failed",
+            "execution_failed",
+            "postcondition_failed",
+            "cancelled"
+          ],
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.application.failure/v1alpha1"
+        },
+        "evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "retry": {
+          "enum": [
+            "never",
+            "immediate",
+            "with_backoff",
+            "after_user_action",
+            "after_state_change"
+          ],
+          "type": "string"
+        },
+        "safe_message": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "category",
+        "code",
+        "safe_message",
+        "retry",
+        "evidence_ids",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "ConditionEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "condition_id": {
+          "type": "string"
+        },
+        "details": {
+          "type": "string"
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "verifier_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "condition_id",
+        "verifier_id",
+        "passed",
+        "details"
+      ],
+      "type": "object"
+    },
+    "JsonValue": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "integer"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "items": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "type": "array"
+        },
+        {
+          "additionalProperties": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "type": "object"
+        }
+      ]
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.application.action-result/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.applications/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/ActionResult"
+    },
+    "schema_id": {
+      "const": "fam.application.action-result/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Application action result",
+  "type": "object"
+}

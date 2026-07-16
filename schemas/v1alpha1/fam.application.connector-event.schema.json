@@ -1,0 +1,93 @@
+{
+  "$defs": {
+    "ConnectorEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "connector_id": {
+          "type": "string"
+        },
+        "event_id": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "capabilities_changed",
+            "instance_changed",
+            "instance_closed"
+          ],
+          "type": "string"
+        },
+        "occurred_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "payload": {
+          "additionalProperties": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "event_id",
+        "connector_id",
+        "kind",
+        "occurred_at",
+        "payload"
+      ],
+      "type": "object"
+    },
+    "JsonValue": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "integer"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "items": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "type": "array"
+        },
+        {
+          "additionalProperties": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "type": "object"
+        }
+      ]
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.application.connector-event/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.applications/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/ConnectorEvent"
+    },
+    "schema_id": {
+      "const": "fam.application.connector-event/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Application connector event",
+  "type": "object"
+}

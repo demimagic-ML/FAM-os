@@ -1,0 +1,11 @@
+# Local-only evidence and caches
+artifacts/
+.larry/
+.mypy_cache/
+.verification-venv/
+**/__pycache__/
+*.py[cod]
+
+# Dependency and build artifacts
+**/node_modules/
+connectors/vscode/out/

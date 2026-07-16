@@ -1,0 +1,13 @@
+{
+  "model": "fam-test-model",
+  "message": {
+    "role": "assistant",
+    "content": "{\"route\":\"code\"}"
+  },
+  "done": true,
+  "load_duration": 1500000000,
+  "prompt_eval_count": 20,
+  "eval_count": 10,
+  "eval_duration": 500000000
+}
+

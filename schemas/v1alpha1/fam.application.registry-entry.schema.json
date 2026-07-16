@@ -1,0 +1,136 @@
+{
+  "$defs": {
+    "CapabilityDescriptor": {
+      "additionalProperties": false,
+      "properties": {
+        "capability_id": {
+          "type": "string"
+        },
+        "confirmation": {
+          "enum": [
+            "not_required",
+            "when_required",
+            "always"
+          ],
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "display_name": {
+          "type": "string"
+        },
+        "input_schema_id": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "observation",
+            "action"
+          ],
+          "type": "string"
+        },
+        "output_schema_id": {
+          "type": "string"
+        },
+        "postcondition_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "required_authority": {
+          "enum": [
+            "observe",
+            "propose",
+            "modify",
+            "execute"
+          ],
+          "type": "string"
+        },
+        "reversibility": {
+          "enum": [
+            "not_applicable",
+            "reversible",
+            "compensatable",
+            "irreversible"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "capability_id",
+        "display_name",
+        "description",
+        "kind",
+        "required_authority",
+        "input_schema_id",
+        "output_schema_id",
+        "reversibility",
+        "confirmation",
+        "postcondition_ids"
+      ],
+      "type": "object"
+    },
+    "CapabilityRegistryEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "application_id": {
+          "type": "string"
+        },
+        "available": {
+          "type": "boolean"
+        },
+        "capability": {
+          "$ref": "#/$defs/CapabilityDescriptor"
+        },
+        "connector_id": {
+          "type": "string"
+        },
+        "entry_id": {
+          "type": "string"
+        },
+        "instance_id": {
+          "type": "string"
+        },
+        "resource_scopes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "entry_id",
+        "connector_id",
+        "instance_id",
+        "application_id",
+        "capability",
+        "resource_scopes",
+        "available"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.application.registry-entry/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.applications/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/CapabilityRegistryEntry"
+    },
+    "schema_id": {
+      "const": "fam.application.registry-entry/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Capability registry entry",
+  "type": "object"
+}

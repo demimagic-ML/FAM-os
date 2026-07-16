@@ -1,0 +1,294 @@
+{
+  "$defs": {
+    "DegradationNotice": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "component": {
+          "enum": [
+            "core",
+            "routing",
+            "expert",
+            "scheduler",
+            "verification",
+            "application",
+            "memory",
+            "supervisor",
+            "registry",
+            "adapter"
+          ],
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.failure/v1alpha1"
+        },
+        "degradation_id": {
+          "type": "string"
+        },
+        "disposition": {
+          "enum": [
+            "continue",
+            "require_confirmation",
+            "withhold"
+          ],
+          "type": "string"
+        },
+        "evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "impact": {
+          "enum": [
+            "none",
+            "unknown",
+            "low",
+            "medium",
+            "high"
+          ],
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "fallback_used",
+            "capability_unavailable",
+            "resource_constrained",
+            "context_reduced",
+            "quality_reduced",
+            "partial_result",
+            "stale_data"
+          ],
+          "type": "string"
+        },
+        "original_capability_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "replacement_capability_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "safe_message": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "degradation_id",
+        "kind",
+        "code",
+        "safe_message",
+        "component",
+        "impact",
+        "disposition",
+        "original_capability_id",
+        "replacement_capability_id",
+        "evidence_ids",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "FailureEnvelope": {
+      "additionalProperties": false,
+      "properties": {
+        "capability_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "category": {
+          "enum": [
+            "invalid_request",
+            "permission_denied",
+            "unavailable",
+            "timeout",
+            "cancelled",
+            "resource_exhausted",
+            "incompatible",
+            "provider_failure",
+            "verification_failed",
+            "postcondition_failed",
+            "internal"
+          ],
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "component": {
+          "enum": [
+            "core",
+            "routing",
+            "expert",
+            "scheduler",
+            "verification",
+            "application",
+            "memory",
+            "supervisor",
+            "registry",
+            "adapter"
+          ],
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.failure/v1alpha1"
+        },
+        "error_id": {
+          "type": "string"
+        },
+        "evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "retry": {
+          "enum": [
+            "never",
+            "immediate",
+            "with_backoff",
+            "after_user_action",
+            "after_resource_change"
+          ],
+          "type": "string"
+        },
+        "safe_message": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "error_id",
+        "category",
+        "code",
+        "safe_message",
+        "component",
+        "retry",
+        "capability_id",
+        "evidence_ids",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "TaskResult": {
+      "additionalProperties": false,
+      "properties": {
+        "content": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "contract_version": {
+          "const": "fam.core/v1alpha1"
+        },
+        "degradations": {
+          "items": {
+            "$ref": "#/$defs/DegradationNotice"
+          },
+          "type": "array"
+        },
+        "evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "failure": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FailureEnvelope"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "plan_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reason": {
+          "type": "string"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "completed",
+            "verified",
+            "withheld",
+            "failed"
+          ],
+          "type": "string"
+        },
+        "verified": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "request_id",
+        "status",
+        "content",
+        "verified",
+        "reason",
+        "plan_id",
+        "evidence_ids",
+        "failure",
+        "degradations",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.task-result/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/TaskResult"
+    },
+    "schema_id": {
+      "const": "fam.core.task-result/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "FAM task result",
+  "type": "object"
+}

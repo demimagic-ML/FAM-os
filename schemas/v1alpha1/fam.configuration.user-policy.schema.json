@@ -1,0 +1,174 @@
+{
+  "$defs": {
+    "ResourceRestriction": {
+      "additionalProperties": false,
+      "properties": {
+        "accelerator_allowed": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "max_accelerator_memory_bytes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "max_cpu_cores": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "max_memory_bytes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "max_storage_cache_bytes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "max_storage_read_bytes_per_second": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "max_storage_write_bytes_per_second": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "max_swap_bytes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "minimum_accelerator_reserve_bytes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "minimum_memory_headroom_bytes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "minimum_storage_reserve_bytes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "max_cpu_cores",
+        "max_memory_bytes",
+        "minimum_memory_headroom_bytes",
+        "max_swap_bytes",
+        "accelerator_allowed",
+        "max_accelerator_memory_bytes",
+        "minimum_accelerator_reserve_bytes",
+        "max_storage_cache_bytes",
+        "minimum_storage_reserve_bytes",
+        "max_storage_read_bytes_per_second",
+        "max_storage_write_bytes_per_second"
+      ],
+      "type": "object"
+    },
+    "UserResourcePolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.configuration/v1alpha1"
+        },
+        "policy_id": {
+          "type": "string"
+        },
+        "restriction": {
+          "$ref": "#/$defs/ResourceRestriction"
+        }
+      },
+      "required": [
+        "policy_id",
+        "restriction",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.configuration.user-policy/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.configuration/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/UserResourcePolicy"
+    },
+    "schema_id": {
+      "const": "fam.configuration.user-policy/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "User resource policy",
+  "type": "object"
+}

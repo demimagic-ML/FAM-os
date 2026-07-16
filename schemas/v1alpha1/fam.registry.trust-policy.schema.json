@@ -1,0 +1,145 @@
+{
+  "$defs": {
+    "ArtifactDigest": {
+      "additionalProperties": false,
+      "properties": {
+        "algorithm": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "algorithm",
+        "value"
+      ],
+      "type": "object"
+    },
+    "BuiltInPackageAnchor": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_digest": {
+          "$ref": "#/$defs/ArtifactDigest"
+        },
+        "package_id": {
+          "type": "string"
+        },
+        "package_version": {
+          "type": "string"
+        },
+        "publisher_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "package_id",
+        "package_version",
+        "publisher_id",
+        "artifact_digest"
+      ],
+      "type": "object"
+    },
+    "PackageTrustPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "allow_license_references": {
+          "type": "boolean"
+        },
+        "allow_local_unverified": {
+          "type": "boolean"
+        },
+        "allowed_license_expressions": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "built_in_anchors": {
+          "items": {
+            "$ref": "#/$defs/BuiltInPackageAnchor"
+          },
+          "type": "array"
+        },
+        "contract_version": {
+          "const": "fam.registry.trust/v1alpha1"
+        },
+        "policy_id": {
+          "type": "string"
+        },
+        "publisher_keys": {
+          "items": {
+            "$ref": "#/$defs/TrustedPublisherKey"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "policy_id",
+        "allowed_license_expressions",
+        "publisher_keys",
+        "built_in_anchors",
+        "allow_license_references",
+        "allow_local_unverified",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "TrustedPublisherKey": {
+      "additionalProperties": false,
+      "properties": {
+        "algorithm": {
+          "enum": [
+            "ed25519"
+          ],
+          "type": "string"
+        },
+        "key_id": {
+          "type": "string"
+        },
+        "public_key_base64": {
+          "type": "string"
+        },
+        "publisher_id": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "active",
+            "revoked"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "key_id",
+        "publisher_id",
+        "algorithm",
+        "public_key_base64",
+        "status"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.registry.trust-policy/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.registry.trust/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/PackageTrustPolicy"
+    },
+    "schema_id": {
+      "const": "fam.registry.trust-policy/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Package trust policy",
+  "type": "object"
+}

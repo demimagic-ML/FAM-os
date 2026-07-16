@@ -1,0 +1,110 @@
+{
+  "$defs": {
+    "SchedulerPolicyReplayRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "case_id": {
+          "type": "string"
+        },
+        "current_host_state_consulted": {
+          "type": "boolean"
+        },
+        "input_digest_sha256": {
+          "type": "string"
+        },
+        "input_schema_id": {
+          "type": "string"
+        },
+        "matched": {
+          "type": "boolean"
+        },
+        "output_schema_id": {
+          "type": "string"
+        },
+        "policy_kind": {
+          "enum": [
+            "host_admission",
+            "gpu_placement",
+            "cache_retention"
+          ],
+          "type": "string"
+        },
+        "policy_version": {
+          "type": "string"
+        },
+        "recorded_output_digest_sha256": {
+          "type": "string"
+        },
+        "replayed_output_digest_sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "case_id",
+        "policy_kind",
+        "policy_version",
+        "input_schema_id",
+        "output_schema_id",
+        "input_digest_sha256",
+        "recorded_output_digest_sha256",
+        "replayed_output_digest_sha256",
+        "matched",
+        "current_host_state_consulted"
+      ],
+      "type": "object"
+    },
+    "SchedulerPolicyReplayReport": {
+      "additionalProperties": false,
+      "properties": {
+        "all_matched": {
+          "type": "boolean"
+        },
+        "contract_version": {
+          "const": "fam.scheduler.policy-replay/v1alpha1"
+        },
+        "records": {
+          "items": {
+            "$ref": "#/$defs/SchedulerPolicyReplayRecord"
+          },
+          "type": "array"
+        },
+        "replayed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "report_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "report_id",
+        "replayed_at",
+        "records",
+        "all_matched",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.scheduler.policy-replay/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.scheduler.policy-replay/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/SchedulerPolicyReplayReport"
+    },
+    "schema_id": {
+      "const": "fam.scheduler.policy-replay/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Offline scheduler policy replay report",
+  "type": "object"
+}

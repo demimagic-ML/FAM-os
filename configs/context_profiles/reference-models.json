@@ -1,0 +1,54 @@
+{
+  "entries": [
+    {
+      "expert_id": "expert.language.llama3.2-3b",
+      "input_token_upper_bound": 4096,
+      "maximum_context_tokens": 8192,
+      "model_ref": "llama3.2:3b",
+      "output_token_reservation": 1024,
+      "profile_id": "context.language.llama3.2-3b",
+      "strategy": "autoregressive_kv"
+    },
+    {
+      "expert_id": "expert.code.qwen2.5-coder-7b",
+      "input_token_upper_bound": 4096,
+      "maximum_context_tokens": 8192,
+      "model_ref": "qwen2.5-coder:7b",
+      "output_token_reservation": 1024,
+      "profile_id": "context.code.qwen2.5-coder-7b",
+      "strategy": "autoregressive_kv"
+    },
+    {
+      "expert_id": "expert.retrieval.nomic-embed-text",
+      "input_token_upper_bound": 2048,
+      "maximum_context_tokens": 2048,
+      "model_ref": "nomic-embed-text:latest",
+      "output_token_reservation": 0,
+      "profile_id": "context.retrieval.nomic-embed-text",
+      "strategy": "encoder_activation_bound"
+    },
+    {
+      "expert_id": "expert.code.laguna-xs2-33b",
+      "input_token_upper_bound": 4096,
+      "maximum_context_tokens": 8192,
+      "model_ref": "laguna-xs.2:q4_K_M",
+      "output_token_reservation": 1024,
+      "profile_id": "context.code.laguna-xs2-33b",
+      "strategy": "autoregressive_kv"
+    },
+    {
+      "expert_id": "expert.code.gemma4-26b",
+      "input_token_upper_bound": 4096,
+      "maximum_context_tokens": 8192,
+      "model_ref": "gemma4:26b",
+      "output_token_reservation": 1024,
+      "profile_id": "context.code.gemma4-26b",
+      "strategy": "autoregressive_kv"
+    }
+  ],
+  "fixed_runtime_overhead_bytes": 268435456,
+  "per_sequence_workspace_bytes": 67108864,
+  "safety_margin_basis_points": 2500,
+  "scalar_bytes": 2,
+  "schema_version": 1
+}

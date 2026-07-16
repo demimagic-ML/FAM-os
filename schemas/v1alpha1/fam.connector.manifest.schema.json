@@ -1,0 +1,227 @@
+{
+  "$defs": {
+    "ArtifactDigest": {
+      "additionalProperties": false,
+      "properties": {
+        "algorithm": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "algorithm",
+        "value"
+      ],
+      "type": "object"
+    },
+    "CapabilityDescriptor": {
+      "additionalProperties": false,
+      "properties": {
+        "capability_id": {
+          "type": "string"
+        },
+        "confirmation": {
+          "enum": [
+            "not_required",
+            "when_required",
+            "always"
+          ],
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "display_name": {
+          "type": "string"
+        },
+        "input_schema_id": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "observation",
+            "action"
+          ],
+          "type": "string"
+        },
+        "output_schema_id": {
+          "type": "string"
+        },
+        "postcondition_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "required_authority": {
+          "enum": [
+            "observe",
+            "propose",
+            "modify",
+            "execute"
+          ],
+          "type": "string"
+        },
+        "reversibility": {
+          "enum": [
+            "not_applicable",
+            "reversible",
+            "compensatable",
+            "irreversible"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "capability_id",
+        "display_name",
+        "description",
+        "kind",
+        "required_authority",
+        "input_schema_id",
+        "output_schema_id",
+        "reversibility",
+        "confirmation",
+        "postcondition_ids"
+      ],
+      "type": "object"
+    },
+    "ConnectorManifest": {
+      "additionalProperties": false,
+      "properties": {
+        "application_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "capabilities": {
+          "items": {
+            "$ref": "#/$defs/CapabilityDescriptor"
+          },
+          "type": "array"
+        },
+        "connector_id": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.connector.manifest/v1alpha1"
+        },
+        "display_name": {
+          "type": "string"
+        },
+        "package": {
+          "$ref": "#/$defs/PackageMetadata"
+        },
+        "requested_authorities": {
+          "items": {
+            "enum": [
+              "observe",
+              "propose",
+              "modify",
+              "execute"
+            ],
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "sandbox_profile_id": {
+          "type": "string"
+        },
+        "supports_dynamic_capabilities": {
+          "type": "boolean"
+        },
+        "transport_protocol_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "package",
+        "connector_id",
+        "display_name",
+        "application_ids",
+        "capabilities",
+        "transport_protocol_ids",
+        "requested_authorities",
+        "sandbox_profile_id",
+        "supports_dynamic_capabilities",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "PackageMetadata": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_digest": {
+          "$ref": "#/$defs/ArtifactDigest"
+        },
+        "license_id": {
+          "type": "string"
+        },
+        "package_id": {
+          "type": "string"
+        },
+        "package_version": {
+          "type": "string"
+        },
+        "publisher_id": {
+          "type": "string"
+        },
+        "signature_key_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "trust_level": {
+          "enum": [
+            "built_in",
+            "signed",
+            "local_unverified"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "package_id",
+        "package_version",
+        "publisher_id",
+        "license_id",
+        "trust_level",
+        "artifact_digest",
+        "signature_key_id"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.connector.manifest/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.connector.manifest/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/ConnectorManifest"
+    },
+    "schema_id": {
+      "const": "fam.connector.manifest/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Connector manifest",
+  "type": "object"
+}

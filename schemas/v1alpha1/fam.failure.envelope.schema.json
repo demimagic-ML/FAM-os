@@ -1,0 +1,111 @@
+{
+  "$defs": {
+    "FailureEnvelope": {
+      "additionalProperties": false,
+      "properties": {
+        "capability_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "category": {
+          "enum": [
+            "invalid_request",
+            "permission_denied",
+            "unavailable",
+            "timeout",
+            "cancelled",
+            "resource_exhausted",
+            "incompatible",
+            "provider_failure",
+            "verification_failed",
+            "postcondition_failed",
+            "internal"
+          ],
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "component": {
+          "enum": [
+            "core",
+            "routing",
+            "expert",
+            "scheduler",
+            "verification",
+            "application",
+            "memory",
+            "supervisor",
+            "registry",
+            "adapter"
+          ],
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.failure/v1alpha1"
+        },
+        "error_id": {
+          "type": "string"
+        },
+        "evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "retry": {
+          "enum": [
+            "never",
+            "immediate",
+            "with_backoff",
+            "after_user_action",
+            "after_resource_change"
+          ],
+          "type": "string"
+        },
+        "safe_message": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "error_id",
+        "category",
+        "code",
+        "safe_message",
+        "component",
+        "retry",
+        "capability_id",
+        "evidence_ids",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.failure.envelope/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.failure/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/FailureEnvelope"
+    },
+    "schema_id": {
+      "const": "fam.failure.envelope/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "FAM failure envelope",
+  "type": "object"
+}

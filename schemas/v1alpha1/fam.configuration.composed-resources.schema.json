@@ -1,0 +1,393 @@
+{
+  "$defs": {
+    "AcceleratorResourceBudget": {
+      "additionalProperties": false,
+      "properties": {
+        "current_memory_bytes": {
+          "type": "integer"
+        },
+        "device_id": {
+          "type": "string"
+        },
+        "effective_memory_limit_bytes": {
+          "type": "integer"
+        },
+        "placement_allowed": {
+          "type": "boolean"
+        },
+        "reserved_memory_bytes": {
+          "type": "integer"
+        },
+        "scheduler_memory_limit_bytes": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "device_id",
+        "placement_allowed",
+        "effective_memory_limit_bytes",
+        "scheduler_memory_limit_bytes",
+        "reserved_memory_bytes",
+        "current_memory_bytes"
+      ],
+      "type": "object"
+    },
+    "ComposedResourceConfiguration": {
+      "additionalProperties": false,
+      "properties": {
+        "budget": {
+          "$ref": "#/$defs/EffectiveResourceBudget"
+        },
+        "composition_id": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.configuration/v1alpha1"
+        },
+        "decisions": {
+          "items": {
+            "$ref": "#/$defs/ConfigurationDecision"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "composition_id",
+        "budget",
+        "decisions",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "ConfigurationDecision": {
+      "additionalProperties": false,
+      "properties": {
+        "effective_value": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "selected",
+            "overridden",
+            "restricted",
+            "clamped",
+            "ignored"
+          ],
+          "type": "string"
+        },
+        "layer": {
+          "enum": [
+            "defaults",
+            "discovery",
+            "validation_profile",
+            "user_policy",
+            "session_override"
+          ],
+          "type": "string"
+        },
+        "reason_code": {
+          "type": "string"
+        },
+        "requested_value": {
+          "type": "string"
+        },
+        "setting": {
+          "type": "string"
+        },
+        "source_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "layer",
+        "source_id",
+        "setting",
+        "requested_value",
+        "effective_value",
+        "kind",
+        "reason_code"
+      ],
+      "type": "object"
+    },
+    "CpuResourceBudget": {
+      "additionalProperties": false,
+      "properties": {
+        "cgroup_quota_cores": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "current_utilization_fraction": {
+          "type": "number"
+        },
+        "reserved_logical_cpu_ids": {
+          "items": {
+            "type": "integer"
+          },
+          "type": "array"
+        },
+        "schedulable_logical_cpu_ids": {
+          "items": {
+            "type": "integer"
+          },
+          "type": "array"
+        },
+        "scheduler_quota_cores": {
+          "type": "number"
+        },
+        "visible_logical_cpu_ids": {
+          "items": {
+            "type": "integer"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "visible_logical_cpu_ids",
+        "schedulable_logical_cpu_ids",
+        "reserved_logical_cpu_ids",
+        "scheduler_quota_cores",
+        "current_utilization_fraction",
+        "cgroup_quota_cores"
+      ],
+      "type": "object"
+    },
+    "EffectiveResourceBudget": {
+      "additionalProperties": false,
+      "properties": {
+        "accelerators": {
+          "items": {
+            "$ref": "#/$defs/AcceleratorResourceBudget"
+          },
+          "type": "array"
+        },
+        "budget_id": {
+          "type": "string"
+        },
+        "captured_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.hardware.budget/v1alpha1"
+        },
+        "cpu": {
+          "$ref": "#/$defs/CpuResourceBudget"
+        },
+        "inventory_id": {
+          "type": "string"
+        },
+        "memory": {
+          "$ref": "#/$defs/MemoryResourceBudget"
+        },
+        "pressure": {
+          "items": {
+            "$ref": "#/$defs/PressureReading"
+          },
+          "type": "array"
+        },
+        "storage": {
+          "items": {
+            "$ref": "#/$defs/StorageResourceBudget"
+          },
+          "type": "array"
+        },
+        "validation_profile": {
+          "$ref": "#/$defs/ValidationProfileRef"
+        }
+      },
+      "required": [
+        "budget_id",
+        "inventory_id",
+        "captured_at",
+        "validation_profile",
+        "cpu",
+        "memory",
+        "accelerators",
+        "storage",
+        "pressure",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "MemoryResourceBudget": {
+      "additionalProperties": false,
+      "properties": {
+        "cgroup_limit_bytes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "current_bytes": {
+          "type": "integer"
+        },
+        "effective_limit_bytes": {
+          "type": "integer"
+        },
+        "reserved_headroom_bytes": {
+          "type": "integer"
+        },
+        "scheduler_limit_bytes": {
+          "type": "integer"
+        },
+        "swap_current_bytes": {
+          "type": "integer"
+        },
+        "swap_limit_bytes": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "effective_limit_bytes",
+        "scheduler_limit_bytes",
+        "reserved_headroom_bytes",
+        "current_bytes",
+        "swap_limit_bytes",
+        "swap_current_bytes",
+        "cgroup_limit_bytes"
+      ],
+      "type": "object"
+    },
+    "PressureReading": {
+      "additionalProperties": false,
+      "properties": {
+        "observed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "resource_id": {
+          "type": "string"
+        },
+        "stall_fraction": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "utilization_fraction": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "resource_id",
+        "observed_at",
+        "utilization_fraction",
+        "stall_fraction"
+      ],
+      "type": "object"
+    },
+    "StorageResourceBudget": {
+      "additionalProperties": false,
+      "properties": {
+        "current_cache_bytes": {
+          "type": "integer"
+        },
+        "effective_cache_limit_bytes": {
+          "type": "integer"
+        },
+        "read_limit_bytes_per_second": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reserved_free_bytes": {
+          "type": "integer"
+        },
+        "scheduler_cache_limit_bytes": {
+          "type": "integer"
+        },
+        "storage_id": {
+          "type": "string"
+        },
+        "write_limit_bytes_per_second": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "storage_id",
+        "effective_cache_limit_bytes",
+        "scheduler_cache_limit_bytes",
+        "reserved_free_bytes",
+        "current_cache_bytes",
+        "read_limit_bytes_per_second",
+        "write_limit_bytes_per_second"
+      ],
+      "type": "object"
+    },
+    "ValidationProfileRef": {
+      "additionalProperties": false,
+      "properties": {
+        "profile_id": {
+          "type": "string"
+        },
+        "purpose": {
+          "enum": [
+            "minimum_compatibility",
+            "full_host_capability",
+            "custom"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "profile_id",
+        "purpose"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.configuration.composed-resources/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.configuration/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/ComposedResourceConfiguration"
+    },
+    "schema_id": {
+      "const": "fam.configuration.composed-resources/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Composed resource configuration",
+  "type": "object"
+}

@@ -1,0 +1,92 @@
+{
+  "$defs": {
+    "LanguageGateEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "exit_code": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "gate_id": {
+          "type": "string"
+        },
+        "output": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "passed",
+            "failed",
+            "error"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "gate_id",
+        "status",
+        "exit_code",
+        "output"
+      ],
+      "type": "object"
+    },
+    "LanguageQualityReport": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.verifier.language-quality/v1alpha1"
+        },
+        "gates": {
+          "items": {
+            "$ref": "#/$defs/LanguageGateEvidence"
+          },
+          "type": "array"
+        },
+        "language_id": {
+          "type": "string"
+        },
+        "toolchain_version": {
+          "type": "string"
+        },
+        "verification_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "verification_id",
+        "language_id",
+        "toolchain_version",
+        "gates",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.verifier.language-quality/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.verifier.language-quality/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/LanguageQualityReport"
+    },
+    "schema_id": {
+      "const": "fam.verifier.language-quality/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Language quality verification report",
+  "type": "object"
+}

@@ -1,0 +1,383 @@
+{
+  "$defs": {
+    "AcceleratorRuntimeState": {
+      "additionalProperties": false,
+      "properties": {
+        "current_memory_bytes": {
+          "type": "integer"
+        },
+        "device_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "device_id",
+        "current_memory_bytes"
+      ],
+      "type": "object"
+    },
+    "DiscoveredResourceState": {
+      "additionalProperties": false,
+      "properties": {
+        "accelerators": {
+          "items": {
+            "$ref": "#/$defs/AcceleratorRuntimeState"
+          },
+          "type": "array"
+        },
+        "captured_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "cgroup_cpu_quota_cores": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cgroup_memory_limit_bytes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "contract_version": {
+          "const": "fam.configuration/v1alpha1"
+        },
+        "inventory": {
+          "$ref": "#/$defs/HostInventory"
+        },
+        "memory_current_bytes": {
+          "type": "integer"
+        },
+        "pressure": {
+          "items": {
+            "$ref": "#/$defs/PressureReading"
+          },
+          "type": "array"
+        },
+        "state_id": {
+          "type": "string"
+        },
+        "storage": {
+          "items": {
+            "$ref": "#/$defs/StorageRuntimeState"
+          },
+          "type": "array"
+        },
+        "swap_current_bytes": {
+          "type": "integer"
+        },
+        "swap_limit_bytes": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "state_id",
+        "captured_at",
+        "inventory",
+        "memory_current_bytes",
+        "swap_limit_bytes",
+        "swap_current_bytes",
+        "cgroup_cpu_quota_cores",
+        "cgroup_memory_limit_bytes",
+        "accelerators",
+        "storage",
+        "pressure",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "HostAcceleratorInventory": {
+      "additionalProperties": false,
+      "properties": {
+        "device_id": {
+          "type": "string"
+        },
+        "driver_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "kind": {
+          "enum": [
+            "gpu",
+            "npu"
+          ],
+          "type": "string"
+        },
+        "memory_total_bytes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "device_id",
+        "kind",
+        "name",
+        "memory_total_bytes",
+        "driver_version"
+      ],
+      "type": "object"
+    },
+    "HostCpuInventory": {
+      "additionalProperties": false,
+      "properties": {
+        "architecture": {
+          "type": "string"
+        },
+        "logical_cpu_ids": {
+          "items": {
+            "type": "integer"
+          },
+          "type": "array"
+        },
+        "model": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "physical_core_count": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "architecture",
+        "logical_cpu_ids",
+        "model",
+        "physical_core_count"
+      ],
+      "type": "object"
+    },
+    "HostInventory": {
+      "additionalProperties": false,
+      "properties": {
+        "accelerators": {
+          "items": {
+            "$ref": "#/$defs/HostAcceleratorInventory"
+          },
+          "type": "array"
+        },
+        "captured_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.hardware.inventory/v1alpha1"
+        },
+        "cpu": {
+          "$ref": "#/$defs/HostCpuInventory"
+        },
+        "inventory_id": {
+          "type": "string"
+        },
+        "memory": {
+          "$ref": "#/$defs/HostMemoryInventory"
+        },
+        "operating_system": {
+          "type": "string"
+        },
+        "os_release": {
+          "type": "string"
+        },
+        "storage": {
+          "items": {
+            "$ref": "#/$defs/HostStorageInventory"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "inventory_id",
+        "captured_at",
+        "operating_system",
+        "os_release",
+        "cpu",
+        "memory",
+        "storage",
+        "accelerators",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "HostMemoryInventory": {
+      "additionalProperties": false,
+      "properties": {
+        "available_bytes": {
+          "type": "integer"
+        },
+        "swap_free_bytes": {
+          "type": "integer"
+        },
+        "swap_total_bytes": {
+          "type": "integer"
+        },
+        "total_bytes": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "total_bytes",
+        "available_bytes",
+        "swap_total_bytes",
+        "swap_free_bytes"
+      ],
+      "type": "object"
+    },
+    "HostStorageInventory": {
+      "additionalProperties": false,
+      "properties": {
+        "available_bytes": {
+          "type": "integer"
+        },
+        "cache_eligible": {
+          "type": "boolean"
+        },
+        "capacity_bytes": {
+          "type": "integer"
+        },
+        "medium": {
+          "enum": [
+            "nvme",
+            "ssd",
+            "hdd",
+            "other"
+          ],
+          "type": "string"
+        },
+        "mount_path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "storage_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "storage_id",
+        "medium",
+        "capacity_bytes",
+        "available_bytes",
+        "cache_eligible",
+        "mount_path"
+      ],
+      "type": "object"
+    },
+    "PressureReading": {
+      "additionalProperties": false,
+      "properties": {
+        "observed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "resource_id": {
+          "type": "string"
+        },
+        "stall_fraction": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "utilization_fraction": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "resource_id",
+        "observed_at",
+        "utilization_fraction",
+        "stall_fraction"
+      ],
+      "type": "object"
+    },
+    "StorageRuntimeState": {
+      "additionalProperties": false,
+      "properties": {
+        "current_cache_bytes": {
+          "type": "integer"
+        },
+        "storage_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "storage_id",
+        "current_cache_bytes"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.configuration.discovered-state/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.configuration/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/DiscoveredResourceState"
+    },
+    "schema_id": {
+      "const": "fam.configuration.discovered-state/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Discovered resource state",
+  "type": "object"
+}

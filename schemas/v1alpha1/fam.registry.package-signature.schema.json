@@ -1,0 +1,52 @@
+{
+  "$defs": {
+    "PackageSignature": {
+      "additionalProperties": false,
+      "properties": {
+        "algorithm": {
+          "enum": [
+            "ed25519"
+          ],
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.registry.trust/v1alpha1"
+        },
+        "key_id": {
+          "type": "string"
+        },
+        "signature_base64": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key_id",
+        "algorithm",
+        "signature_base64",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.registry.package-signature/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.registry.trust/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/PackageSignature"
+    },
+    "schema_id": {
+      "const": "fam.registry.package-signature/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Detached package signature",
+  "type": "object"
+}

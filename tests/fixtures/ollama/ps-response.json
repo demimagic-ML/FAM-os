@@ -1,0 +1,12 @@
+{
+  "models": [
+    {
+      "name": "fam-test-model:latest",
+      "model": "fam-test-model:latest",
+      "size": 2000000000,
+      "size_vram": 1000000000,
+      "context_length": 2048
+    }
+  ]
+}
+

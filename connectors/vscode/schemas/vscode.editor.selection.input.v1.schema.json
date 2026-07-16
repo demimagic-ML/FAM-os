@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vscode.editor.selection.input.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "maximum_characters": {"type": "integer", "minimum": 1, "maximum": 131072}
+  }
+}

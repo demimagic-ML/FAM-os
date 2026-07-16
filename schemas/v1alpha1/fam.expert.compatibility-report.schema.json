@@ -1,0 +1,100 @@
+{
+  "$defs": {
+    "ExpertCompatibilityReport": {
+      "additionalProperties": false,
+      "properties": {
+        "budget_id": {
+          "type": "string"
+        },
+        "compatible_accelerator_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "compatible_storage_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "contract_version": {
+          "const": "fam.expert.compatibility/v1alpha1"
+        },
+        "currently_available_system_memory_bytes": {
+          "type": "integer"
+        },
+        "expert_id": {
+          "type": "string"
+        },
+        "inventory_id": {
+          "type": "string"
+        },
+        "package_id": {
+          "type": "string"
+        },
+        "package_version": {
+          "type": "string"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "required_system_memory_bytes": {
+          "type": "integer"
+        },
+        "status": {
+          "enum": [
+            "compatible",
+            "compatible_cpu_only",
+            "currently_constrained",
+            "incompatible"
+          ],
+          "type": "string"
+        },
+        "validation_profile_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "package_id",
+        "package_version",
+        "expert_id",
+        "inventory_id",
+        "budget_id",
+        "validation_profile_id",
+        "status",
+        "required_system_memory_bytes",
+        "currently_available_system_memory_bytes",
+        "compatible_storage_ids",
+        "compatible_accelerator_ids",
+        "reason_codes",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.expert.compatibility-report/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.expert.compatibility/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/ExpertCompatibilityReport"
+    },
+    "schema_id": {
+      "const": "fam.expert.compatibility-report/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Expert compatibility report",
+  "type": "object"
+}

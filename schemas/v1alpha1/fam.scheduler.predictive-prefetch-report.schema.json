@@ -1,0 +1,578 @@
+{
+  "$defs": {
+    "ArtifactAccessSequence": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "observed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "sequence_id": {
+          "type": "string"
+        },
+        "source_evidence_digest_sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "sequence_id",
+        "observed_at",
+        "artifact_ids",
+        "source_evidence_digest_sha256"
+      ],
+      "type": "object"
+    },
+    "CacheTelemetryEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_bytes": {
+          "type": "integer"
+        },
+        "artifact_id": {
+          "type": "string"
+        },
+        "evictable": {
+          "type": "boolean"
+        },
+        "hit_count": {
+          "type": "integer"
+        },
+        "last_accessed_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "miss_count": {
+          "type": "integer"
+        },
+        "observed_bytes": {
+          "type": "integer"
+        },
+        "reload_cost_ms": {
+          "type": "number"
+        },
+        "source_evidence_digest_sha256": {
+          "type": "string"
+        },
+        "state": {
+          "enum": [
+            "cold",
+            "warm",
+            "active"
+          ],
+          "type": "string"
+        },
+        "tier": {
+          "enum": [
+            "host_page_cache",
+            "provider_weights",
+            "accelerator_weights",
+            "npu_compiled"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "tier",
+        "state",
+        "artifact_bytes",
+        "observed_bytes",
+        "hit_count",
+        "miss_count",
+        "last_accessed_at",
+        "reload_cost_ms",
+        "evictable",
+        "source_evidence_digest_sha256"
+      ],
+      "type": "object"
+    },
+    "CacheTelemetrySnapshot": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.scheduler.cache-policy/v1alpha1"
+        },
+        "current_host_state_complete": {
+          "type": "boolean"
+        },
+        "entries": {
+          "items": {
+            "$ref": "#/$defs/CacheTelemetryEntry"
+          },
+          "type": "array"
+        },
+        "observed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "previous_snapshot_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sequence": {
+          "type": "integer"
+        },
+        "snapshot_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "snapshot_id",
+        "sequence",
+        "previous_snapshot_id",
+        "observed_at",
+        "entries",
+        "current_host_state_complete",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "PredictivePrefetchReport": {
+      "additionalProperties": false,
+      "properties": {
+        "admitted_decision": {
+          "$ref": "#/$defs/PrefetchPolicyDecision"
+        },
+        "admitted_request": {
+          "$ref": "#/$defs/PrefetchPolicyRequest"
+        },
+        "contract_version": {
+          "const": "fam.scheduler.predictive-prefetch/v1alpha1"
+        },
+        "execution": {
+          "$ref": "#/$defs/PrefetchExecutionEvidence"
+        },
+        "prediction": {
+          "$ref": "#/$defs/PrefetchPrediction"
+        },
+        "prediction_request": {
+          "$ref": "#/$defs/PrefetchPredictionRequest"
+        },
+        "report_id": {
+          "type": "string"
+        },
+        "waste_guard_decision": {
+          "$ref": "#/$defs/PrefetchPolicyDecision"
+        },
+        "waste_guard_request": {
+          "$ref": "#/$defs/PrefetchPolicyRequest"
+        }
+      },
+      "required": [
+        "report_id",
+        "prediction_request",
+        "prediction",
+        "admitted_request",
+        "admitted_decision",
+        "execution",
+        "waste_guard_request",
+        "waste_guard_decision",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "PrefetchCandidate": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_bytes": {
+          "type": "integer"
+        },
+        "artifact_id": {
+          "type": "string"
+        },
+        "expected_reload_cost_ms": {
+          "type": "number"
+        },
+        "requested_prefetch_bytes": {
+          "type": "integer"
+        },
+        "tier": {
+          "enum": [
+            "host_page_cache",
+            "provider_weights",
+            "accelerator_weights",
+            "npu_compiled"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "tier",
+        "artifact_bytes",
+        "requested_prefetch_bytes",
+        "expected_reload_cost_ms"
+      ],
+      "type": "object"
+    },
+    "PrefetchExecutionEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "cache_bytes_after": {
+          "type": "integer"
+        },
+        "cache_bytes_before": {
+          "type": "integer"
+        },
+        "completed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.scheduler.predictive-prefetch/v1alpha1"
+        },
+        "decision": {
+          "$ref": "#/$defs/PrefetchPolicyDecision"
+        },
+        "demand_digest_sha256": {
+          "type": "string"
+        },
+        "demand_physical_read_bytes": {
+          "type": "integer"
+        },
+        "demand_read_bytes": {
+          "type": "integer"
+        },
+        "evidence_id": {
+          "type": "string"
+        },
+        "prediction": {
+          "$ref": "#/$defs/PrefetchPrediction"
+        },
+        "prefetch_digest_sha256": {
+          "type": "string"
+        },
+        "prefetch_physical_read_bytes": {
+          "type": "integer"
+        },
+        "prefetched_bytes": {
+          "type": "integer"
+        },
+        "requested_bytes": {
+          "type": "integer"
+        },
+        "started_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "temporary_artifact_removed": {
+          "type": "boolean"
+        },
+        "used_before_expiry": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "evidence_id",
+        "prediction",
+        "decision",
+        "started_at",
+        "completed_at",
+        "requested_bytes",
+        "prefetched_bytes",
+        "demand_read_bytes",
+        "prefetch_physical_read_bytes",
+        "demand_physical_read_bytes",
+        "cache_bytes_before",
+        "cache_bytes_after",
+        "prefetch_digest_sha256",
+        "demand_digest_sha256",
+        "used_before_expiry",
+        "temporary_artifact_removed",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "PrefetchPolicyDecision": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.scheduler.predictive-prefetch/v1alpha1"
+        },
+        "decision_id": {
+          "type": "string"
+        },
+        "policy_version": {
+          "type": "string"
+        },
+        "reasons": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "reserved_io_read_bytes": {
+          "type": "integer"
+        },
+        "reserved_prefetch_bytes": {
+          "type": "integer"
+        },
+        "selected_eviction_artifact_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "status": {
+          "enum": [
+            "admitted",
+            "rejected"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "decision_id",
+        "request_id",
+        "status",
+        "reserved_prefetch_bytes",
+        "reserved_io_read_bytes",
+        "reasons",
+        "selected_eviction_artifact_ids",
+        "policy_version",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "PrefetchPolicyRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "budget": {
+          "$ref": "#/$defs/PrefetchResourceBudget"
+        },
+        "contract_version": {
+          "const": "fam.scheduler.predictive-prefetch/v1alpha1"
+        },
+        "evaluated_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "eviction_permitted": {
+          "type": "boolean"
+        },
+        "in_flight_prefetches": {
+          "type": "integer"
+        },
+        "policy_version": {
+          "type": "string"
+        },
+        "prediction": {
+          "$ref": "#/$defs/PrefetchPrediction"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "snapshot": {
+          "$ref": "#/$defs/CacheTelemetrySnapshot"
+        }
+      },
+      "required": [
+        "request_id",
+        "prediction",
+        "snapshot",
+        "budget",
+        "evaluated_at",
+        "in_flight_prefetches",
+        "eviction_permitted",
+        "policy_version",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "PrefetchPrediction": {
+      "additionalProperties": false,
+      "properties": {
+        "candidate": {
+          "$ref": "#/$defs/PrefetchCandidate"
+        },
+        "confidence": {
+          "type": "number"
+        },
+        "contract_version": {
+          "const": "fam.scheduler.predictive-prefetch/v1alpha1"
+        },
+        "expires_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "outgoing_observations": {
+          "type": "integer"
+        },
+        "predicted_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "prediction_id": {
+          "type": "string"
+        },
+        "predictor_version": {
+          "type": "string"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "source_sequence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "transition_observations": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "prediction_id",
+        "request_id",
+        "candidate",
+        "transition_observations",
+        "outgoing_observations",
+        "confidence",
+        "predicted_at",
+        "expires_at",
+        "source_sequence_ids",
+        "predictor_version",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "PrefetchPredictionRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "candidates": {
+          "items": {
+            "$ref": "#/$defs/PrefetchCandidate"
+          },
+          "type": "array"
+        },
+        "contract_version": {
+          "const": "fam.scheduler.predictive-prefetch/v1alpha1"
+        },
+        "current_artifact_id": {
+          "type": "string"
+        },
+        "history": {
+          "items": {
+            "$ref": "#/$defs/ArtifactAccessSequence"
+          },
+          "type": "array"
+        },
+        "horizon_seconds": {
+          "type": "integer"
+        },
+        "minimum_confidence": {
+          "type": "number"
+        },
+        "minimum_transition_observations": {
+          "type": "integer"
+        },
+        "predictor_version": {
+          "type": "string"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "requested_at": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "current_artifact_id",
+        "requested_at",
+        "candidates",
+        "history",
+        "minimum_transition_observations",
+        "minimum_confidence",
+        "horizon_seconds",
+        "predictor_version",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "PrefetchResourceBudget": {
+      "additionalProperties": false,
+      "properties": {
+        "available_tier_bytes": {
+          "type": "integer"
+        },
+        "current_waste_bytes": {
+          "type": "integer"
+        },
+        "host_available_bytes": {
+          "type": "integer"
+        },
+        "maximum_concurrent_prefetches": {
+          "type": "integer"
+        },
+        "maximum_io_read_bytes": {
+          "type": "integer"
+        },
+        "maximum_prefetch_bytes": {
+          "type": "integer"
+        },
+        "maximum_waste_bytes": {
+          "type": "integer"
+        },
+        "operating_system_reserve_bytes": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "maximum_prefetch_bytes",
+        "maximum_io_read_bytes",
+        "available_tier_bytes",
+        "host_available_bytes",
+        "operating_system_reserve_bytes",
+        "maximum_concurrent_prefetches",
+        "maximum_waste_bytes",
+        "current_waste_bytes"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.scheduler.predictive-prefetch-report/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.scheduler.predictive-prefetch/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/PredictivePrefetchReport"
+    },
+    "schema_id": {
+      "const": "fam.scheduler.predictive-prefetch-report/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Bounded predictive prefetch evidence",
+  "type": "object"
+}

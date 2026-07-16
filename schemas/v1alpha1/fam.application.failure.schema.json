@@ -1,0 +1,75 @@
+{
+  "$defs": {
+    "ApplicationFailure": {
+      "additionalProperties": false,
+      "properties": {
+        "category": {
+          "enum": [
+            "permission_denied",
+            "unavailable",
+            "precondition_failed",
+            "execution_failed",
+            "postcondition_failed",
+            "cancelled"
+          ],
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.application.failure/v1alpha1"
+        },
+        "evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "retry": {
+          "enum": [
+            "never",
+            "immediate",
+            "with_backoff",
+            "after_user_action",
+            "after_state_change"
+          ],
+          "type": "string"
+        },
+        "safe_message": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "category",
+        "code",
+        "safe_message",
+        "retry",
+        "evidence_ids",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.application.failure/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.application.failure/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/ApplicationFailure"
+    },
+    "schema_id": {
+      "const": "fam.application.failure/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Application failure",
+  "type": "object"
+}

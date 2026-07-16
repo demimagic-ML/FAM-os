@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "policy": "artifact storage bytes plus ten-percent conservative weight-runtime expansion; context and workspace bytes excluded",
+  "entries": [
+    {"expert_id": "expert.language.llama3.2-3b", "runtime_artifact_id": "llama3.2:3b", "resident_weight_bytes": 2221332508, "storage_bytes": 2019393189},
+    {"expert_id": "expert.code.qwen2.5-coder-7b", "runtime_artifact_id": "qwen2.5-coder:7b", "resident_weight_bytes": 5151396318, "storage_bytes": 4683087561},
+    {"expert_id": "expert.retrieval.nomic-embed-text", "runtime_artifact_id": "nomic-embed-text:latest", "resident_weight_bytes": 301732695, "storage_bytes": 274302450},
+    {"expert_id": "expert.code.laguna-xs2-33b", "runtime_artifact_id": "laguna-xs.2:q4_K_M", "resident_weight_bytes": 25407868002, "storage_bytes": 23098061820},
+    {"expert_id": "expert.code.gemma4-26b", "runtime_artifact_id": "gemma4:26b", "resident_weight_bytes": 19786339337, "storage_bytes": 17987581215}
+  ]
+}

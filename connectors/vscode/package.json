@@ -1,0 +1,63 @@
+{
+  "name": "fam-os-vscode-connector",
+  "displayName": "FAM_OS Semantic Connector",
+  "description": "Permissioned semantic VS Code connector for the local FAM_OS Application Fabric.",
+  "version": "0.1.0",
+  "publisher": "fam-os",
+  "license": "UNLICENSED",
+  "private": true,
+  "engines": {
+    "vscode": "^1.110.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "famOS.connect",
+        "title": "FAM_OS: Connect Semantic Connector"
+      },
+      {
+        "command": "famOS.disconnect",
+        "title": "FAM_OS: Disconnect Semantic Connector"
+      }
+    ],
+    "configuration": {
+      "title": "FAM_OS",
+      "properties": {
+        "famOS.connector.autoConnect": {
+          "type": "boolean",
+          "default": false,
+          "description": "Connect the semantic connector after VS Code startup."
+        },
+        "famOS.connector.socketPath": {
+          "type": "string",
+          "default": "",
+          "description": "Absolute path to the private FAM_OS Application Fabric Unix socket. Empty uses the current-user runtime default."
+        },
+        "famOS.connector.maximumObservationCharacters": {
+          "type": "integer",
+          "default": 16384,
+          "minimum": 256,
+          "maximum": 131072,
+          "description": "Maximum selected text returned by one authorized observation."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p .",
+    "check": "tsc -p . --noEmit",
+    "test": "npm run compile && node --test out/test && PYTHONPATH=../../src:../.. python3 test/native_transport_integration.py && python3 test/validate_schemas.py"
+  },
+  "devDependencies": {
+    "@types/node": "20.19.43",
+    "@types/vscode": "1.110.0",
+    "typescript": "5.9.3"
+  }
+}

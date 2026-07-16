@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "accelerator_device_id": "gpu-0",
+  "main_accelerator_index": 0,
+  "runtime": "ollama 0.30.11",
+  "policy": "explicit layer offload; full host weight plus context safety reservation; proportional offloaded-weight VRAM bound plus full context bound",
+  "models": [
+    {"expert_id": "expert.language.llama3.2-3b", "model_ref": "llama3.2:3b", "model_layer_count": 28, "requested_accelerator_layers": 28},
+    {"expert_id": "expert.code.qwen2.5-coder-7b", "model_ref": "qwen2.5-coder:7b", "model_layer_count": 28, "requested_accelerator_layers": 28},
+    {"expert_id": "expert.code.laguna-xs2-33b", "model_ref": "laguna-xs.2:q4_K_M", "model_layer_count": 40, "requested_accelerator_layers": 16},
+    {"expert_id": "expert.code.gemma4-26b", "model_ref": "gemma4:26b", "model_layer_count": 30, "requested_accelerator_layers": 8}
+  ]
+}

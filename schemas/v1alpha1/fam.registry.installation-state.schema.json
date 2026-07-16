@@ -1,0 +1,237 @@
+{
+  "$defs": {
+    "ArtifactDigest": {
+      "additionalProperties": false,
+      "properties": {
+        "algorithm": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "algorithm",
+        "value"
+      ],
+      "type": "object"
+    },
+    "ExpertPackageCoordinate": {
+      "additionalProperties": false,
+      "properties": {
+        "package_id": {
+          "type": "string"
+        },
+        "package_version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "package_id",
+        "package_version"
+      ],
+      "type": "object"
+    },
+    "ExpertPackageInstallationState": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.registry.lifecycle/v1alpha1"
+        },
+        "events": {
+          "items": {
+            "$ref": "#/$defs/PackageLifecycleEvent"
+          },
+          "type": "array"
+        },
+        "packages": {
+          "items": {
+            "$ref": "#/$defs/InstalledExpertPackage"
+          },
+          "type": "array"
+        },
+        "pending_artifact_removals": {
+          "items": {
+            "$ref": "#/$defs/PendingArtifactRemoval"
+          },
+          "type": "array"
+        },
+        "revision": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "revision",
+        "packages",
+        "pending_artifact_removals",
+        "events",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "InstalledExpertPackage": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_digest": {
+          "$ref": "#/$defs/ArtifactDigest"
+        },
+        "artifact_locator": {
+          "type": "string"
+        },
+        "compatibility_status": {
+          "enum": [
+            "compatible",
+            "compatible_cpu_only",
+            "currently_constrained",
+            "incompatible"
+          ],
+          "type": "string"
+        },
+        "coordinate": {
+          "$ref": "#/$defs/ExpertPackageCoordinate"
+        },
+        "effective_trust": {
+          "enum": [
+            "built_in",
+            "signed",
+            "local_unverified"
+          ],
+          "type": "string"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "expert_id": {
+          "type": "string"
+        },
+        "installed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "manifest_digest": {
+          "$ref": "#/$defs/ArtifactDigest"
+        },
+        "trust_policy_id": {
+          "type": "string"
+        },
+        "validation_profile_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "coordinate",
+        "expert_id",
+        "artifact_locator",
+        "artifact_digest",
+        "manifest_digest",
+        "effective_trust",
+        "trust_policy_id",
+        "compatibility_status",
+        "validation_profile_id",
+        "installed_at",
+        "enabled"
+      ],
+      "type": "object"
+    },
+    "PackageLifecycleEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "enum": [
+            "install",
+            "update",
+            "disable",
+            "rollback",
+            "remove",
+            "cleanup"
+          ],
+          "type": "string"
+        },
+        "active_after": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExpertPackageCoordinate"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "coordinate": {
+          "$ref": "#/$defs/ExpertPackageCoordinate"
+        },
+        "event_id": {
+          "type": "string"
+        },
+        "occurred_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "previous_active": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExpertPackageCoordinate"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reason_code": {
+          "type": "string"
+        },
+        "revision": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "event_id",
+        "revision",
+        "occurred_at",
+        "action",
+        "coordinate",
+        "previous_active",
+        "active_after",
+        "reason_code"
+      ],
+      "type": "object"
+    },
+    "PendingArtifactRemoval": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_locator": {
+          "type": "string"
+        },
+        "coordinate": {
+          "$ref": "#/$defs/ExpertPackageCoordinate"
+        }
+      },
+      "required": [
+        "coordinate",
+        "artifact_locator"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.registry.installation-state/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.registry.lifecycle/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/ExpertPackageInstallationState"
+    },
+    "schema_id": {
+      "const": "fam.registry.installation-state/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Expert package installation state",
+  "type": "object"
+}

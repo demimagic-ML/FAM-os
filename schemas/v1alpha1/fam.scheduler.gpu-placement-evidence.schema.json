@@ -1,0 +1,711 @@
+{
+  "$defs": {
+    "ContextMemoryEstimate": {
+      "additionalProperties": false,
+      "properties": {
+        "assumption_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "attention_workspace_bytes": {
+          "type": "integer"
+        },
+        "concurrent_sequences": {
+          "type": "integer"
+        },
+        "contract_version": {
+          "const": "fam.scheduler.context-memory/v1alpha1"
+        },
+        "estimate_id": {
+          "type": "string"
+        },
+        "fixed_runtime_overhead_bytes": {
+          "type": "integer"
+        },
+        "model_resident_bytes_excluded": {
+          "type": "boolean"
+        },
+        "persistent_context_bytes": {
+          "type": "integer"
+        },
+        "profile_id": {
+          "type": "string"
+        },
+        "reservation_id": {
+          "type": "string"
+        },
+        "reserved_growth_bytes": {
+          "type": "integer"
+        },
+        "safety_margin_bytes": {
+          "type": "integer"
+        },
+        "sequence_workspace_bytes": {
+          "type": "integer"
+        },
+        "strategy": {
+          "enum": [
+            "autoregressive_kv",
+            "encoder_activation_bound"
+          ],
+          "type": "string"
+        },
+        "subtotal_bytes": {
+          "type": "integer"
+        },
+        "tokens_per_sequence": {
+          "type": "integer"
+        },
+        "total_context_bytes": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "estimate_id",
+        "reservation_id",
+        "profile_id",
+        "strategy",
+        "tokens_per_sequence",
+        "concurrent_sequences",
+        "persistent_context_bytes",
+        "reserved_growth_bytes",
+        "attention_workspace_bytes",
+        "sequence_workspace_bytes",
+        "fixed_runtime_overhead_bytes",
+        "subtotal_bytes",
+        "safety_margin_bytes",
+        "total_context_bytes",
+        "model_resident_bytes_excluded",
+        "assumption_codes",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "GpuPlacementDecision": {
+      "additionalProperties": false,
+      "properties": {
+        "accelerator_available_bytes": {
+          "type": "integer"
+        },
+        "accelerator_context_bytes": {
+          "type": "integer"
+        },
+        "accelerator_reservation_bytes": {
+          "type": "integer"
+        },
+        "accelerator_weight_bytes": {
+          "type": "integer"
+        },
+        "admission_contract_version": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.scheduler.gpu-placement/v1alpha1"
+        },
+        "decision_id": {
+          "type": "string"
+        },
+        "estimated_transfer_bytes": {
+          "type": "integer"
+        },
+        "host_available_bytes": {
+          "type": "integer"
+        },
+        "host_safety_reservation_bytes": {
+          "type": "integer"
+        },
+        "host_weight_compute_bytes": {
+          "type": "integer"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "requested_accelerator_layers": {
+          "type": "integer"
+        },
+        "status": {
+          "enum": [
+            "admitted",
+            "rejected"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "decision_id",
+        "request_id",
+        "status",
+        "host_weight_compute_bytes",
+        "accelerator_weight_bytes",
+        "accelerator_context_bytes",
+        "host_safety_reservation_bytes",
+        "accelerator_reservation_bytes",
+        "host_available_bytes",
+        "accelerator_available_bytes",
+        "estimated_transfer_bytes",
+        "requested_accelerator_layers",
+        "reason_codes",
+        "admission_contract_version",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "GpuPlacementEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "accelerator_memory_delta_bytes": {
+          "type": "integer"
+        },
+        "after_load_observation": {
+          "$ref": "#/$defs/SchedulerResourceObservation"
+        },
+        "contract_version": {
+          "const": "fam.scheduler.gpu-placement/v1alpha1"
+        },
+        "decision": {
+          "$ref": "#/$defs/GpuPlacementDecision"
+        },
+        "effective_transfer_bytes_per_second": {
+          "type": "number"
+        },
+        "evidence_id": {
+          "type": "string"
+        },
+        "output_sha256": {
+          "type": "string"
+        },
+        "placement_verified": {
+          "type": "boolean"
+        },
+        "provider_accelerator_bytes": {
+          "type": "integer"
+        },
+        "provider_host_compute_bytes": {
+          "type": "integer"
+        },
+        "provider_load_seconds": {
+          "type": "number"
+        },
+        "provider_resident_bytes": {
+          "type": "integer"
+        },
+        "request": {
+          "$ref": "#/$defs/GpuPlacementRequest"
+        },
+        "service_memory_peak_bytes": {
+          "type": "integer"
+        },
+        "transfer_duration_includes_provider_load_overhead": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "evidence_id",
+        "request",
+        "decision",
+        "after_load_observation",
+        "provider_resident_bytes",
+        "provider_accelerator_bytes",
+        "provider_host_compute_bytes",
+        "provider_load_seconds",
+        "effective_transfer_bytes_per_second",
+        "service_memory_peak_bytes",
+        "accelerator_memory_delta_bytes",
+        "transfer_duration_includes_provider_load_overhead",
+        "placement_verified",
+        "output_sha256",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "GpuPlacementRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "accelerator_device_id": {
+          "type": "string"
+        },
+        "context": {
+          "$ref": "#/$defs/ContextMemoryEstimate"
+        },
+        "contract_version": {
+          "const": "fam.scheduler.gpu-placement/v1alpha1"
+        },
+        "expert_id": {
+          "type": "string"
+        },
+        "main_accelerator_index": {
+          "type": "integer"
+        },
+        "model_layer_count": {
+          "type": "integer"
+        },
+        "observation": {
+          "$ref": "#/$defs/SchedulerResourceObservation"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "requested_accelerator_layers": {
+          "type": "integer"
+        },
+        "weight": {
+          "$ref": "#/$defs/ResidentWeightEstimate"
+        }
+      },
+      "required": [
+        "request_id",
+        "expert_id",
+        "observation",
+        "weight",
+        "context",
+        "accelerator_device_id",
+        "model_layer_count",
+        "requested_accelerator_layers",
+        "main_accelerator_index",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "LiveAcceleratorAvailability": {
+      "additionalProperties": false,
+      "properties": {
+        "available_for_new_bytes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "current_bytes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "device_id": {
+          "type": "string"
+        },
+        "placement_allowed": {
+          "type": "boolean"
+        },
+        "scheduler_limit_bytes": {
+          "type": "integer"
+        },
+        "utilization_fraction": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "device_id",
+        "placement_allowed",
+        "scheduler_limit_bytes",
+        "current_bytes",
+        "available_for_new_bytes",
+        "utilization_fraction"
+      ],
+      "type": "object"
+    },
+    "LiveCpuAvailability": {
+      "additionalProperties": false,
+      "properties": {
+        "cgroup_quota_cores": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "interval_seconds": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "scheduler_quota_cores": {
+          "type": "number"
+        },
+        "usage_delta_microseconds": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "usage_total_microseconds": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "utilization_fraction": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "scheduler_quota_cores",
+        "cgroup_quota_cores",
+        "interval_seconds",
+        "usage_delta_microseconds",
+        "utilization_fraction",
+        "usage_total_microseconds"
+      ],
+      "type": "object"
+    },
+    "LiveMemoryAvailability": {
+      "additionalProperties": false,
+      "properties": {
+        "available_for_new_bytes": {
+          "type": "integer"
+        },
+        "cgroup_limit_bytes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "current_bytes": {
+          "type": "integer"
+        },
+        "effective_limit_bytes": {
+          "type": "integer"
+        },
+        "reserved_headroom_bytes": {
+          "type": "integer"
+        },
+        "scheduler_limit_bytes": {
+          "type": "integer"
+        },
+        "scope_authoritative": {
+          "type": "boolean"
+        },
+        "swap_current_bytes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "swap_limit_bytes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "effective_limit_bytes",
+        "scheduler_limit_bytes",
+        "reserved_headroom_bytes",
+        "current_bytes",
+        "available_for_new_bytes",
+        "cgroup_limit_bytes",
+        "swap_current_bytes",
+        "swap_limit_bytes",
+        "scope_authoritative"
+      ],
+      "type": "object"
+    },
+    "LiveStorageAvailability": {
+      "additionalProperties": false,
+      "properties": {
+        "available_cache_bytes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "current_cache_bytes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "scheduler_cache_limit_bytes": {
+          "type": "integer"
+        },
+        "storage_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "storage_id",
+        "scheduler_cache_limit_bytes",
+        "current_cache_bytes",
+        "available_cache_bytes"
+      ],
+      "type": "object"
+    },
+    "ManagedServiceUsage": {
+      "additionalProperties": false,
+      "properties": {
+        "cpu_usage_microseconds": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "memory_current_bytes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "memory_peak_bytes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "oom_kill_count": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "service_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "service_id",
+        "memory_current_bytes",
+        "memory_peak_bytes",
+        "cpu_usage_microseconds",
+        "oom_kill_count"
+      ],
+      "type": "object"
+    },
+    "ResidentWeightEstimate": {
+      "additionalProperties": false,
+      "properties": {
+        "context_bytes_excluded": {
+          "type": "boolean"
+        },
+        "expert_id": {
+          "type": "string"
+        },
+        "provenance": {
+          "type": "string"
+        },
+        "resident_weight_bytes": {
+          "type": "integer"
+        },
+        "runtime_artifact_id": {
+          "type": "string"
+        },
+        "source": {
+          "enum": [
+            "observed_weight_only",
+            "declared_conservative"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "expert_id",
+        "runtime_artifact_id",
+        "resident_weight_bytes",
+        "source",
+        "provenance",
+        "context_bytes_excluded"
+      ],
+      "type": "object"
+    },
+    "SchedulerResourceObservation": {
+      "additionalProperties": false,
+      "properties": {
+        "accelerators": {
+          "items": {
+            "$ref": "#/$defs/LiveAcceleratorAvailability"
+          },
+          "type": "array"
+        },
+        "budget_id": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.scheduler.live-resources/v1alpha1"
+        },
+        "cpu": {
+          "$ref": "#/$defs/LiveCpuAvailability"
+        },
+        "inventory_id": {
+          "type": "string"
+        },
+        "managed_services": {
+          "items": {
+            "$ref": "#/$defs/ManagedServiceUsage"
+          },
+          "type": "array"
+        },
+        "memory": {
+          "$ref": "#/$defs/LiveMemoryAvailability"
+        },
+        "observation_id": {
+          "type": "string"
+        },
+        "observed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "previous_observation_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "scope_service_id": {
+          "type": "string"
+        },
+        "sequence": {
+          "type": "integer"
+        },
+        "status": {
+          "enum": [
+            "baseline",
+            "complete",
+            "degraded"
+          ],
+          "type": "string"
+        },
+        "storage": {
+          "items": {
+            "$ref": "#/$defs/LiveStorageAvailability"
+          },
+          "type": "array"
+        },
+        "validation_profile_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "observation_id",
+        "sequence",
+        "previous_observation_id",
+        "observed_at",
+        "budget_id",
+        "inventory_id",
+        "validation_profile_id",
+        "scope_service_id",
+        "status",
+        "cpu",
+        "memory",
+        "accelerators",
+        "storage",
+        "managed_services",
+        "reason_codes",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.scheduler.gpu-placement-evidence/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.scheduler.gpu-placement/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/GpuPlacementEvidence"
+    },
+    "schema_id": {
+      "const": "fam.scheduler.gpu-placement-evidence/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Observed GPU split placement evidence",
+  "type": "object"
+}

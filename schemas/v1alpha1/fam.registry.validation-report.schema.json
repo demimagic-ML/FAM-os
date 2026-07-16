@@ -1,0 +1,104 @@
+{
+  "$defs": {
+    "ArtifactDigest": {
+      "additionalProperties": false,
+      "properties": {
+        "algorithm": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "algorithm",
+        "value"
+      ],
+      "type": "object"
+    },
+    "PackageValidationReport": {
+      "additionalProperties": false,
+      "properties": {
+        "accepted": {
+          "type": "boolean"
+        },
+        "contract_version": {
+          "const": "fam.registry.trust/v1alpha1"
+        },
+        "effective_trust": {
+          "anyOf": [
+            {
+              "enum": [
+                "built_in",
+                "signed",
+                "local_unverified"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "observed_artifact_digest": {
+          "$ref": "#/$defs/ArtifactDigest"
+        },
+        "package_id": {
+          "type": "string"
+        },
+        "package_version": {
+          "type": "string"
+        },
+        "policy_id": {
+          "type": "string"
+        },
+        "reason_code": {
+          "type": "string"
+        },
+        "verified_key_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "package_id",
+        "package_version",
+        "accepted",
+        "reason_code",
+        "effective_trust",
+        "observed_artifact_digest",
+        "policy_id",
+        "verified_key_id",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.registry.validation-report/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.registry.trust/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/PackageValidationReport"
+    },
+    "schema_id": {
+      "const": "fam.registry.validation-report/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Package validation report",
+  "type": "object"
+}

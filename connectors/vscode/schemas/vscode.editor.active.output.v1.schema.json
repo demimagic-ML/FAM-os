@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vscode.editor.active.output.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["document_uri", "language_id", "document_version", "dirty", "line_count", "selection", "visible_ranges"],
+  "properties": {
+    "document_uri": {"type": "string"},
+    "language_id": {"type": "string"},
+    "document_version": {"type": "integer", "minimum": 1},
+    "dirty": {"type": "boolean"},
+    "line_count": {"type": "integer", "minimum": 1},
+    "selection": {"$ref": "#/$defs/range"},
+    "visible_ranges": {"type": "array", "maxItems": 16, "items": {"$ref": "#/$defs/range"}}
+  },
+  "$defs": {
+    "position": {
+      "type": "object", "additionalProperties": false,
+      "required": ["line", "character"],
+      "properties": {"line": {"type": "integer", "minimum": 0}, "character": {"type": "integer", "minimum": 0}}
+    },
+    "range": {
+      "type": "object", "additionalProperties": false,
+      "required": ["start", "end"],
+      "properties": {"start": {"$ref": "#/$defs/position"}, "end": {"$ref": "#/$defs/position"}}
+    }
+  }
+}

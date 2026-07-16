@@ -1,0 +1,23 @@
+{
+  "ollama_url": "http://127.0.0.1:11435",
+  "kernel_model": "granite3.3:2b",
+  "economical_expert": "gemma4:26b",
+  "escalation_expert": "gemma4:26b",
+  "context_length": 8192,
+  "expert_num_predict": 1600,
+  "repair_attempts": 1,
+  "escalation_repair_attempts": 0,
+  "escalate_on_failure": false,
+  "evict_before_escalation": false,
+  "timeout_seconds": 1200,
+  "keep_alive": "2m",
+  "tests_file": "evaluations/verifiers/stable_topological_sort.py",
+  "repair_guidance": "Re-read every trusted assertion before changing code. Build one ordered_nodes list from mapping keys followed by unseen neighbors in first-discovery order. Snapshot adjacency with graph.get, compute all indegrees, and always scan ordered_nodes to choose the first ready unprocessed node. Never use min, sorted, a set, or mutate graph. Compare output length with ordered_nodes to detect cycles.",
+  "repair_examples": [
+    "{'root': ['neighbor_only']} -> ['root', 'neighbor_only']",
+    "{'B': ['D'], 'A': ['D'], 'D': []} -> ['B', 'A', 'D']",
+    "{'A': [], 'B': [], 'C': []} -> ['A', 'B', 'C']",
+    "{'A': ['B'], 'B': ['A']} -> raise ValueError"
+  ],
+  "prompt": "Implement exactly one Python function named stable_topological_sort(graph). Return only one complete Python code block under 50 lines.\n\nRequired behavior:\n1. Treat graph as a mapping from each listed node to its outgoing neighbors; never mutate the mapping or its neighbor collections.\n2. Create a complete ordered node sequence: mapping keys in input iteration order, then each previously unseen neighbor at its first encounter while scanning keys and their neighbor lists. Do not use a set, min, sorted, or lexical ordering.\n3. Include neighbor-only nodes by reading their outgoing edges with graph.get(node, ()).\n4. Compute indegree for every node in that complete ordered sequence.\n5. Repeatedly choose the earliest ready, not-yet-emitted node according to the complete ordered sequence. Newly ready nodes never jump ahead of an earlier ready node.\n6. Return every node once. If fewer nodes can be emitted than exist in the complete ordered sequence, raise ValueError because the complete graph has a cycle.\n\nRequired examples:\n- {'root': ['neighbor_only']} returns ['root', 'neighbor_only'].\n- {'B': ['D'], 'A': ['D'], 'D': []} returns ['B', 'A', 'D']; choosing min(ready) is wrong.\n- {'A': [], 'B': [], 'C': []} returns ['A', 'B', 'C'].\n- {'A': ['B'], 'B': ['A']} raises ValueError."
+}

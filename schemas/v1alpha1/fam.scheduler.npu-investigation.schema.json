@@ -1,0 +1,279 @@
+{
+  "$defs": {
+    "NpuHardwareEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "access_mechanism": {
+          "type": "string"
+        },
+        "delegated_device_access": {
+          "type": "boolean"
+        },
+        "device_family": {
+          "type": "string"
+        },
+        "device_id": {
+          "type": "string"
+        },
+        "device_node_present": {
+          "type": "boolean"
+        },
+        "host_user_direct_access": {
+          "type": "boolean"
+        },
+        "kernel_driver": {
+          "type": "string"
+        },
+        "kernel_module_version": {
+          "type": "string"
+        },
+        "kernel_release": {
+          "type": "string"
+        },
+        "operating_system": {
+          "type": "string"
+        },
+        "vendor_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "vendor_id",
+        "device_id",
+        "device_family",
+        "kernel_driver",
+        "kernel_module_version",
+        "operating_system",
+        "kernel_release",
+        "device_node_present",
+        "host_user_direct_access",
+        "delegated_device_access",
+        "access_mechanism"
+      ],
+      "type": "object"
+    },
+    "NpuInvestigationReport": {
+      "additionalProperties": false,
+      "properties": {
+        "blocking_gate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "completed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.scheduler.npu-investigation/v1alpha1"
+        },
+        "hardware": {
+          "$ref": "#/$defs/NpuHardwareEvidence"
+        },
+        "micro_expert": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NpuMicroExpertEvidence"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "outcome": {
+          "enum": [
+            "supported",
+            "unsupported"
+          ],
+          "type": "string"
+        },
+        "report_id": {
+          "type": "string"
+        },
+        "runtime": {
+          "$ref": "#/$defs/NpuRuntimeEvidence"
+        },
+        "started_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "validation_profile_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "report_id",
+        "started_at",
+        "completed_at",
+        "validation_profile_id",
+        "outcome",
+        "hardware",
+        "runtime",
+        "micro_expert",
+        "blocking_gate",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "NpuMicroExpertEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "capability_id": {
+          "type": "string"
+        },
+        "class_labels": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "compile_duration_ms": {
+          "type": "number"
+        },
+        "expected_label": {
+          "type": "string"
+        },
+        "expert_id": {
+          "type": "string"
+        },
+        "fallback_used": {
+          "type": "boolean"
+        },
+        "first_inference_duration_ms": {
+          "type": "number"
+        },
+        "input_digest_sha256": {
+          "type": "string"
+        },
+        "model_digest_sha256": {
+          "type": "string"
+        },
+        "model_format": {
+          "type": "string"
+        },
+        "observed_label": {
+          "type": "string"
+        },
+        "output_digest_sha256": {
+          "type": "string"
+        },
+        "output_probabilities": {
+          "items": {
+            "type": "number"
+          },
+          "type": "array"
+        },
+        "warm_inference_durations_ms": {
+          "items": {
+            "type": "number"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "expert_id",
+        "capability_id",
+        "model_format",
+        "model_digest_sha256",
+        "input_digest_sha256",
+        "output_digest_sha256",
+        "expected_label",
+        "observed_label",
+        "class_labels",
+        "output_probabilities",
+        "compile_duration_ms",
+        "first_inference_duration_ms",
+        "warm_inference_durations_ms",
+        "fallback_used"
+      ],
+      "type": "object"
+    },
+    "NpuRuntimeEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "available_devices": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "container_isolated": {
+          "type": "boolean"
+        },
+        "cpu_fallback_allowed": {
+          "type": "boolean"
+        },
+        "execution_devices": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "level_zero_version": {
+          "type": "string"
+        },
+        "npu_full_device_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "requested_device": {
+          "type": "string"
+        },
+        "runtime_name": {
+          "type": "string"
+        },
+        "runtime_version": {
+          "type": "string"
+        },
+        "user_mode_driver_version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "runtime_name",
+        "runtime_version",
+        "user_mode_driver_version",
+        "level_zero_version",
+        "available_devices",
+        "npu_full_device_name",
+        "requested_device",
+        "execution_devices",
+        "cpu_fallback_allowed",
+        "container_isolated"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.scheduler.npu-investigation/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.scheduler.npu-investigation/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/NpuInvestigationReport"
+    },
+    "schema_id": {
+      "const": "fam.scheduler.npu-investigation/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Intel NPU micro-expert investigation",
+  "type": "object"
+}

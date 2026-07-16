@@ -1,0 +1,178 @@
+{
+  "$defs": {
+    "AdmissionRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "available_memory_bytes": {
+          "type": "integer"
+        },
+        "context_estimate_id": {
+          "type": "string"
+        },
+        "context_memory_bytes": {
+          "type": "integer"
+        },
+        "context_weights_excluded": {
+          "type": "boolean"
+        },
+        "contract_version": {
+          "const": "fam.scheduler.admission/v1alpha1"
+        },
+        "eviction_candidates": {
+          "items": {
+            "$ref": "#/$defs/EvictionCandidate"
+          },
+          "type": "array"
+        },
+        "memory_scope_authoritative": {
+          "type": "boolean"
+        },
+        "observation_id": {
+          "type": "string"
+        },
+        "observation_status": {
+          "enum": [
+            "baseline",
+            "complete",
+            "degraded"
+          ],
+          "type": "string"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "requested_expert_id": {
+          "type": "string"
+        },
+        "requested_state": {
+          "enum": [
+            "cold",
+            "warm",
+            "active",
+            "evicting"
+          ],
+          "type": "string"
+        },
+        "residency_catalog_id": {
+          "type": "string"
+        },
+        "residency_catalog_revision": {
+          "type": "integer"
+        },
+        "weight": {
+          "$ref": "#/$defs/ResidentWeightEstimate"
+        }
+      },
+      "required": [
+        "request_id",
+        "observation_id",
+        "observation_status",
+        "memory_scope_authoritative",
+        "available_memory_bytes",
+        "residency_catalog_id",
+        "residency_catalog_revision",
+        "requested_expert_id",
+        "requested_state",
+        "weight",
+        "context_estimate_id",
+        "context_memory_bytes",
+        "context_weights_excluded",
+        "eviction_candidates",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "EvictionCandidate": {
+      "additionalProperties": false,
+      "properties": {
+        "expert_id": {
+          "type": "string"
+        },
+        "last_used_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "reclaimable_bytes": {
+          "type": "integer"
+        },
+        "retention_priority": {
+          "type": "integer"
+        },
+        "state": {
+          "enum": [
+            "cold",
+            "warm",
+            "active",
+            "evicting"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "expert_id",
+        "state",
+        "reclaimable_bytes",
+        "retention_priority",
+        "last_used_at"
+      ],
+      "type": "object"
+    },
+    "ResidentWeightEstimate": {
+      "additionalProperties": false,
+      "properties": {
+        "context_bytes_excluded": {
+          "type": "boolean"
+        },
+        "expert_id": {
+          "type": "string"
+        },
+        "provenance": {
+          "type": "string"
+        },
+        "resident_weight_bytes": {
+          "type": "integer"
+        },
+        "runtime_artifact_id": {
+          "type": "string"
+        },
+        "source": {
+          "enum": [
+            "observed_weight_only",
+            "declared_conservative"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "expert_id",
+        "runtime_artifact_id",
+        "resident_weight_bytes",
+        "source",
+        "provenance",
+        "context_bytes_excluded"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.scheduler.admission-request/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.scheduler.admission/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/AdmissionRequest"
+    },
+    "schema_id": {
+      "const": "fam.scheduler.admission-request/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Scheduler admission request",
+  "type": "object"
+}

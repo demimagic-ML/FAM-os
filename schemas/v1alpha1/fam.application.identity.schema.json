@@ -1,0 +1,63 @@
+{
+  "$defs": {
+    "ApplicationIdentity": {
+      "additionalProperties": false,
+      "properties": {
+        "application_id": {
+          "type": "string"
+        },
+        "display_name": {
+          "type": "string"
+        },
+        "vendor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "application_id",
+        "display_name",
+        "vendor",
+        "version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.application.identity/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.applications/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/ApplicationIdentity"
+    },
+    "schema_id": {
+      "const": "fam.application.identity/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Application identity",
+  "type": "object"
+}

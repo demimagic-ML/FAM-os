@@ -1,0 +1,73 @@
+{
+  "$defs": {
+    "ActionConfirmation": {
+      "additionalProperties": false,
+      "properties": {
+        "confirmation_id": {
+          "type": "string"
+        },
+        "decided_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "decided_by": {
+          "type": "string"
+        },
+        "decision": {
+          "enum": [
+            "approved",
+            "denied"
+          ],
+          "type": "string"
+        },
+        "permission_grant_id": {
+          "type": "string"
+        },
+        "proposal_id": {
+          "type": "string"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "confirmation_id",
+        "proposal_id",
+        "permission_grant_id",
+        "decision",
+        "decided_by",
+        "decided_at",
+        "reason"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.application.action-confirmation/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.applications/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/ActionConfirmation"
+    },
+    "schema_id": {
+      "const": "fam.application.action-confirmation/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Application action confirmation",
+  "type": "object"
+}

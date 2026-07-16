@@ -1,0 +1,127 @@
+{
+  "$defs": {
+    "ArtifactDigest": {
+      "additionalProperties": false,
+      "properties": {
+        "algorithm": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "algorithm",
+        "value"
+      ],
+      "type": "object"
+    },
+    "ExpertPackageCoordinate": {
+      "additionalProperties": false,
+      "properties": {
+        "package_id": {
+          "type": "string"
+        },
+        "package_version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "package_id",
+        "package_version"
+      ],
+      "type": "object"
+    },
+    "ExpertRoutingEmbedding": {
+      "additionalProperties": false,
+      "properties": {
+        "benchmark_run_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "capabilities": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "contract_version": {
+          "const": "fam.expert.routing-metadata/v1alpha1"
+        },
+        "coordinate": {
+          "$ref": "#/$defs/ExpertPackageCoordinate"
+        },
+        "embedding_id": {
+          "type": "string"
+        },
+        "embedding_space_id": {
+          "type": "string"
+        },
+        "expert_id": {
+          "type": "string"
+        },
+        "generated_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "generator_id": {
+          "type": "string"
+        },
+        "generator_version": {
+          "type": "string"
+        },
+        "publisher_id": {
+          "type": "string"
+        },
+        "source_digest": {
+          "$ref": "#/$defs/ArtifactDigest"
+        },
+        "vector": {
+          "items": {
+            "type": "number"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "embedding_id",
+        "coordinate",
+        "expert_id",
+        "publisher_id",
+        "embedding_space_id",
+        "generator_id",
+        "generator_version",
+        "vector",
+        "capabilities",
+        "source_digest",
+        "generated_at",
+        "benchmark_run_ids",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.expert.routing-embedding/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.expert.routing-metadata/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/ExpertRoutingEmbedding"
+    },
+    "schema_id": {
+      "const": "fam.expert.routing-embedding/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Expert semantic routing embedding",
+  "type": "object"
+}

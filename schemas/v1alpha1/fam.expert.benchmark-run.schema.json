@@ -1,0 +1,294 @@
+{
+  "$defs": {
+    "ArtifactDigest": {
+      "additionalProperties": false,
+      "properties": {
+        "algorithm": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "algorithm",
+        "value"
+      ],
+      "type": "object"
+    },
+    "ExpertBenchmarkAttempt": {
+      "additionalProperties": false,
+      "properties": {
+        "attempt_index": {
+          "type": "integer"
+        },
+        "conformance_failure_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "disclosed_context_digest": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ArtifactDigest"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "kind": {
+          "enum": [
+            "initial",
+            "repair",
+            "escalation"
+          ],
+          "type": "string"
+        },
+        "model_ref": {
+          "type": "string"
+        },
+        "output_tokens": {
+          "type": "integer"
+        },
+        "prompt_tokens": {
+          "type": "integer"
+        },
+        "verification_passed": {
+          "type": "boolean"
+        },
+        "verifier_context_disclosure": {
+          "enum": [
+            "none",
+            "examples",
+            "trusted_tests_and_examples"
+          ],
+          "type": "string"
+        },
+        "wall_seconds": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "attempt_index",
+        "kind",
+        "model_ref",
+        "verifier_context_disclosure",
+        "disclosed_context_digest",
+        "verification_passed",
+        "conformance_failure_codes",
+        "wall_seconds",
+        "prompt_tokens",
+        "output_tokens"
+      ],
+      "type": "object"
+    },
+    "ExpertBenchmarkResources": {
+      "additionalProperties": false,
+      "properties": {
+        "cpu_usage_microseconds": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "max_accelerator_memory_bytes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "model_accelerator_bytes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "model_resident_bytes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "peak_system_memory_bytes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "storage_read_bytes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "storage_write_bytes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "unavailable_measurements": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "cpu_usage_microseconds",
+        "peak_system_memory_bytes",
+        "max_accelerator_memory_bytes",
+        "model_resident_bytes",
+        "model_accelerator_bytes",
+        "storage_read_bytes",
+        "storage_write_bytes",
+        "unavailable_measurements"
+      ],
+      "type": "object"
+    },
+    "ExpertBenchmarkRun": {
+      "additionalProperties": false,
+      "properties": {
+        "acceptance_policy_id": {
+          "type": "string"
+        },
+        "attempts": {
+          "items": {
+            "$ref": "#/$defs/ExpertBenchmarkAttempt"
+          },
+          "type": "array"
+        },
+        "captured_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.expert.benchmark/v1alpha1"
+        },
+        "coordinate": {
+          "$ref": "#/$defs/ExpertPackageCoordinate"
+        },
+        "expert_id": {
+          "type": "string"
+        },
+        "outcome": {
+          "enum": [
+            "verified_initial",
+            "verified_after_repair",
+            "verified_after_escalation",
+            "failed"
+          ],
+          "type": "string"
+        },
+        "raw_evidence_digest": {
+          "$ref": "#/$defs/ArtifactDigest"
+        },
+        "resources": {
+          "$ref": "#/$defs/ExpertBenchmarkResources"
+        },
+        "run_id": {
+          "type": "string"
+        },
+        "strict_requirement_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "suite_id": {
+          "type": "string"
+        },
+        "suite_version": {
+          "type": "string"
+        },
+        "validation_profile_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "run_id",
+        "suite_id",
+        "suite_version",
+        "coordinate",
+        "expert_id",
+        "validation_profile_id",
+        "acceptance_policy_id",
+        "captured_at",
+        "outcome",
+        "strict_requirement_ids",
+        "attempts",
+        "resources",
+        "raw_evidence_digest",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "ExpertPackageCoordinate": {
+      "additionalProperties": false,
+      "properties": {
+        "package_id": {
+          "type": "string"
+        },
+        "package_version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "package_id",
+        "package_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.expert.benchmark-run/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.expert.benchmark/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/ExpertBenchmarkRun"
+    },
+    "schema_id": {
+      "const": "fam.expert.benchmark-run/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Expert benchmark run metadata",
+  "type": "object"
+}

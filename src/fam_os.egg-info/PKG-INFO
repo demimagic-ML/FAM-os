@@ -1,0 +1,15 @@
+Metadata-Version: 2.4
+Name: fam-os
+Version: 0.1.0
+Summary: Hardware-aware operating-system intelligence service
+Requires-Python: >=3.12
+License-File: LICENSE
+Requires-Dist: cryptography<47,>=41
+Requires-Dist: jsonschema<5,>=4.10
+Requires-Dist: mcp<2,>=1.27
+Provides-Extra: verification
+Requires-Dist: mypy<2,>=1.10; extra == "verification"
+Requires-Dist: ruff<1,>=0.5; extra == "verification"
+Provides-Extra: math-verification
+Requires-Dist: sympy<2,>=1.13; extra == "math-verification"
+Dynamic: license-file

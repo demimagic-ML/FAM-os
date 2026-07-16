@@ -1,0 +1,61 @@
+{
+  "$defs": {
+    "AttemptBudgetReservation": {
+      "additionalProperties": false,
+      "properties": {
+        "attempt_id": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "repair",
+            "escalation"
+          ],
+          "type": "string"
+        },
+        "plan_instance_id": {
+          "type": "string"
+        },
+        "reservation_id": {
+          "type": "string"
+        },
+        "reserved_tokens": {
+          "type": "integer"
+        },
+        "reserved_wall_milliseconds": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "reservation_id",
+        "plan_instance_id",
+        "attempt_id",
+        "kind",
+        "reserved_tokens",
+        "reserved_wall_milliseconds"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.attempt-budget-reservation/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.global-attempt-budget/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/AttemptBudgetReservation"
+    },
+    "schema_id": {
+      "const": "fam.core.attempt-budget-reservation/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Attempt budget reservation",
+  "type": "object"
+}

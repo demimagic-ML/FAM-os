@@ -1,0 +1,79 @@
+{
+  "$defs": {
+    "PrefetchPolicyDecision": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.scheduler.predictive-prefetch/v1alpha1"
+        },
+        "decision_id": {
+          "type": "string"
+        },
+        "policy_version": {
+          "type": "string"
+        },
+        "reasons": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "reserved_io_read_bytes": {
+          "type": "integer"
+        },
+        "reserved_prefetch_bytes": {
+          "type": "integer"
+        },
+        "selected_eviction_artifact_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "status": {
+          "enum": [
+            "admitted",
+            "rejected"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "decision_id",
+        "request_id",
+        "status",
+        "reserved_prefetch_bytes",
+        "reserved_io_read_bytes",
+        "reasons",
+        "selected_eviction_artifact_ids",
+        "policy_version",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.scheduler.prefetch-policy-decision/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.scheduler.predictive-prefetch/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/PrefetchPolicyDecision"
+    },
+    "schema_id": {
+      "const": "fam.scheduler.prefetch-policy-decision/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Predictive prefetch admission decision",
+  "type": "object"
+}

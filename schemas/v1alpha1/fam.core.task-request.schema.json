@@ -1,0 +1,56 @@
+{
+  "$defs": {
+    "TaskRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.core/v1alpha1"
+        },
+        "prompt": {
+          "type": "string"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "required_capabilities": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "verification_required": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "request_id",
+        "prompt",
+        "required_capabilities",
+        "verification_required",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.task-request/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/TaskRequest"
+    },
+    "schema_id": {
+      "const": "fam.core.task-request/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "FAM task request",
+  "type": "object"
+}

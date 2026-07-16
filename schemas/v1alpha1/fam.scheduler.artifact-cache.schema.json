@@ -1,0 +1,78 @@
+{
+  "$defs": {
+    "ArtifactCacheObservation": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.scheduler.storage-paging/v1alpha1"
+        },
+        "counted_in_cgroup_memory_when_mapped": {
+          "type": "boolean"
+        },
+        "file_bytes": {
+          "type": "integer"
+        },
+        "observation_id": {
+          "type": "string"
+        },
+        "observed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "page_count": {
+          "type": "integer"
+        },
+        "page_size_bytes": {
+          "type": "integer"
+        },
+        "resident_bytes_upper_bound": {
+          "type": "integer"
+        },
+        "resident_fraction": {
+          "type": "number"
+        },
+        "resident_page_count": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "observation_id",
+        "artifact_id",
+        "observed_at",
+        "file_bytes",
+        "page_size_bytes",
+        "page_count",
+        "resident_page_count",
+        "resident_bytes_upper_bound",
+        "resident_fraction",
+        "counted_in_cgroup_memory_when_mapped",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.scheduler.artifact-cache/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.scheduler.storage-paging/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/ArtifactCacheObservation"
+    },
+    "schema_id": {
+      "const": "fam.scheduler.artifact-cache/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Mmap artifact cache observation",
+  "type": "object"
+}

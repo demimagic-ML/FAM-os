@@ -1,0 +1,219 @@
+{
+  "$defs": {
+    "ShellApprovalRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "approval_id": {
+          "type": "string"
+        },
+        "capability_id": {
+          "type": "string"
+        },
+        "expires_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "proposal_id": {
+          "type": "string"
+        },
+        "reversible": {
+          "type": "boolean"
+        },
+        "summary": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "approval_id",
+        "proposal_id",
+        "capability_id",
+        "summary",
+        "expires_at",
+        "reversible"
+      ],
+      "type": "object"
+    },
+    "ShellPlanStep": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "state": {
+          "enum": [
+            "pending",
+            "active",
+            "succeeded",
+            "failed",
+            "denied",
+            "cancelled",
+            "unavailable",
+            "expired"
+          ],
+          "type": "string"
+        },
+        "step_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "step_id",
+        "kind",
+        "description",
+        "state"
+      ],
+      "type": "object"
+    },
+    "ShellResult": {
+      "additionalProperties": false,
+      "properties": {
+        "content": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "completed",
+            "verified",
+            "withheld",
+            "failed"
+          ],
+          "type": "string"
+        },
+        "verified": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "request_id",
+        "status",
+        "content",
+        "reason",
+        "verified",
+        "evidence_ids"
+      ],
+      "type": "object"
+    },
+    "ShellSessionSnapshot": {
+      "additionalProperties": false,
+      "properties": {
+        "approval": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ShellApprovalRequest"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "contract_version": {
+          "const": "fam.shell/v1alpha1"
+        },
+        "current_step_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "message": {
+          "type": "string"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "result": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ShellResult"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "revision": {
+          "type": "integer"
+        },
+        "session_id": {
+          "type": "string"
+        },
+        "state": {
+          "enum": [
+            "accepted",
+            "running",
+            "waiting_approval",
+            "cancelling",
+            "terminal"
+          ],
+          "type": "string"
+        },
+        "steps": {
+          "items": {
+            "$ref": "#/$defs/ShellPlanStep"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "session_id",
+        "request_id",
+        "revision",
+        "state",
+        "steps",
+        "current_step_id",
+        "message",
+        "approval",
+        "result",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.shell.snapshot/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.shell/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/ShellSessionSnapshot"
+    },
+    "schema_id": {
+      "const": "fam.shell.snapshot/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "FAM Shell session snapshot",
+  "type": "object"
+}

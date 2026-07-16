@@ -1,0 +1,68 @@
+{
+  "$defs": {
+    "MathVerificationRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "absolute_tolerance": {
+          "type": "string"
+        },
+        "candidate_expression": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.verifier.math/v1alpha1"
+        },
+        "precision_digits": {
+          "type": "integer"
+        },
+        "reference_expression": {
+          "type": "string"
+        },
+        "sample_points": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "variable": {
+          "type": "string"
+        },
+        "verification_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "verification_id",
+        "candidate_expression",
+        "reference_expression",
+        "variable",
+        "sample_points",
+        "absolute_tolerance",
+        "precision_digits",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.verifier.math-request/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.verifier.math/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/MathVerificationRequest"
+    },
+    "schema_id": {
+      "const": "fam.verifier.math-request/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Math verification request",
+  "type": "object"
+}

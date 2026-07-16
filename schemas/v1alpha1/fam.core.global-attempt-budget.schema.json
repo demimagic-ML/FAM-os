@@ -1,0 +1,57 @@
+{
+  "$defs": {
+    "GlobalAttemptBudget": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.core.global-attempt-budget/v1alpha1"
+        },
+        "maximum_escalations": {
+          "type": "integer"
+        },
+        "maximum_repairs": {
+          "type": "integer"
+        },
+        "maximum_tokens": {
+          "type": "integer"
+        },
+        "maximum_wall_milliseconds": {
+          "type": "integer"
+        },
+        "plan_instance_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "plan_instance_id",
+        "maximum_tokens",
+        "maximum_wall_milliseconds",
+        "maximum_repairs",
+        "maximum_escalations",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.global-attempt-budget/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.global-attempt-budget/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/GlobalAttemptBudget"
+    },
+    "schema_id": {
+      "const": "fam.core.global-attempt-budget/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Global attempt budget",
+  "type": "object"
+}

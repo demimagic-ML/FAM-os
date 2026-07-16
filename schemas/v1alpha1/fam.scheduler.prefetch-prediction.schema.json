@@ -1,0 +1,116 @@
+{
+  "$defs": {
+    "PrefetchCandidate": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_bytes": {
+          "type": "integer"
+        },
+        "artifact_id": {
+          "type": "string"
+        },
+        "expected_reload_cost_ms": {
+          "type": "number"
+        },
+        "requested_prefetch_bytes": {
+          "type": "integer"
+        },
+        "tier": {
+          "enum": [
+            "host_page_cache",
+            "provider_weights",
+            "accelerator_weights",
+            "npu_compiled"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "tier",
+        "artifact_bytes",
+        "requested_prefetch_bytes",
+        "expected_reload_cost_ms"
+      ],
+      "type": "object"
+    },
+    "PrefetchPrediction": {
+      "additionalProperties": false,
+      "properties": {
+        "candidate": {
+          "$ref": "#/$defs/PrefetchCandidate"
+        },
+        "confidence": {
+          "type": "number"
+        },
+        "contract_version": {
+          "const": "fam.scheduler.predictive-prefetch/v1alpha1"
+        },
+        "expires_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "outgoing_observations": {
+          "type": "integer"
+        },
+        "predicted_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "prediction_id": {
+          "type": "string"
+        },
+        "predictor_version": {
+          "type": "string"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "source_sequence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "transition_observations": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "prediction_id",
+        "request_id",
+        "candidate",
+        "transition_observations",
+        "outgoing_observations",
+        "confidence",
+        "predicted_at",
+        "expires_at",
+        "source_sequence_ids",
+        "predictor_version",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.scheduler.prefetch-prediction/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.scheduler.predictive-prefetch/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/PrefetchPrediction"
+    },
+    "schema_id": {
+      "const": "fam.scheduler.prefetch-prediction/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Historical transition prediction",
+  "type": "object"
+}

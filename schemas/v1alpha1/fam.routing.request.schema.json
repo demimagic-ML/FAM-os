@@ -1,0 +1,52 @@
+{
+  "$defs": {
+    "RoutingRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.routing/v1alpha1"
+        },
+        "prompt": {
+          "type": "string"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "required_capabilities": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "request_id",
+        "prompt",
+        "required_capabilities",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.routing.request/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.routing/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/RoutingRequest"
+    },
+    "schema_id": {
+      "const": "fam.routing.request/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Routing request",
+  "type": "object"
+}
