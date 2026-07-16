@@ -5,6 +5,7 @@
 <h1 align="center">FAM_OS</h1>
 <h3 align="center">For All Mankind Operating System</h3>
 <p align="center"><b>Local AI that actually runs on your Linux desktop — verified, resource-aware, and under your control.</b></p>
+<p align="center">Built by <a href="https://www.linkedin.com/in/ivan-dimitrov-online/">Ivan Dimitrov</a></p>
 
 ---
 
