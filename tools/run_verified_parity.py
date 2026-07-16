@@ -4,14 +4,18 @@ from __future__ import annotations
 
 import argparse
 import json
+from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 from typing import TYPE_CHECKING
 
 from fam_os.adapters.bubblewrap.runner import BubblewrapSandboxRunner
 from fam_os.core.contracts import TaskRequest
-from fam_os.core.execution import RepairContext, VerifiedCodeExecution, VerifiedCodePolicy
-from fam_os.core.execution.attempt import AttemptExecutor
+from fam_os.core.execution import (
+    RepairContext,
+    VerifiedCodeExecution,
+    VerifiedCodePolicy,
+)
 from fam_os.core.execution.contracts import VerifiedExecutionOutcome
 from fam_os.core.execution.placement import PlacementExecutor
 from fam_os.core.execution.policy import GenerationSettings
@@ -26,6 +30,7 @@ from fam_os.verification.python import (
     load_trusted_python_tests,
 )
 from tools.parity.composition import BenchmarkComposition, load_benchmark_composition
+from tools.parity.budget import budgeted_attempts
 from tools.parity.profile_service import ProfiledOllamaService, ProfiledServiceSettings
 from tools.parity.historical_config import VerifiedFixture, load_verified_fixture
 from tools.parity.report_writer import captured_at, write_report
@@ -56,7 +61,7 @@ def run_verified_parity(
     with ProfiledOllamaService(service_settings) as service:
         if evidence_collector is not None:
             evidence_collector.capture_before(service)
-        outcome = _execute(service, fixture, trusted_tests_path)
+        outcome, attempt_budget = _execute(service, fixture, trusted_tests_path)
         loaded = service.runtime.loaded_models()
         resources = service.snapshot()
         evidence = (
@@ -73,6 +78,7 @@ def run_verified_parity(
         loaded,
         resources,
     )
+    report["global_attempt_budget"] = asdict(attempt_budget)
     if evidence is not None:
         _scrub_local_paths(report, config_path, trusted_tests_path, composition)
         report["benchmark"] = "phase2-full-workstation-smoke"
@@ -125,9 +131,9 @@ def _execute(
     service: ProfiledOllamaService,
     fixture: VerifiedFixture,
     trusted_tests_path: Path,
-) -> VerifiedExecutionOutcome:
+) -> tuple[VerifiedExecutionOutcome, object]:
     tests = load_trusted_python_tests(trusted_tests_path, "stable-toposort-v2")
-    use_case, economical, escalation = _use_case(
+    use_case, economical, escalation, ledger = _use_case(
         service, fixture, tests, service.settings.composition
     )
     request = TaskRequest(
@@ -136,9 +142,8 @@ def _execute(
         ("python",),
         verification_required=True,
     )
-    return use_case.execute(
-        request, _policy(fixture, economical, escalation, tests)
-    )
+    outcome = use_case.execute(request, _policy(fixture, economical, escalation, tests))
+    return outcome, ledger.snapshot()
 
 
 def _use_case(
@@ -146,7 +151,7 @@ def _use_case(
     fixture: VerifiedFixture,
     tests: TrustedPythonTests,
     composition: BenchmarkComposition,
-) -> tuple[VerifiedCodeExecution, ExpertDescriptor, ExpertDescriptor]:
+) -> tuple[VerifiedCodeExecution, ExpertDescriptor, ExpertDescriptor, object]:
     router_expert, economical, escalation = _experts(fixture)
     catalog = StaticExpertCatalog((router_expert, economical, escalation))
     budget = composition.placement_budget(fixture.context_tokens)
@@ -171,13 +176,9 @@ def _use_case(
         ),
     )
     verifier = PythonVerifier(BubblewrapSandboxRunner(), tests)
-    use_case = VerifiedCodeExecution(
-        router,
-        catalog,
-        placement,
-        AttemptExecutor(service.runtime, verifier),
-    )
-    return use_case, economical, escalation
+    budgeted, ledger = budgeted_attempts(service, fixture, verifier)
+    use_case = VerifiedCodeExecution(router, catalog, placement, budgeted)
+    return use_case, economical, escalation, ledger
 
 
 def _policy(

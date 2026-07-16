@@ -49,7 +49,8 @@ def main() -> int:
 
 def _report(service, started, evidences, snapshots, final_loaded):
     valid = tuple(item for item in snapshots if item is not None)
-    maximum = lambda name: max(getattr(item, name) or 0 for item in valid)
+    def maximum(name):
+        return max(getattr(item, name) or 0 for item in valid)
     composition = service.settings.composition
     return FullWorkstationGpuReport(
         "full-gpu-live-20260716", started, datetime.now(timezone.utc),

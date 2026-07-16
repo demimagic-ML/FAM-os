@@ -8,7 +8,6 @@ from datetime import datetime
 from fam_os.core.ports.inference import LoadedModel
 from fam_os.scheduler.residency_contracts import (
     ExpertResidencyCatalog,
-    ExpertResidencyRecord,
     ExpertResidencyState,
     ResidencyLease,
     ResidencyTransitionReason,

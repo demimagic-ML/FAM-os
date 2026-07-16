@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>FAM Console</title><link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header><div><p class="eyebrow">For All Mankind / local fabric</p><h1>Your machine, thinking in public.</h1></div>
+    <div class="pulse" aria-label="Runtime connection"><i></i><span id="connection">Connecting</span></div></header>
+  <main>
+    <aside><p class="rail-label">Fabric map</p><nav id="rail" aria-label="Console sections"></nav>
+      <div class="ownership"><span>OWNER</span><strong id="owner">—</strong><small id="release">—</small></div></aside>
+    <section class="workspace"><div class="workspace-head"><div><p class="eyebrow" id="section-kicker">Live state</p><h2 id="section-title">Resources</h2></div>
+      <button id="refresh">Refresh state</button></div><div id="cards" class="cards" aria-live="polite"></div></section>
+  </main>
+  <template id="card"><article><div class="card-head"><span class="status"></span><small></small></div><h3></h3><strong></strong><p></p></article></template>
+  <script src="/app.js"></script>
+</body></html>

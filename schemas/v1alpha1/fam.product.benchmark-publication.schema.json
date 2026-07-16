@@ -1,0 +1,91 @@
+{
+  "$defs": {
+    "BenchmarkPublication": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.product.benchmarks/v1alpha1"
+        },
+        "full_workstation": {
+          "$ref": "#/$defs/ProfileBenchmarkSummary"
+        },
+        "minimum_hardware": {
+          "$ref": "#/$defs/ProfileBenchmarkSummary"
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "profiles_kept_separate": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "minimum_hardware",
+        "full_workstation",
+        "profiles_kept_separate",
+        "passed",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "ProfileBenchmarkSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "measurements": {
+          "items": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "type": "array"
+        },
+        "profile_id": {
+          "type": "string"
+        },
+        "reproduction_command": {
+          "type": "string"
+        },
+        "source_path": {
+          "type": "string"
+        },
+        "source_sha256": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "profile_id",
+        "source_path",
+        "source_sha256",
+        "status",
+        "measurements",
+        "reproduction_command"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.product.benchmark-publication/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.product.benchmarks/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/BenchmarkPublication"
+    },
+    "schema_id": {
+      "const": "fam.product.benchmark-publication/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Reference benchmark publication",
+  "type": "object"
+}

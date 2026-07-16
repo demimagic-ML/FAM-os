@@ -6,7 +6,6 @@ import stat
 from dataclasses import dataclass
 from pathlib import Path
 
-from fam_os.applications.transport.auth import PeerAuthorizationPolicy
 from fam_os.applications.transport.connection import AuthenticatedLocalConnection
 
 

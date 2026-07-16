@@ -1,0 +1,66 @@
+{
+  "$defs": {
+    "FabricRecoveryDecision": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.fabric.recovery/v1alpha1"
+        },
+        "discard_remote_output": {
+          "type": "boolean"
+        },
+        "failure": {
+          "enum": [
+            "disconnected",
+            "timeout",
+            "partial_result",
+            "verification_failed"
+          ],
+          "type": "string"
+        },
+        "preserve_acceptance": {
+          "type": "boolean"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "retry_local": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "failure",
+        "discard_remote_output",
+        "retry_local",
+        "preserve_acceptance",
+        "reason_codes",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.fabric.recovery-decision/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.fabric.recovery/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/FabricRecoveryDecision"
+    },
+    "schema_id": {
+      "const": "fam.fabric.recovery-decision/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Remote failure recovery decision",
+  "type": "object"
+}

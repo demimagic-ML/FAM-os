@@ -1,0 +1,53 @@
+{
+  "$defs": {
+    "AdaptationSnapshot": {
+      "additionalProperties": false,
+      "properties": {
+        "energy_joules": {
+          "type": "number"
+        },
+        "latency_seconds": {
+          "type": "number"
+        },
+        "payload_sha256": {
+          "type": "string"
+        },
+        "snapshot_id": {
+          "type": "string"
+        },
+        "verification_quality": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "snapshot_id",
+        "payload_sha256",
+        "verification_quality",
+        "latency_seconds",
+        "energy_joules"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.adaptation.snapshot/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.adaptation.drift/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/AdaptationSnapshot"
+    },
+    "schema_id": {
+      "const": "fam.adaptation.snapshot/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Immutable adaptation snapshot",
+  "type": "object"
+}

@@ -1,0 +1,57 @@
+{
+  "$defs": {
+    "FailureTrace": {
+      "additionalProperties": false,
+      "properties": {
+        "capability_id": {
+          "type": "string"
+        },
+        "evidence_sha256": {
+          "type": "string"
+        },
+        "failed_requirement_id": {
+          "type": "string"
+        },
+        "independently_verified": {
+          "type": "boolean"
+        },
+        "trace_id": {
+          "type": "string"
+        },
+        "verifier_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "trace_id",
+        "capability_id",
+        "failed_requirement_id",
+        "verifier_id",
+        "evidence_sha256",
+        "independently_verified"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.factory.failure-trace/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.factory.discovery/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/FailureTrace"
+    },
+    "schema_id": {
+      "const": "fam.factory.failure-trace/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Verified expert failure trace",
+  "type": "object"
+}

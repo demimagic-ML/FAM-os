@@ -1,0 +1,72 @@
+{
+  "$defs": {
+    "MultiDeviceDemoReport": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.fabric.demo/v1alpha1"
+        },
+        "disconnect_local_fallback_verified": {
+          "type": "boolean"
+        },
+        "encrypted_transport": {
+          "type": "boolean"
+        },
+        "enrolled_device_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "remote_device_selected": {
+          "type": "string"
+        },
+        "remote_result_verified": {
+          "type": "boolean"
+        },
+        "report_id": {
+          "type": "string"
+        },
+        "unauthorized_context_bytes": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "report_id",
+        "enrolled_device_ids",
+        "encrypted_transport",
+        "remote_device_selected",
+        "unauthorized_context_bytes",
+        "remote_result_verified",
+        "disconnect_local_fallback_verified",
+        "passed",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.fabric.multidevice-demo/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.fabric.demo/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/MultiDeviceDemoReport"
+    },
+    "schema_id": {
+      "const": "fam.fabric.multidevice-demo/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Trusted three-device fabric demonstration",
+  "type": "object"
+}

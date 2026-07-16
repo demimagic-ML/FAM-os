@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "Hardware-aware operating-system intelligence service"
 requires-python = ">=3.12"
 dependencies = [
-    "cryptography>=41,<47",
+    "cryptography>=48.0.1,<49",
     "jsonschema>=4.10,<5",
     "mcp>=1.27,<2",
 ]
@@ -21,9 +21,17 @@ verification = [
 math-verification = [
     "sympy>=1.13,<2",
 ]
+media = [
+    "faster-whisper>=1.1,<2",
+    "pillow>=10,<13",
+    "piper-tts>=1.3,<2",
+]
 
 [project.scripts]
 fam-shell = "fam_os.adapters.shell.cli:main"
+fam-os = "fam_os.product.cli:main"
+fam-console = "fam_os.console.service:main"
+fam-service = "fam_os.product.service:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
@@ -31,3 +39,10 @@ package-dir = {"" = "src"}
 [tool.setuptools.packages.find]
 where = ["src"]
 include = ["fam_os*"]
+
+[tool.setuptools.package-data]
+"fam_os.console.static" = ["*.html", "*.css", "*.js"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/fixtures/verification/stable_topological_sort_parity_tests.py" = ["F821"]
+"tests/fixtures/verification/stable_topological_sort_tests.py" = ["F821"]

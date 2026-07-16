@@ -1,0 +1,166 @@
+{
+  "$defs": {
+    "EfficiencySelection": {
+      "additionalProperties": false,
+      "properties": {
+        "metric": {
+          "enum": [
+            "quality_per_byte",
+            "quality_per_second",
+            "quality_per_joule"
+          ],
+          "type": "string"
+        },
+        "selected_expert_id": {
+          "type": "string"
+        },
+        "values": {
+          "items": {
+            "$ref": "#/$defs/EfficiencyValue"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "metric",
+        "selected_expert_id",
+        "values"
+      ],
+      "type": "object"
+    },
+    "EfficiencyValue": {
+      "additionalProperties": false,
+      "properties": {
+        "expert_id": {
+          "type": "string"
+        },
+        "value": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "expert_id",
+        "value"
+      ],
+      "type": "object"
+    },
+    "ExpertEfficiencyMeasurement": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_bytes": {
+          "type": "integer"
+        },
+        "artifact_sha256": {
+          "type": "string"
+        },
+        "energy_joules": {
+          "type": "number"
+        },
+        "expert_id": {
+          "type": "string"
+        },
+        "model_ref": {
+          "type": "string"
+        },
+        "power_samples": {
+          "items": {
+            "$ref": "#/$defs/PowerSample"
+          },
+          "type": "array"
+        },
+        "quality_score": {
+          "type": "number"
+        },
+        "wall_seconds": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "expert_id",
+        "model_ref",
+        "artifact_sha256",
+        "quality_score",
+        "artifact_bytes",
+        "wall_seconds",
+        "energy_joules",
+        "power_samples"
+      ],
+      "type": "object"
+    },
+    "ExpertEfficiencyReport": {
+      "additionalProperties": false,
+      "properties": {
+        "benchmark_id": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.expert.efficiency-report/v1alpha1"
+        },
+        "measurements": {
+          "items": {
+            "$ref": "#/$defs/ExpertEfficiencyMeasurement"
+          },
+          "type": "array"
+        },
+        "meter_id": {
+          "type": "string"
+        },
+        "report_id": {
+          "type": "string"
+        },
+        "selections": {
+          "items": {
+            "$ref": "#/$defs/EfficiencySelection"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "report_id",
+        "meter_id",
+        "benchmark_id",
+        "measurements",
+        "selections",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "PowerSample": {
+      "additionalProperties": false,
+      "properties": {
+        "offset_seconds": {
+          "type": "number"
+        },
+        "watts": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "offset_seconds",
+        "watts"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.expert.efficiency-report/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.expert.efficiency-report/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/ExpertEfficiencyReport"
+    },
+    "schema_id": {
+      "const": "fam.expert.efficiency-report/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Measured expert efficiency report",
+  "type": "object"
+}

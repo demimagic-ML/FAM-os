@@ -81,8 +81,105 @@ from fam_os.experts.mixed_benchmark import (
     StrongRegressionRunRef,
     validate_mixed_report,
 )
+from fam_os.experts.micro_experts import (
+    MICRO_EXPERT_CONTRACT_VERSION,
+    ComplexityMicroExpert,
+    LanguageDetectionMicroExpert,
+    MicroExpertAdvice,
+    MicroExpertBenchmarkResult,
+    MicroExpertBenchmarkReport,
+    RoutingMicroExpert,
+    SafetyMicroExpert,
+)
+from fam_os.experts.escalation_evidence import (
+    ESCALATION_TRACE_CONTRACT_VERSION,
+    EscalationTraceReport,
+    EscalationBudgetEvidence,
+)
+from fam_os.experts.retrieval_tiers import (
+    RETRIEVAL_TIERS_CONTRACT_VERSION,
+    RankedRetrievalSource,
+    SynthesisResult,
+    VerifiedRetrievalResult,
+)
+from fam_os.experts.retrieval_evidence import (
+    RETRIEVAL_EVIDENCE_CONTRACT_VERSION,
+    RetrievalTierEvidence,
+)
+from fam_os.experts.math_experts import (
+    MATH_EXPERT_CONTRACT_VERSION,
+    DeterministicMathSolver,
+    MathReasoningAdvice,
+    MathSolverKind,
+    MathSolverRequest,
+    MathSolverResult,
+)
+from fam_os.experts.math_evidence import (
+    MATH_EVIDENCE_CONTRACT_VERSION,
+    MathBenchmarkCaseResult,
+    MathExpertEvidence,
+)
+from fam_os.experts.media_evidence import (
+    MEDIA_EVIDENCE_CONTRACT_VERSION,
+    MediaExpertEvidence,
+)
+from fam_os.experts.efficiency_reports import (
+    EFFICIENCY_REPORT_CONTRACT_VERSION,
+    EfficiencyMetric,
+    EfficiencySelection,
+    EfficiencyValue,
+    ExpertEfficiencyMeasurement,
+    ExpertEfficiencyReport,
+    PowerSample,
+    build_efficiency_report,
+)
+from fam_os.experts.evolution_policy import (
+    EXPERT_EVOLUTION_CONTRACT_VERSION,
+    EvolutionAction,
+    ExpertEvolutionPolicy,
+    ExpertEvolutionProposal,
+    ExpertEvolutionReport,
+    ExpertPerformanceSlice,
+)
+from fam_os.experts.phase9_exit import (
+    PHASE9_EXIT_CONTRACT_VERSION,
+    Phase9ExitEvidence,
+)
 
 __all__ = [
+    "RETRIEVAL_EVIDENCE_CONTRACT_VERSION",
+    "MATH_EVIDENCE_CONTRACT_VERSION",
+    "MATH_EXPERT_CONTRACT_VERSION",
+    "MEDIA_EVIDENCE_CONTRACT_VERSION",
+    "MediaExpertEvidence",
+    "EFFICIENCY_REPORT_CONTRACT_VERSION",
+    "EfficiencyMetric",
+    "EfficiencySelection",
+    "EfficiencyValue",
+    "ExpertEfficiencyMeasurement",
+    "ExpertEfficiencyReport",
+    "PowerSample",
+    "build_efficiency_report",
+    "EXPERT_EVOLUTION_CONTRACT_VERSION",
+    "EvolutionAction",
+    "ExpertEvolutionPolicy",
+    "ExpertEvolutionProposal",
+    "ExpertEvolutionReport",
+    "ExpertPerformanceSlice",
+    "PHASE9_EXIT_CONTRACT_VERSION",
+    "Phase9ExitEvidence",
+    "DeterministicMathSolver",
+    "MathBenchmarkCaseResult",
+    "MathExpertEvidence",
+    "MathReasoningAdvice",
+    "MathSolverKind",
+    "MathSolverRequest",
+    "MathSolverResult",
+    "RETRIEVAL_TIERS_CONTRACT_VERSION",
+    "RankedRetrievalSource",
+    "RetrievalTierEvidence",
+    "SynthesisResult",
+    "VerifiedRetrievalResult",
     "BUILT_IN_CAPABILITY_DOMAINS",
     "BenchmarkAttemptKind",
     "BenchmarkOutcome",
@@ -142,4 +239,15 @@ __all__ = [
     "MixedBenchmarkSuite",
     "validate_mixed_report",
     "StrongRegressionRunRef",
+    "MICRO_EXPERT_CONTRACT_VERSION",
+    "ComplexityMicroExpert",
+    "LanguageDetectionMicroExpert",
+    "MicroExpertAdvice",
+    "MicroExpertBenchmarkResult",
+    "MicroExpertBenchmarkReport",
+    "RoutingMicroExpert",
+    "SafetyMicroExpert",
+    "ESCALATION_TRACE_CONTRACT_VERSION",
+    "EscalationTraceReport",
+    "EscalationBudgetEvidence",
 ]

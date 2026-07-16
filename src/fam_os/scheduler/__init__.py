@@ -138,6 +138,13 @@ from fam_os.scheduler.prefetch_prediction import (
     PrefetchPredictionRequest,
 )
 from fam_os.scheduler.prefetch_predictor import DeterministicTransitionPredictor
+from fam_os.scheduler.frequency_learning import (
+    EXPERT_FREQUENCY_CONTRACT_VERSION,
+    ExpertFrequency,
+    ExpertFrequencyProfile,
+    ExpertUseObservation,
+    LocalExpertFrequencyLearner,
+)
 from fam_os.scheduler.prefetch_contracts import (
     PREFETCH_POLICY_VERSION,
     PredictivePrefetchReport,
@@ -293,4 +300,6 @@ __all__ = [
     "PrefetchAdmissionStatus", "PrefetchResourceBudget", "PrefetchPolicyRequest",
     "PrefetchPolicyDecision", "PrefetchExecutionEvidence", "PredictivePrefetchReport",
     "DeterministicPrefetchAdmissionPolicy",
+    "EXPERT_FREQUENCY_CONTRACT_VERSION", "ExpertFrequency", "ExpertFrequencyProfile",
+    "ExpertUseObservation", "LocalExpertFrequencyLearner",
 ]

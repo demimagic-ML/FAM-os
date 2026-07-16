@@ -1,0 +1,138 @@
+{
+  "$defs": {
+    "DocumentIndexApproval": {
+      "additionalProperties": false,
+      "properties": {
+        "approved_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "approved_by": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.memory.document-index/v1alpha1"
+        },
+        "document_id": {
+          "type": "string"
+        },
+        "embedding_artifact_sha256": {
+          "type": "string"
+        },
+        "embedding_model_ref": {
+          "type": "string"
+        },
+        "scope": {
+          "$ref": "#/$defs/MemoryScope"
+        },
+        "source_locator": {
+          "type": "string"
+        },
+        "source_sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "document_id",
+        "source_locator",
+        "source_sha256",
+        "scope",
+        "approved_by",
+        "approved_at",
+        "embedding_model_ref",
+        "embedding_artifact_sha256",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "MemoryDocumentExport": {
+      "additionalProperties": false,
+      "properties": {
+        "approval": {
+          "$ref": "#/$defs/DocumentIndexApproval"
+        },
+        "content": {
+          "type": "string"
+        },
+        "content_sha256": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.memory.management/v1alpha1"
+        }
+      },
+      "required": [
+        "approval",
+        "content",
+        "content_sha256",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "MemoryScope": {
+      "additionalProperties": false,
+      "properties": {
+        "application_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "owner_id": {
+          "type": "string"
+        },
+        "purpose_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "session_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "workspace_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "owner_id",
+        "purpose_ids",
+        "application_ids",
+        "workspace_ids",
+        "session_id"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.memory.document-export/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.memory.management/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/MemoryDocumentExport"
+    },
+    "schema_id": {
+      "const": "fam.memory.document-export/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Digest-verified memory document export",
+  "type": "object"
+}

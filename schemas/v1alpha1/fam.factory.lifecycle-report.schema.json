@@ -1,0 +1,93 @@
+{
+  "$defs": {
+    "FactoryLifecycleReport": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_sha256": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.factory.lifecycle/v1alpha1"
+        },
+        "discovered": {
+          "type": "boolean"
+        },
+        "hardware_objective_applied": {
+          "type": "boolean"
+        },
+        "installed": {
+          "type": "boolean"
+        },
+        "package_manifest_sha256": {
+          "type": "string"
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "quantized": {
+          "type": "boolean"
+        },
+        "regression_gate_id": {
+          "type": "string"
+        },
+        "report_id": {
+          "type": "string"
+        },
+        "retired": {
+          "type": "boolean"
+        },
+        "selected": {
+          "type": "boolean"
+        },
+        "signed": {
+          "type": "boolean"
+        },
+        "trained": {
+          "type": "boolean"
+        },
+        "verified": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "report_id",
+        "discovered",
+        "trained",
+        "hardware_objective_applied",
+        "quantized",
+        "signed",
+        "installed",
+        "selected",
+        "verified",
+        "retired",
+        "artifact_sha256",
+        "package_manifest_sha256",
+        "regression_gate_id",
+        "passed",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.factory.lifecycle-report/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.factory.lifecycle/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/FactoryLifecycleReport"
+    },
+    "schema_id": {
+      "const": "fam.factory.lifecycle-report/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "End-to-end Expert Factory lifecycle",
+  "type": "object"
+}

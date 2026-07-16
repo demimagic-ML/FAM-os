@@ -1,0 +1,60 @@
+{
+  "$defs": {
+    "MicroExpertAdvice": {
+      "additionalProperties": false,
+      "properties": {
+        "advisory_only": {
+          "type": "boolean"
+        },
+        "confidence_millionths": {
+          "type": "integer"
+        },
+        "contract_version": {
+          "const": "fam.expert.micro-advice/v1alpha1"
+        },
+        "expert_id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "expert_id",
+        "label",
+        "confidence_millionths",
+        "reason_codes",
+        "advisory_only",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.expert.micro-advice/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.expert.micro-advice/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/MicroExpertAdvice"
+    },
+    "schema_id": {
+      "const": "fam.expert.micro-advice/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Advisory micro-expert result",
+  "type": "object"
+}

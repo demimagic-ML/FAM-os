@@ -1,0 +1,81 @@
+{
+  "$defs": {
+    "Phase15ExitEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "clean_shutdown_passed": {
+          "type": "boolean"
+        },
+        "console_passed": {
+          "type": "boolean"
+        },
+        "contract_version": {
+          "const": "fam.product.phase15-exit/v1alpha1"
+        },
+        "diagnosis_repair_removal_passed": {
+          "type": "boolean"
+        },
+        "installed_operation_passed": {
+          "type": "boolean"
+        },
+        "operational_evidence_sha256": {
+          "type": "string"
+        },
+        "operational_soak_passed": {
+          "type": "boolean"
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "real_model_request_passed": {
+          "type": "boolean"
+        },
+        "regression_test_count": {
+          "type": "integer"
+        },
+        "schema_count": {
+          "type": "integer"
+        },
+        "soak_evidence_sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "installed_operation_passed",
+        "real_model_request_passed",
+        "console_passed",
+        "clean_shutdown_passed",
+        "diagnosis_repair_removal_passed",
+        "operational_soak_passed",
+        "regression_test_count",
+        "schema_count",
+        "operational_evidence_sha256",
+        "soak_evidence_sha256",
+        "passed",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.product.phase15-exit/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.product.phase15-exit/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/Phase15ExitEvidence"
+    },
+    "schema_id": {
+      "const": "fam.product.phase15-exit/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Installed operational exit evidence",
+  "type": "object"
+}

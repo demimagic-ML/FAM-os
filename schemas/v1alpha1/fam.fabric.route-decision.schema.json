@@ -1,0 +1,56 @@
+{
+  "$defs": {
+    "FabricRouteDecision": {
+      "additionalProperties": false,
+      "properties": {
+        "considered_device_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "contract_version": {
+          "const": "fam.fabric.scheduling/v1alpha1"
+        },
+        "predicted_completion_milliseconds": {
+          "type": "number"
+        },
+        "selected_device_id": {
+          "type": "string"
+        },
+        "selected_expert_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "selected_device_id",
+        "selected_expert_id",
+        "predicted_completion_milliseconds",
+        "considered_device_ids",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.fabric.route-decision/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.fabric.scheduling/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/FabricRouteDecision"
+    },
+    "schema_id": {
+      "const": "fam.fabric.route-decision/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Latency-aware fabric route decision",
+  "type": "object"
+}

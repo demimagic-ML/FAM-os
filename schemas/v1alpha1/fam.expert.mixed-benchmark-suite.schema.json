@@ -1,0 +1,91 @@
+{
+  "$defs": {
+    "MixedBenchmarkCase": {
+      "additionalProperties": false,
+      "properties": {
+        "acceptance_id": {
+          "type": "string"
+        },
+        "capability_id": {
+          "type": "string"
+        },
+        "case_id": {
+          "type": "string"
+        },
+        "family": {
+          "enum": [
+            "kernel_only",
+            "code",
+            "mathematics",
+            "retrieval",
+            "application"
+          ],
+          "type": "string"
+        },
+        "fixture_sha256": {
+          "type": "string"
+        },
+        "named_regression": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "case_id",
+        "family",
+        "capability_id",
+        "acceptance_id",
+        "fixture_sha256",
+        "named_regression"
+      ],
+      "type": "object"
+    },
+    "MixedBenchmarkSuite": {
+      "additionalProperties": false,
+      "properties": {
+        "cases": {
+          "items": {
+            "$ref": "#/$defs/MixedBenchmarkCase"
+          },
+          "type": "array"
+        },
+        "contract_version": {
+          "const": "fam.expert.mixed-benchmark/v1alpha1"
+        },
+        "suite_id": {
+          "type": "string"
+        },
+        "suite_version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "suite_id",
+        "suite_version",
+        "cases",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.expert.mixed-benchmark-suite/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.expert.mixed-benchmark/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/MixedBenchmarkSuite"
+    },
+    "schema_id": {
+      "const": "fam.expert.mixed-benchmark-suite/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Mixed expert benchmark suite",
+  "type": "object"
+}

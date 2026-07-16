@@ -1,0 +1,45 @@
+{
+  "$defs": {
+    "FabricHandshake": {
+      "additionalProperties": false,
+      "properties": {
+        "device_id": {
+          "type": "string"
+        },
+        "ephemeral_public_base64": {
+          "type": "string"
+        },
+        "signature_base64": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "device_id",
+        "ephemeral_public_base64",
+        "signature_base64"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.fabric.handshake/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.fabric.transport/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/FabricHandshake"
+    },
+    "schema_id": {
+      "const": "fam.fabric.handshake/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Signed fabric handshake",
+  "type": "object"
+}

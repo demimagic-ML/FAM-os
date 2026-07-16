@@ -1,0 +1,102 @@
+{
+  "$defs": {
+    "RetrievalTierEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "answer": {
+          "type": "string"
+        },
+        "cited_source_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "contract_version": {
+          "const": "fam.expert.retrieval-evidence/v1alpha1"
+        },
+        "embedding_artifact_sha256": {
+          "type": "string"
+        },
+        "embedding_dimension": {
+          "type": "integer"
+        },
+        "embedding_expert_id": {
+          "type": "string"
+        },
+        "embedding_model_ref": {
+          "type": "string"
+        },
+        "evidence_id": {
+          "type": "string"
+        },
+        "ranked_source_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "released": {
+          "type": "boolean"
+        },
+        "reranking_expert_id": {
+          "type": "string"
+        },
+        "synthesis_artifact_sha256": {
+          "type": "string"
+        },
+        "synthesis_expert_id": {
+          "type": "string"
+        },
+        "synthesis_model_ref": {
+          "type": "string"
+        },
+        "verified_claim_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "evidence_id",
+        "embedding_expert_id",
+        "embedding_model_ref",
+        "embedding_artifact_sha256",
+        "embedding_dimension",
+        "reranking_expert_id",
+        "ranked_source_ids",
+        "synthesis_expert_id",
+        "synthesis_model_ref",
+        "synthesis_artifact_sha256",
+        "cited_source_ids",
+        "verified_claim_ids",
+        "answer",
+        "released",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.expert.retrieval-evidence/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.expert.retrieval-evidence/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/RetrievalTierEvidence"
+    },
+    "schema_id": {
+      "const": "fam.expert.retrieval-evidence/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Three-tier retrieval evidence",
+  "type": "object"
+}

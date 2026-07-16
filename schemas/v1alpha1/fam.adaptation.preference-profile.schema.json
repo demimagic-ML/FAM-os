@@ -1,0 +1,75 @@
+{
+  "$defs": {
+    "UserPreference": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "enum": [
+            "quality_priority",
+            "energy_priority",
+            "latency_priority",
+            "explanation_detail"
+          ],
+          "type": "string"
+        },
+        "updated_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "value": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "key",
+        "value",
+        "updated_at"
+      ],
+      "type": "object"
+    },
+    "UserPreferenceProfile": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.adaptation.preferences/v1alpha1"
+        },
+        "owner_id": {
+          "type": "string"
+        },
+        "preferences": {
+          "items": {
+            "$ref": "#/$defs/UserPreference"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "owner_id",
+        "preferences",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.adaptation.preference-profile/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.adaptation.preferences/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/UserPreferenceProfile"
+    },
+    "schema_id": {
+      "const": "fam.adaptation.preference-profile/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Inspectable user preference profile",
+  "type": "object"
+}

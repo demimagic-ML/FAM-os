@@ -1,0 +1,60 @@
+{
+  "$defs": {
+    "IndexedDocumentChunk": {
+      "additionalProperties": false,
+      "properties": {
+        "chunk_id": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "content_sha256": {
+          "type": "string"
+        },
+        "document_id": {
+          "type": "string"
+        },
+        "embedding": {
+          "items": {
+            "type": "number"
+          },
+          "type": "array"
+        },
+        "ordinal": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "chunk_id",
+        "document_id",
+        "ordinal",
+        "content",
+        "content_sha256",
+        "embedding"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.memory.document-chunk/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.memory.document-index/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/IndexedDocumentChunk"
+    },
+    "schema_id": {
+      "const": "fam.memory.document-chunk/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Embedded approved document chunk",
+  "type": "object"
+}

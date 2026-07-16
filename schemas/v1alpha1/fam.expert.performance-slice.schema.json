@@ -1,0 +1,57 @@
+{
+  "$defs": {
+    "ExpertPerformanceSlice": {
+      "additionalProperties": false,
+      "properties": {
+        "capability_id": {
+          "type": "string"
+        },
+        "expert_id": {
+          "type": "string"
+        },
+        "passed_cases": {
+          "type": "integer"
+        },
+        "quality_per_joule": {
+          "type": "number"
+        },
+        "task_cluster": {
+          "type": "string"
+        },
+        "total_cases": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "expert_id",
+        "capability_id",
+        "task_cluster",
+        "passed_cases",
+        "total_cases",
+        "quality_per_joule"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.expert.performance-slice/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.expert.evolution/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/ExpertPerformanceSlice"
+    },
+    "schema_id": {
+      "const": "fam.expert.performance-slice/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Expert performance evidence slice",
+  "type": "object"
+}

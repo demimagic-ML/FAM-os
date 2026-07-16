@@ -17,7 +17,6 @@ from fam_os.core.lifecycle import (
 )
 from fam_os.core.routing import CoreRoutingService
 from fam_os.routing import RouteDecision, RouteName, RoutingResult
-from tests.unit.test_core_application_steps import ACTION
 from tests.unit.test_core_attempt_transitions import command as attempt_command, runtime as attempt_runtime, service as attempt_service
 from tests.unit.test_core_confirmation_transitions import command as confirmation_command, confirmation_runtime, decision
 from tests.unit.test_core_control_transitions import ControlCommand, degradation, runtime as control_runtime

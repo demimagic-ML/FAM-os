@@ -1,0 +1,88 @@
+{
+  "$defs": {
+    "MemoryQualityCase": {
+      "additionalProperties": false,
+      "properties": {
+        "expected_document_id": {
+          "type": "string"
+        },
+        "observed_document_id": {
+          "type": "string"
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "query_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "query_id",
+        "expected_document_id",
+        "observed_document_id",
+        "passed"
+      ],
+      "type": "object"
+    },
+    "MemoryQualityPrivacyReport": {
+      "additionalProperties": false,
+      "properties": {
+        "cases": {
+          "items": {
+            "$ref": "#/$defs/MemoryQualityCase"
+          },
+          "type": "array"
+        },
+        "contract_version": {
+          "const": "fam.memory.quality-privacy/v1alpha1"
+        },
+        "cross_owner_hit_count": {
+          "type": "integer"
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "plaintext_leak_count": {
+          "type": "integer"
+        },
+        "report_id": {
+          "type": "string"
+        },
+        "top1_accuracy": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "report_id",
+        "cases",
+        "top1_accuracy",
+        "cross_owner_hit_count",
+        "plaintext_leak_count",
+        "passed",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.memory.quality-privacy-report/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.memory.quality-privacy/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/MemoryQualityPrivacyReport"
+    },
+    "schema_id": {
+      "const": "fam.memory.quality-privacy-report/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Memory retrieval quality and privacy report",
+  "type": "object"
+}

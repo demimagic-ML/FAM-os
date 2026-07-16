@@ -1,0 +1,80 @@
+{
+  "$defs": {
+    "RegressionGateResult": {
+      "additionalProperties": false,
+      "properties": {
+        "acceptance_passed": {
+          "type": "boolean"
+        },
+        "baseline_quality": {
+          "type": "number"
+        },
+        "candidate_quality": {
+          "type": "number"
+        },
+        "contract_version": {
+          "const": "fam.factory.regression/v1alpha1"
+        },
+        "gate_id": {
+          "type": "string"
+        },
+        "maximum_energy_joules": {
+          "type": "number"
+        },
+        "maximum_latency_seconds": {
+          "type": "number"
+        },
+        "observed_energy_joules": {
+          "type": "number"
+        },
+        "observed_latency_seconds": {
+          "type": "number"
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "gate_id",
+        "baseline_quality",
+        "candidate_quality",
+        "maximum_latency_seconds",
+        "observed_latency_seconds",
+        "maximum_energy_joules",
+        "observed_energy_joules",
+        "acceptance_passed",
+        "passed",
+        "reason_codes",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.factory.regression-gate/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.factory.regression/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/RegressionGateResult"
+    },
+    "schema_id": {
+      "const": "fam.factory.regression-gate/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Continuous expert regression gate",
+  "type": "object"
+}

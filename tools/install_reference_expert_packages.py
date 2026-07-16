@@ -62,7 +62,7 @@ def install(args) -> dict[str, object]:
             if any(item.expert_id == manifest.expert_id for item in current.packages)
             else lifecycle.install
         )
-        state = operation(manifest, binding.artifact_ref, validation, compatibility)
+        operation(manifest, binding.artifact_ref, validation, compatibility)
     final_state = lifecycle.state_store.load()
     installed = [
         _package_payload(item, bindings)

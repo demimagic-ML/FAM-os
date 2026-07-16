@@ -1,0 +1,101 @@
+{
+  "$defs": {
+    "MediaExpertEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "asr_artifact_sha256": {
+          "type": "string"
+        },
+        "asr_expected_text": {
+          "type": "string"
+        },
+        "asr_model_ref": {
+          "type": "string"
+        },
+        "asr_observed_text": {
+          "type": "string"
+        },
+        "asr_passed": {
+          "type": "boolean"
+        },
+        "contract_version": {
+          "const": "fam.expert.media-evidence/v1alpha1"
+        },
+        "evidence_id": {
+          "type": "string"
+        },
+        "ocr_expected_text": {
+          "type": "string"
+        },
+        "ocr_observed_text": {
+          "type": "string"
+        },
+        "ocr_passed": {
+          "type": "boolean"
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "tts_artifact_sha256": {
+          "type": "string"
+        },
+        "tts_audio_sha256": {
+          "type": "string"
+        },
+        "tts_voice_ref": {
+          "type": "string"
+        },
+        "vision_artifact_sha256": {
+          "type": "string"
+        },
+        "vision_description": {
+          "type": "string"
+        },
+        "vision_model_ref": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "evidence_id",
+        "vision_model_ref",
+        "vision_artifact_sha256",
+        "vision_description",
+        "ocr_expected_text",
+        "ocr_observed_text",
+        "ocr_passed",
+        "tts_voice_ref",
+        "tts_artifact_sha256",
+        "tts_audio_sha256",
+        "asr_model_ref",
+        "asr_artifact_sha256",
+        "asr_expected_text",
+        "asr_observed_text",
+        "asr_passed",
+        "passed",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.expert.media-evidence/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.expert.media-evidence/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/MediaExpertEvidence"
+    },
+    "schema_id": {
+      "const": "fam.expert.media-evidence/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Local media expert evidence",
+  "type": "object"
+}

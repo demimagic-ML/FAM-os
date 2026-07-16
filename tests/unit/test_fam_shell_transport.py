@@ -4,7 +4,6 @@ import struct
 import tempfile
 import threading
 import unittest
-from datetime import datetime, timezone
 from pathlib import Path
 
 from fam_os.adapters.shell import (

@@ -1,2 +1,0 @@
-[console_scripts]
-fam-shell = fam_os.adapters.shell.cli:main

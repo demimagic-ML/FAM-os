@@ -1,0 +1,78 @@
+{
+  "$defs": {
+    "MemoryAccessContext": {
+      "additionalProperties": false,
+      "properties": {
+        "application_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "contract_version": {
+          "const": "fam.memory.access/v1alpha1"
+        },
+        "owner_id": {
+          "type": "string"
+        },
+        "purpose_id": {
+          "type": "string"
+        },
+        "session_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "workspace_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "owner_id",
+        "purpose_id",
+        "application_id",
+        "workspace_id",
+        "session_id",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.memory.access-context/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.memory.access/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/MemoryAccessContext"
+    },
+    "schema_id": {
+      "const": "fam.memory.access-context/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Scoped memory access context",
+  "type": "object"
+}

@@ -1,0 +1,130 @@
+{
+  "$defs": {
+    "EscalationBudgetEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "consumed_tokens": {
+          "type": "integer"
+        },
+        "consumed_wall_milliseconds": {
+          "type": "integer"
+        },
+        "escalations": {
+          "type": "integer"
+        },
+        "repairs": {
+          "type": "integer"
+        },
+        "reservation_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "consumed_tokens",
+        "consumed_wall_milliseconds",
+        "repairs",
+        "escalations",
+        "reservation_ids"
+      ],
+      "type": "object"
+    },
+    "EscalationTraceReport": {
+      "additionalProperties": false,
+      "properties": {
+        "acceptance_id": {
+          "type": "string"
+        },
+        "attempt_kinds": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "contract_version": {
+          "const": "fam.expert.escalation-trace/v1alpha1"
+        },
+        "economical_model_ref": {
+          "type": "string"
+        },
+        "escalation_expert_id": {
+          "type": "string"
+        },
+        "escalation_model_ref": {
+          "type": "string"
+        },
+        "global_budget": {
+          "$ref": "#/$defs/EscalationBudgetEvidence"
+        },
+        "maximum_failure_feedback_characters": {
+          "type": "integer"
+        },
+        "package_artifact_sha256": {
+          "type": "string"
+        },
+        "raw_report_sha256": {
+          "type": "string"
+        },
+        "repair_examples_sha256": {
+          "type": "string"
+        },
+        "trace_id": {
+          "type": "string"
+        },
+        "trusted_tests_sha256": {
+          "type": "string"
+        },
+        "verification_statuses": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "verified": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "trace_id",
+        "economical_model_ref",
+        "escalation_model_ref",
+        "escalation_expert_id",
+        "package_artifact_sha256",
+        "attempt_kinds",
+        "verification_statuses",
+        "acceptance_id",
+        "trusted_tests_sha256",
+        "repair_examples_sha256",
+        "maximum_failure_feedback_characters",
+        "global_budget",
+        "verified",
+        "raw_report_sha256",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.expert.escalation-trace/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.expert.escalation-trace/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/EscalationTraceReport"
+    },
+    "schema_id": {
+      "const": "fam.expert.escalation-trace/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Code escalation trace",
+  "type": "object"
+}

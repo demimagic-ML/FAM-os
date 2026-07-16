@@ -1,0 +1,46 @@
+{
+  "$defs": {
+    "DeviceEnrollmentChallenge": {
+      "additionalProperties": false,
+      "properties": {
+        "expires_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "nonce_base64": {
+          "type": "string"
+        },
+        "request_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "nonce_base64",
+        "expires_at"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.fabric.enrollment-challenge/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.fabric.device-identity/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/DeviceEnrollmentChallenge"
+    },
+    "schema_id": {
+      "const": "fam.fabric.enrollment-challenge/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Device proof-of-key challenge",
+  "type": "object"
+}

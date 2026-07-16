@@ -1,0 +1,61 @@
+{
+  "$defs": {
+    "MathReasoningAdvice": {
+      "additionalProperties": false,
+      "properties": {
+        "advisory_only": {
+          "type": "boolean"
+        },
+        "contract_version": {
+          "const": "fam.expert.math/v1alpha1"
+        },
+        "explanation": {
+          "type": "string"
+        },
+        "model_ref": {
+          "type": "string"
+        },
+        "problem_id": {
+          "type": "string"
+        },
+        "proposed_answer": {
+          "type": "string"
+        },
+        "proposed_expression": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "problem_id",
+        "explanation",
+        "proposed_expression",
+        "proposed_answer",
+        "model_ref",
+        "advisory_only",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.expert.math-reasoning/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.expert.math/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/MathReasoningAdvice"
+    },
+    "schema_id": {
+      "const": "fam.expert.math-reasoning/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Advisory mathematics reasoning",
+  "type": "object"
+}

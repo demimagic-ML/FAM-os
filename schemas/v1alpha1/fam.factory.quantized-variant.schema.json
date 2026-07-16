@@ -1,0 +1,77 @@
+{
+  "$defs": {
+    "QuantizedVariant": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_bytes": {
+          "type": "integer"
+        },
+        "artifact_sha256": {
+          "type": "string"
+        },
+        "bits_per_weight": {
+          "type": "integer"
+        },
+        "calibration_dataset_sha256": {
+          "type": "string"
+        },
+        "calibration_quality": {
+          "type": "number"
+        },
+        "contract_version": {
+          "const": "fam.factory.quantization/v1alpha1"
+        },
+        "format": {
+          "type": "string"
+        },
+        "maximum_quality_drop": {
+          "type": "number"
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "source_expert_id": {
+          "type": "string"
+        },
+        "variant_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "variant_id",
+        "source_expert_id",
+        "format",
+        "bits_per_weight",
+        "artifact_sha256",
+        "artifact_bytes",
+        "calibration_dataset_sha256",
+        "calibration_quality",
+        "maximum_quality_drop",
+        "passed",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.factory.quantized-variant/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.factory.quantization/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/QuantizedVariant"
+    },
+    "schema_id": {
+      "const": "fam.factory.quantized-variant/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Calibrated quantized expert variant",
+  "type": "object"
+}

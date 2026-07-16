@@ -1,0 +1,57 @@
+{
+  "$defs": {
+    "DocumentRetrievalHit": {
+      "additionalProperties": false,
+      "properties": {
+        "chunk_id": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "document_id": {
+          "type": "string"
+        },
+        "score": {
+          "type": "number"
+        },
+        "source_locator": {
+          "type": "string"
+        },
+        "source_sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "chunk_id",
+        "document_id",
+        "content",
+        "score",
+        "source_locator",
+        "source_sha256"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.memory.document-hit/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.memory.document-index/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/DocumentRetrievalHit"
+    },
+    "schema_id": {
+      "const": "fam.memory.document-hit/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Scoped document retrieval hit",
+  "type": "object"
+}

@@ -1,0 +1,57 @@
+{
+  "$defs": {
+    "MissingCapabilityProposal": {
+      "additionalProperties": false,
+      "properties": {
+        "capability_id": {
+          "type": "string"
+        },
+        "cluster_id": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.factory.discovery/v1alpha1"
+        },
+        "observation_count": {
+          "type": "integer"
+        },
+        "proposal_id": {
+          "type": "string"
+        },
+        "training_authorized": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "proposal_id",
+        "capability_id",
+        "cluster_id",
+        "observation_count",
+        "training_authorized",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.factory.missing-capability/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.factory.discovery/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/MissingCapabilityProposal"
+    },
+    "schema_id": {
+      "const": "fam.factory.missing-capability/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Missing capability proposal",
+  "type": "object"
+}

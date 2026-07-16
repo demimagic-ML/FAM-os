@@ -425,16 +425,68 @@ and negative, tampered, unavailable-isolation, and over-budget cases are withhel
 
 **Goal:** Expand the capability hierarchy using the smallest reliable models and tools.
 
-- [ ] 9.1 Build a benchmark covering kernel-only, code, math, retrieval, and application tasks, retaining the failed stable-topological-sort case as a named regression with independent Laguna and Gemma escalation-tier runs.
-- [ ] 9.2 Add micro-experts for routing, language detection, safety, and complexity.
-- [ ] 9.3 Add economical and escalation code tiers; prove that small-tier failures can escalate to the packaged Laguna and Gemma experts with bounded, policy-approved verifier feedback rather than silently weakening the task.
-- [ ] 9.4 Add retrieval embedding, reranking, and synthesis tiers.
-- [ ] 9.5 Add mathematics reasoning plus deterministic solvers.
-- [ ] 9.6 Add OCR, vision, speech recognition, and text-to-speech packages.
-- [ ] 9.7 Add quality-per-byte, quality-per-second, and quality-per-joule selection reports.
-- [ ] 9.8 Define evidence-based expert splitting, merging, and retirement rules.
+- [x] 9.1 Build a benchmark covering kernel-only, code, math, retrieval, and application tasks, retaining the failed stable-topological-sort case as a named regression with independent Laguna and Gemma escalation-tier runs.
+- [x] 9.2 Add micro-experts for routing, language detection, safety, and complexity.
+- [x] 9.3 Add economical and escalation code tiers; prove that small-tier failures can escalate to the packaged Laguna and Gemma experts with bounded, policy-approved verifier feedback rather than silently weakening the task.
+- [x] 9.4 Add retrieval embedding, reranking, and synthesis tiers.
+- [x] 9.5 Add mathematics reasoning plus deterministic solvers.
+- [x] 9.6 Add OCR, vision, speech recognition, and text-to-speech packages.
+- [x] 9.7 Add quality-per-byte, quality-per-second, and quality-per-joule selection reports.
+- [x] 9.8 Define evidence-based expert splitting, merging, and retirement rules.
 
 **Exit gate:** FAM_OS completes a mixed verified benchmark and demonstrates that most tasks stop before the largest expert tier.
+
+**Exit status:** Complete. `artifacts/expert_fabric/phase9-exit.json` records a
+passing five-family benchmark with four of five tasks stopping before the
+largest tier. Full validation and the eight-step evidence chain are recorded in
+`handoffs/0086-phase9-capability-hierarchy-exit.md`.
+
+**Current Phase 9 evidence:** The strict five-family suite, digest-bound fixtures,
+exact acceptance linkage, kernel-without-model invariant, named stable-topological
+regression, independent packaged Laguna/Gemma full-workstation runs, and passing
+mixed report for step 9.1 are recorded in `handoffs/0078-mixed-verified-benchmark.md`,
+`docs/protocols/MIXED_VERIFIED_BENCHMARK.md`, ADR 0077,
+`configs/benchmarks/mixed-verified-v1.json`, and
+`artifacts/expert_fabric/phase9.1/`.
+Four authority-free micro-tier packages for routing, language detection, safety
+screening, and complexity, exact runtime bindings, strict advice/benchmark
+schemas, and fixture-bound classification evidence for step 9.2 are recorded in
+`handoffs/0079-advisory-micro-experts.md`,
+`docs/protocols/ADVISORY_MICRO_EXPERTS.md`, ADR 0078, and
+`artifacts/expert_fabric/phase9.2/micro-expert-benchmark.json`.
+Global pre-inference reservations, bounded/digest-bound verifier feedback, exact
+unchanged acceptance, and live Qwen-7B-failure-to-Laguna/Gemma verified traces for
+step 9.3 are recorded in `handoffs/0080-bounded-code-escalation.md`,
+`docs/protocols/BOUNDED_CODE_ESCALATION.md`, ADR 0079, and
+`artifacts/expert_fabric/phase9.3/`.
+Provider-neutral batch embeddings, deterministic hybrid reranking, bounded cited
+synthesis, separate package identities, independent exact-span release
+verification, and a live Nomic/Llama workstation proof for step 9.4 are recorded
+in `handoffs/0081-three-tier-retrieval.md`,
+`docs/protocols/THREE_TIER_RETRIEVAL.md`, ADR 0080, and
+`artifacts/expert_fabric/phase9.4/retrieval-tiers-workstation.json`.
+Authority-free Llama reasoning, exact rational arithmetic, safe symbolic equation
+solving, strict public schemas, and live solver-authoritative evidence for step 9.5 are recorded in
+`handoffs/0082-verified-mathematics-experts.md`,
+`docs/protocols/VERIFIED_MATHEMATICS_EXPERTS.md`, ADR 0081, and
+`artifacts/expert_fabric/phase9.5/math-expert-workstation.json`.
+Separately permissioned OCR, vision, English speech-recognition, and TTS
+packages, explicit-file media ports, exact local artifact bindings, and passing
+live Qwen3-VL plus Piper-to-Faster-Whisper evidence for step 9.6 are recorded in
+`handoffs/0083-local-media-experts.md`,
+`docs/protocols/LOCAL_MEDIA_EXPERTS.md`, ADR 0082, and
+`artifacts/expert_fabric/phase9.6/media-expert-workstation.json`.
+Independent quality-per-byte, quality-per-second, and quality-per-joule
+selection, exact same-task measurements, raw NVIDIA power samples, and a strict
+no-estimated-energy rule for step 9.7 are recorded in
+`handoffs/0084-measured-expert-efficiency.md`,
+`docs/protocols/EXPERT_EFFICIENCY_SELECTION.md`, ADR 0083, and
+`artifacts/expert_fabric/phase9.7/expert-efficiency-workstation.json`.
+Minimum-sample split, redundancy-based merge, quality-and-energy-dominant
+retirement, and structurally unapplied approval-required proposals for step 9.8
+are recorded in `handoffs/0085-evidence-based-expert-evolution.md`,
+`docs/protocols/EVIDENCE_BASED_EXPERT_EVOLUTION.md`, ADR 0084, and
+`artifacts/expert_fabric/phase9.8/expert-evolution-report.json`.
 
 ---
 
@@ -442,15 +494,57 @@ and negative, tampered, unavailable-isolation, and over-budget cases are withhel
 
 **Goal:** Add permissioned local knowledge without baking personal data into model weights.
 
-- [ ] 10.1 Define memory record, provenance, scope, expiry, and deletion schemas.
-- [ ] 10.2 Implement session and working memory.
-- [ ] 10.3 Implement approved document indexes and retrieval.
-- [ ] 10.4 Implement memory relevance gating.
-- [ ] 10.5 Implement inspection, correction, export, and deletion.
-- [ ] 10.6 Add encryption and multi-user isolation.
-- [ ] 10.7 Add retrieval-quality and privacy tests.
+- [x] 10.1 Define memory record, provenance, scope, expiry, and deletion schemas.
+- [x] 10.2 Implement session and working memory.
+- [x] 10.3 Implement approved document indexes and retrieval.
+- [x] 10.4 Implement memory relevance gating.
+- [x] 10.5 Implement inspection, correction, export, and deletion.
+- [x] 10.6 Add encryption and multi-user isolation.
+- [x] 10.7 Add retrieval-quality and privacy tests.
 
 **Exit gate:** A user can inspect and delete every persistent memory item, and memory is retrieved only within its approved scope.
+
+**Exit status:** Complete. The canonical evidence in
+`artifacts/memory/phase10-exit.json` proves inspection and deletion with zero
+remaining chunks, zero cross-scope hits, zero plaintext leaks, and 100% live
+top-1 retrieval accuracy. Full validation is recorded in
+`handoffs/0094-phase10-memory-fabric-exit.md`.
+
+**Current Phase 10 evidence:** Existing strict record, provenance, owner/purpose/
+application/workspace/session scope, sensitivity, retention, and expiry metadata,
+plus deterministic expiry evaluation and removal-confirmed deletion request/
+receipt schemas for step 10.1 are recorded in
+`handoffs/0087-memory-lifecycle-contracts.md`,
+`docs/protocols/MEMORY_RECORD_LIFECYCLE.md`, and ADR 0085.
+Bounded digest-verified session/working storage, exact access contexts,
+fail-closed capacity, expiry filtering/purge, and payload-first deletion for step
+10.2 are recorded in `handoffs/0088-session-working-memory.md`,
+`docs/protocols/SESSION_WORKING_MEMORY.md`, and ADR 0086.
+Digest/scope/model-bound approvals, exact chunk reconstruction, durable SQLite
+vectors, pre-scoring scope filtering, and live Nomic retrieval evidence for step
+10.3 are recorded in `handoffs/0089-approved-document-indexes.md`,
+`docs/protocols/APPROVED_DOCUMENT_INDEXES.md`, ADR 0087, and
+`artifacts/memory/phase10.3/`.
+Exact-scope-first freshness, relevance, and hard context-volume gates with stable
+ordering and per-record rejection evidence for step 10.4 are recorded in
+`handoffs/0090-memory-relevance-gating.md`,
+`docs/protocols/MEMORY_RELEVANCE_GATING.md`, ADR 0088, and
+`artifacts/memory/phase10.4/relevance-gate.json`.
+Scope-authorized inspection, digest-verified export, atomic reindex correction,
+cascading deletion, and live end-to-end management evidence for step 10.5 are
+recorded in `handoffs/0091-memory-user-management.md`,
+`docs/protocols/MEMORY_USER_MANAGEMENT.md`, ADR 0089, and
+`artifacts/memory/phase10.5/`.
+Owner-keyed AES-256-GCM content/vector encryption, authenticated owner binding,
+plaintext-absence and cross-owner rejection evidence for step 10.6 are recorded
+in `handoffs/0092-memory-encryption-isolation.md`,
+`docs/protocols/MEMORY_ENCRYPTION_ISOLATION.md`, ADR 0090, and
+`artifacts/memory/phase10.6/`.
+Encrypted three-document live retrieval at 100% top-1 accuracy, zero cross-owner
+hits, and zero raw-database plaintext leaks for step 10.7 are recorded in
+`handoffs/0093-memory-quality-privacy.md`,
+`docs/protocols/MEMORY_QUALITY_PRIVACY.md`, ADR 0091, and
+`artifacts/memory/phase10.7/`.
 
 ---
 
@@ -458,13 +552,42 @@ and negative, tampered, unavailable-isolation, and over-budget cases are withhel
 
 **Goal:** Adapt scheduling and user experience without full-model training.
 
-- [ ] 11.1 Learn expert-frequency and cache predictions locally.
-- [ ] 11.2 Learn context and escalation predictions from verified outcomes.
-- [ ] 11.3 Add user preference adapters with inspection and reset.
-- [ ] 11.4 Add battery, thermal, foreground-load, and idle policies.
-- [ ] 11.5 Add rollback and drift detection.
+- [x] 11.1 Learn expert-frequency and cache predictions locally.
+- [x] 11.2 Learn context and escalation predictions from verified outcomes.
+- [x] 11.3 Add user preference adapters with inspection and reset.
+- [x] 11.4 Add battery, thermal, foreground-load, and idle policies.
+- [x] 11.5 Add rollback and drift detection.
 
 **Exit gate:** Repeated workflows improve measured latency or energy without reducing verification quality or user control.
+
+**Exit status:** Complete. `artifacts/adaptation/phase11-exit.json` records a
+real repeated Qwen3 1.7B workflow improving from 1.014 seconds to 0.128 seconds
+with identical verified quality and preserved preference reset control. See
+`handoffs/0100-phase11-local-adaptation-exit.md`.
+
+**Current Phase 11 evidence:** Local-only expert frequency with visible failure
+counts plus the existing digest-bound, resource-admitted cache transition
+predictor for step 11.1 are recorded in
+`handoffs/0095-local-frequency-cache-learning.md`,
+`docs/protocols/LOCAL_FREQUENCY_CACHE_LEARNING.md`, ADR 0092,
+`artifacts/adaptation/phase11.1/`, and `artifacts/scheduler/phase7.10/`.
+Digest-bound verified-only labels, conservative context prediction, and observed
+escalation probability for step 11.2 are recorded in
+`handoffs/0096-verified-outcome-prediction.md`,
+`docs/protocols/VERIFIED_OUTCOME_PREDICTION.md`, ADR 0093, and
+`artifacts/adaptation/phase11.2/`.
+Closed normalized preference keys, owner-bound atomic storage, inspection,
+cross-owner denial, and reset receipts for step 11.3 are recorded in
+`handoffs/0097-user-preference-adapters.md`,
+`docs/protocols/USER_PREFERENCE_ADAPTERS.md`, ADR 0094, and
+`artifacts/adaptation/phase11.3/`.
+Deterministic battery, thermal, foreground-load, and idle restrictions for step
+11.4 are recorded in `handoffs/0098-operating-state-adaptation.md`,
+`docs/protocols/OPERATING_STATE_ADAPTATION.md`, ADR 0095, and
+`artifacts/adaptation/phase11.4/`.
+Immutable snapshots, verification/latency/energy drift, and exact-digest rollback
+for step 11.5 are recorded in `handoffs/0099-adaptation-drift-rollback.md`,
+`docs/protocols/ADAPTATION_DRIFT_ROLLBACK.md`, and ADR 0096.
 
 ---
 
@@ -472,14 +595,20 @@ and negative, tampered, unavailable-isolation, and over-budget cases are withhel
 
 **Goal:** Allow user-owned machines to contribute optional capacity securely.
 
-- [ ] 12.1 Define device identity and trust enrollment.
-- [ ] 12.2 Define remote expert capability and privacy policy.
-- [ ] 12.3 Implement encrypted authenticated transport.
-- [ ] 12.4 Implement latency-aware local-versus-remote scheduling.
-- [ ] 12.5 Implement disconnect and partial-failure recovery.
-- [ ] 12.6 Add desktop, laptop, and home-server demonstration.
+- [x] 12.1 Define device identity and trust enrollment.
+- [x] 12.2 Define remote expert capability and privacy policy.
+- [x] 12.3 Implement encrypted authenticated transport.
+- [x] 12.4 Implement latency-aware local-versus-remote scheduling.
+- [x] 12.5 Implement disconnect and partial-failure recovery.
+- [x] 12.6 Add desktop, laptop, and home-server demonstration.
 
 **Exit gate:** A local task can use a trusted remote expert without exposing unauthorized context and can recover when the device disappears.
+
+**Exit status:** Complete. The authenticated encrypted desktop/laptop/home-server
+TCP demonstration selected the remote expert with zero unauthorized context,
+verified its result, and preserved local acceptance after disconnect. Evidence is
+in `artifacts/fabric/phase12/multidevice-demo.json` and
+`handoffs/0106-phase12-trusted-fabric-exit.md`.
 
 ---
 
@@ -487,16 +616,21 @@ and negative, tampered, unavailable-isolation, and over-budget cases are withhel
 
 **Goal:** Create and improve experts specifically for the fabric.
 
-- [ ] 13.1 Build failure-trace clustering and missing-capability discovery.
-- [ ] 13.2 Define teacher, distillation, adapter, and evaluation pipelines.
-- [ ] 13.3 Train routing and complexity micro-experts.
-- [ ] 13.4 Train or distill specialist experts with shared interfaces.
-- [ ] 13.5 Add activated-parameter, bytes-moved, latency, and energy costs to training objectives.
-- [ ] 13.6 Generate quantized variants and calibration metadata.
-- [ ] 13.7 Sign and publish expert packages.
-- [ ] 13.8 Add continuous benchmark and regression gates.
+- [x] 13.1 Build failure-trace clustering and missing-capability discovery.
+- [x] 13.2 Define teacher, distillation, adapter, and evaluation pipelines.
+- [x] 13.3 Train routing and complexity micro-experts.
+- [x] 13.4 Train or distill specialist experts with shared interfaces.
+- [x] 13.5 Add activated-parameter, bytes-moved, latency, and energy costs to training objectives.
+- [x] 13.6 Generate quantized variants and calibration metadata.
+- [x] 13.7 Sign and publish expert packages.
+- [x] 13.8 Add continuous benchmark and regression gates.
 
 **Exit gate:** A new expert can be discovered from evidence, trained, packaged, installed, selected, verified, and retired through one auditable lifecycle.
+
+**Exit status:** Complete. `artifacts/expert_factory/phase13/factory-lifecycle.json`
+proves every lifecycle stage, including hardware objective, calibrated int4
+variant, signed atomic publication, regression gate, and removal after retirement.
+See `handoffs/0114-phase13-expert-factory-exit.md`.
 
 ---
 
@@ -504,21 +638,60 @@ and negative, tampered, unavailable-isolation, and over-budget cases are withhel
 
 **Goal:** Turn the research runtime into a dependable OS service.
 
-- [ ] 14.1 Complete threat models and external security review.
-- [ ] 14.2 Add atomic updates and rollback for services, schemas, experts, and connectors.
-- [ ] 14.3 Add multi-user isolation and recovery mode.
-- [ ] 14.4 Add long-running thermal, storage, memory, and crash tests.
-- [ ] 14.5 Make FAM_OS trivial to install, update, diagnose, repair, and completely remove on Linux.
-- [ ] 14.6 Complete the production FAM Shell and Console for resources, experts, permissions, memory, audit history, and recovery.
-- [ ] 14.7 Publish reproducible minimum-hardware and full-reference-workstation benchmarks.
+- [x] 14.1 Complete threat models and external security review.
+- [x] 14.2 Add atomic updates and rollback for services, schemas, experts, and connectors.
+- [x] 14.3 Add multi-user isolation and recovery mode.
+- [x] 14.4 Add long-running thermal, storage, memory, and crash tests.
+- [x] 14.5 Make FAM_OS trivial to install, update, diagnose, repair, and completely remove on Linux.
+- [x] 14.6 Complete the production FAM Shell and Console for resources, experts, permissions, memory, audit history, and recovery.
+- [x] 14.7 Publish reproducible minimum-hardware and full-reference-workstation benchmarks.
 
 **Exit gate:** FAM_OS can be installed and removed safely, survives extended operation, and provides complete user visibility and control.
+
+**Exit status:** Complete. The aggregate product gate reran safe installation,
+damage diagnosis, repair, removal, signed atomic update and rollback, owner
+isolation, recovery denials, and complete Console visibility. It binds the live
+five-minute thermal/storage/memory/crash qualification and the profile-separated
+reference benchmarks. Evidence is in `artifacts/product/phase14-exit.json` and
+`handoffs/0122-phase14-product-exit.md`.
 
 ---
 
 ## Immediate next step
 
-Begin **Phase 7.1**: implement live cgroup-aware resource observation as the
-first Hardware Scheduler input. Preserve the separate physical inventory,
-effective profile ceilings, current availability, and operating-system reserve
-while making observation suitable for repeated admission/eviction decisions.
+Run the final repository-wide audit and begin release-candidate packaging. A
+third-party human penetration test remains explicitly uncompleted and must not
+be represented as certification.
+
+**Final audit status:** Reopened. The component and package gates passed, but the
+installed user service referenced a missing module and no installed-daemon test
+proved a real Shell request through Core and Ollama. Phase 15 is required before
+the project may again claim Master Plan completion.
+
+---
+
+## Phase 15 — Installed operational acceptance
+
+**Goal:** Prove FAM_OS works as an installed, startable local AI product.
+
+- [x] 15.1 Implement the production Core-to-inference Shell gateway.
+- [x] 15.2 Implement the combined local service for Shell and Console.
+- [x] 15.3 Correct generated Linux service configuration and lifecycle commands.
+- [x] 15.4 Install into an isolated prefix and prove service startup and shutdown.
+- [x] 15.5 Complete a real Shell request through Ollama and a downloaded model.
+- [x] 15.6 Prove Console access against the same running service.
+- [x] 15.7 Re-run update, diagnosis, repair, removal, regression, and soak gates.
+
+**Exit gate:** A fresh installation starts one owner-scoped service, answers a
+real local-model request from FAM Shell, serves authenticated Console state,
+stops cleanly, detects and repairs damage, and removes every installed artifact.
+
+**Exit status:** Complete. A fresh isolated installation executed its generated
+service and Shell launchers, completed a real `qwen3:1.7b` request through
+Ollama with measured GPU residency, served authenticated Console HTML and all
+six state sections, shut down cleanly, detected damage, repaired, and removed
+all artifacts. Six further real Shell and Console cycles passed a 60-second
+operational soak with negligible RSS change. The full 842-test suite, 166
+schemas, lint, typing, earlier Phase 14 exit, and fresh-venv wheel commands pass.
+Evidence: `artifacts/product/phase15/phase15-exit.json` and
+`handoffs/0126-phase15-installed-operational-exit.md`.

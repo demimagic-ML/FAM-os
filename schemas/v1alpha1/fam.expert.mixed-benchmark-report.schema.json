@@ -1,0 +1,154 @@
+{
+  "$defs": {
+    "MixedBenchmarkCaseResult": {
+      "additionalProperties": false,
+      "properties": {
+        "acceptance_id": {
+          "type": "string"
+        },
+        "case_id": {
+          "type": "string"
+        },
+        "evidence_sha256": {
+          "type": "string"
+        },
+        "expert_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "expert_tier": {
+          "anyOf": [
+            {
+              "enum": [
+                "micro",
+                "economical",
+                "escalation",
+                "remote"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "model_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "passed": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "case_id",
+        "passed",
+        "acceptance_id",
+        "evidence_sha256",
+        "expert_id",
+        "expert_tier",
+        "model_ref"
+      ],
+      "type": "object"
+    },
+    "MixedBenchmarkReport": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.expert.mixed-benchmark/v1alpha1"
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "results": {
+          "items": {
+            "$ref": "#/$defs/MixedBenchmarkCaseResult"
+          },
+          "type": "array"
+        },
+        "strong_regressions": {
+          "items": {
+            "$ref": "#/$defs/StrongRegressionRunRef"
+          },
+          "type": "array"
+        },
+        "suite_id": {
+          "type": "string"
+        },
+        "suite_version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "suite_id",
+        "suite_version",
+        "results",
+        "strong_regressions",
+        "passed",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "StrongRegressionRunRef": {
+      "additionalProperties": false,
+      "properties": {
+        "expert_id": {
+          "type": "string"
+        },
+        "model_ref": {
+          "type": "string"
+        },
+        "package_artifact_sha256": {
+          "type": "string"
+        },
+        "report_sha256": {
+          "type": "string"
+        },
+        "verified": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "model_ref",
+        "expert_id",
+        "package_artifact_sha256",
+        "report_sha256",
+        "verified"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.expert.mixed-benchmark-report/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.expert.mixed-benchmark/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/MixedBenchmarkReport"
+    },
+    "schema_id": {
+      "const": "fam.expert.mixed-benchmark-report/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Mixed expert benchmark report",
+  "type": "object"
+}

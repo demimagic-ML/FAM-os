@@ -1,0 +1,61 @@
+{
+  "$defs": {
+    "PublishedExpertPackage": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.factory.release/v1alpha1"
+        },
+        "manifest_sha256": {
+          "type": "string"
+        },
+        "package_id": {
+          "type": "string"
+        },
+        "publication_path": {
+          "type": "string"
+        },
+        "publisher_key_id": {
+          "type": "string"
+        },
+        "signature_base64": {
+          "type": "string"
+        },
+        "signature_verified": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "package_id",
+        "manifest_sha256",
+        "signature_base64",
+        "publisher_key_id",
+        "publication_path",
+        "signature_verified",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.factory.published-package/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.factory.release/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/PublishedExpertPackage"
+    },
+    "schema_id": {
+      "const": "fam.factory.published-package/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Signed published expert package",
+  "type": "object"
+}

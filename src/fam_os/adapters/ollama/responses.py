@@ -5,6 +5,7 @@ from __future__ import annotations
 from fam_os.adapters.ollama.errors import OllamaProtocolError
 from fam_os.adapters.ollama.transport import JsonObject
 from fam_os.core.ports.inference import InferenceResponse, LoadedModel
+from fam_os.core.ports.embedding import EmbeddingResponse
 from fam_os.telemetry import InferenceMetrics
 
 
@@ -65,3 +66,27 @@ def _parse_loaded_model(raw: object) -> LoadedModel:
         context_tokens=_optional_integer(raw, "context_length"),
     )
 
+
+def parse_embedding_response(
+    model_ref: str, payload: JsonObject, wall_seconds: float,
+) -> EmbeddingResponse:
+    raw_vectors = payload.get("embeddings")
+    if not isinstance(raw_vectors, list) or not raw_vectors:
+        raise OllamaProtocolError("embedding response requires embeddings")
+    vectors = tuple(_parse_vector(value) for value in raw_vectors)
+    return EmbeddingResponse(
+        model_ref=model_ref,
+        vectors=vectors,
+        prompt_tokens=_optional_integer(payload, "prompt_eval_count") or 0,
+        wall_seconds=wall_seconds,
+    )
+
+
+def _parse_vector(raw: object) -> tuple[float, ...]:
+    if not isinstance(raw, list) or not raw:
+        raise OllamaProtocolError("embedding vector must be a non-empty list")
+    try:
+        vector = tuple(float(value) for value in raw)
+    except (TypeError, ValueError) as exc:
+        raise OllamaProtocolError("embedding vector values must be numeric") from exc
+    return vector

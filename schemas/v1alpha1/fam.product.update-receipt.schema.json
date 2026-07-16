@@ -1,0 +1,83 @@
+{
+  "$defs": {
+    "UpdateReceipt": {
+      "additionalProperties": false,
+      "properties": {
+        "activated": {
+          "type": "boolean"
+        },
+        "active_release_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "contract_version": {
+          "const": "fam.product.update/v1alpha1"
+        },
+        "health_checked": {
+          "type": "boolean"
+        },
+        "previous_release_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reason": {
+          "type": "string"
+        },
+        "release_id": {
+          "type": "string"
+        },
+        "rolled_back": {
+          "type": "boolean"
+        },
+        "staged": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "release_id",
+        "previous_release_id",
+        "staged",
+        "health_checked",
+        "activated",
+        "rolled_back",
+        "active_release_id",
+        "reason",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.product.update-receipt/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.product.update/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/UpdateReceipt"
+    },
+    "schema_id": {
+      "const": "fam.product.update-receipt/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Atomic release update receipt",
+  "type": "object"
+}

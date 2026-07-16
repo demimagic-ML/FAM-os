@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
 
-from fam_os.scheduler.cache_contracts import CacheEntryState, CacheTelemetrySnapshot
+from fam_os.scheduler.cache_contracts import CacheTelemetrySnapshot
 from fam_os.scheduler.prefetch_prediction import (
     PREFETCH_CONTRACT_VERSION,
     PrefetchPrediction,

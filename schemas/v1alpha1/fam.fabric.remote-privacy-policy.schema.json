@@ -1,0 +1,78 @@
+{
+  "$defs": {
+    "RemotePrivacyPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "allowed_device_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "allowed_purpose_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "allowed_sensitivities": {
+          "items": {
+            "enum": [
+              "public",
+              "private",
+              "restricted"
+            ],
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "allowed_workspace_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "maximum_context_bytes": {
+          "type": "integer"
+        },
+        "owner_id": {
+          "type": "string"
+        },
+        "raw_content_allowed": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "owner_id",
+        "allowed_device_ids",
+        "allowed_purpose_ids",
+        "allowed_workspace_ids",
+        "maximum_context_bytes",
+        "allowed_sensitivities",
+        "raw_content_allowed"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.fabric.remote-privacy-policy/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.fabric.remote-privacy/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/RemotePrivacyPolicy"
+    },
+    "schema_id": {
+      "const": "fam.fabric.remote-privacy-policy/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Remote context privacy policy",
+  "type": "object"
+}

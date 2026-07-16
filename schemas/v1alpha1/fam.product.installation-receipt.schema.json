@@ -1,0 +1,66 @@
+{
+  "$defs": {
+    "InstallationReceipt": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.product.installation/v1alpha1"
+        },
+        "files": {
+          "items": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "type": "array"
+        },
+        "healthy": {
+          "type": "boolean"
+        },
+        "issues": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "prefix": {
+          "type": "string"
+        },
+        "release_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "prefix",
+        "release_id",
+        "files",
+        "healthy",
+        "issues",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.product.installation-receipt/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.product.installation/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/InstallationReceipt"
+    },
+    "schema_id": {
+      "const": "fam.product.installation-receipt/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Linux installation receipt",
+  "type": "object"
+}

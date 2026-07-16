@@ -1,0 +1,61 @@
+{
+  "$defs": {
+    "MathSolverResult": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.expert.math/v1alpha1"
+        },
+        "exact_result": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "exact_arithmetic",
+            "symbolic_equation"
+          ],
+          "type": "string"
+        },
+        "problem_id": {
+          "type": "string"
+        },
+        "solver_id": {
+          "type": "string"
+        },
+        "verified": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "problem_id",
+        "kind",
+        "exact_result",
+        "solver_id",
+        "verified",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.expert.math-solver-result/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.expert.math/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/MathSolverResult"
+    },
+    "schema_id": {
+      "const": "fam.expert.math-solver-result/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Deterministic mathematics solver result",
+  "type": "object"
+}

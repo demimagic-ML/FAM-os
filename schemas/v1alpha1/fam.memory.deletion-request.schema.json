@@ -1,0 +1,68 @@
+{
+  "$defs": {
+    "MemoryDeletionRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.memory.lifecycle/v1alpha1"
+        },
+        "owner_id": {
+          "type": "string"
+        },
+        "reason": {
+          "enum": [
+            "user_request",
+            "expiry",
+            "scope_revoked",
+            "source_removed"
+          ],
+          "type": "string"
+        },
+        "record_id": {
+          "type": "string"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "requested_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "requested_by": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "record_id",
+        "owner_id",
+        "requested_by",
+        "requested_at",
+        "reason",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.memory.deletion-request/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.memory.lifecycle/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/MemoryDeletionRequest"
+    },
+    "schema_id": {
+      "const": "fam.memory.deletion-request/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Memory deletion request",
+  "type": "object"
+}

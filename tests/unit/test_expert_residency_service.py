@@ -189,7 +189,7 @@ class ExpertResidencyServiceTests(unittest.TestCase):
     def test_stale_revision_and_illegal_cold_lease_fail(self):
         with self.assertRaisesRegex(ResidencyTransitionError, "cannot acquire"):
             self.service.acquire("expert.qwen", lease(), 0)
-        warm = self.warm()
+        self.warm()
         with self.assertRaisesRegex(ResidencyTransitionError, "stale"):
             self.service.expire_leases(NOW + timedelta(seconds=2), 0)
         replacement = initial_cold_residency_catalog(

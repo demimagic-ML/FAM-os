@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 
-from fam_os.core.contracts import DegradationNotice, TaskResult
+from fam_os.core.contracts import TaskResult
 from fam_os.core.lifecycle.contracts import PlanInstanceSnapshot
 
 

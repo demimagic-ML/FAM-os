@@ -1,0 +1,100 @@
+{
+  "$defs": {
+    "FindingDisposition": {
+      "additionalProperties": false,
+      "properties": {
+        "disposition": {
+          "type": "string"
+        },
+        "finding_id": {
+          "type": "string"
+        },
+        "rationale": {
+          "type": "string"
+        },
+        "severity": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "finding_id",
+        "severity",
+        "disposition",
+        "rationale"
+      ],
+      "type": "object"
+    },
+    "SecurityReviewReport": {
+      "additionalProperties": false,
+      "properties": {
+        "findings": {
+          "items": {
+            "$ref": "#/$defs/FindingDisposition"
+          },
+          "type": "array"
+        },
+        "human_external_review_completed": {
+          "type": "boolean"
+        },
+        "independent_tools": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "input_digests": {
+          "items": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "type": "array"
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "release_blockers": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "review_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "review_id",
+        "human_external_review_completed",
+        "independent_tools",
+        "input_digests",
+        "findings",
+        "release_blockers",
+        "passed"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.product.security-review/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.product.security-review/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/SecurityReviewReport"
+    },
+    "schema_id": {
+      "const": "fam.product.security-review/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Release security review",
+  "type": "object"
+}

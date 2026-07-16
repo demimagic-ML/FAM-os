@@ -1,0 +1,56 @@
+{
+  "$defs": {
+    "RemoteExpertCapability": {
+      "additionalProperties": false,
+      "properties": {
+        "capability_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "device_id": {
+          "type": "string"
+        },
+        "expert_id": {
+          "type": "string"
+        },
+        "maximum_context_bytes": {
+          "type": "integer"
+        },
+        "verified_package_sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "device_id",
+        "expert_id",
+        "capability_ids",
+        "maximum_context_bytes",
+        "verified_package_sha256"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.fabric.remote-capability/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.fabric.remote-privacy/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/RemoteExpertCapability"
+    },
+    "schema_id": {
+      "const": "fam.fabric.remote-capability/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Remote expert capability",
+  "type": "object"
+}

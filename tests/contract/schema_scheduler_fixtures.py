@@ -4,6 +4,8 @@ from dataclasses import replace
 from datetime import timedelta
 
 from fam_os.scheduler import (
+    ExpertUseObservation,
+    LocalExpertFrequencyLearner,
     AdmissionRequest,
     AdmissionDecision,
     AdmissionStatus,
@@ -48,7 +50,6 @@ from fam_os.scheduler import (
     CachePolicyRequest,
     CacheTelemetryEntry,
     CacheTelemetrySnapshot,
-    CacheTier,
     CacheTierPressure,
     DeterministicCacheRetentionPolicy,
     SchedulerPolicyKind,
@@ -228,6 +229,10 @@ def scheduler_schema_values() -> tuple[object, ...]:
         "replay-report-1", NOW, replay_records, True,
     )
     prefetch_values = _prefetch_values(cache_snapshot)
+    frequency = LocalExpertFrequencyLearner().learn("frequency-1", (
+        ExpertUseObservation("use-1", "expert.small", NOW, True),
+        ExpertUseObservation("use-2", "expert.small", NOW, True),
+    ))
     baseline_first = replace(
         observation,
         validation_profile_id="compat-cpu-16gb",
@@ -275,6 +280,7 @@ def scheduler_schema_values() -> tuple[object, ...]:
         npu_report,
         cache_snapshot, cache_request, cache_decision, replay_report,
         *prefetch_values,
+        frequency,
     )
 
 

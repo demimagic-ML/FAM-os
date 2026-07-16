@@ -1,0 +1,53 @@
+{
+  "$defs": {
+    "FabricEncryptedEnvelope": {
+      "additionalProperties": false,
+      "properties": {
+        "ciphertext_base64": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.fabric.transport/v1alpha1"
+        },
+        "nonce_base64": {
+          "type": "string"
+        },
+        "sequence": {
+          "type": "integer"
+        },
+        "session_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "session_id",
+        "sequence",
+        "nonce_base64",
+        "ciphertext_base64",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.fabric.encrypted-envelope/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.fabric.transport/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/FabricEncryptedEnvelope"
+    },
+    "schema_id": {
+      "const": "fam.fabric.encrypted-envelope/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Authenticated encrypted fabric envelope",
+  "type": "object"
+}

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from fam_os.adapters.ollama.transport import JsonObject
 from fam_os.core.ports.inference import InferenceRequest
+from fam_os.core.ports.embedding import EmbeddingRequest
 
 
 def build_chat_payload(request: InferenceRequest) -> JsonObject:
@@ -38,3 +39,11 @@ def build_unload_payload(model_ref: str) -> JsonObject:
     if not model_ref.strip():
         raise ValueError("model_ref must not be empty")
     return {"model": model_ref, "keep_alive": 0}
+
+
+def build_embedding_payload(request: EmbeddingRequest) -> JsonObject:
+    return {
+        "model": request.model_ref,
+        "input": list(request.inputs),
+        "keep_alive": request.keep_alive,
+    }

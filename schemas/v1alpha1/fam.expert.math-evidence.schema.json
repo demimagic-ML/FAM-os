@@ -1,0 +1,168 @@
+{
+  "$defs": {
+    "MathBenchmarkCaseResult": {
+      "additionalProperties": false,
+      "properties": {
+        "case_id": {
+          "type": "string"
+        },
+        "expected_exact_result": {
+          "type": "string"
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "reasoning": {
+          "$ref": "#/$defs/MathReasoningAdvice"
+        },
+        "solver": {
+          "$ref": "#/$defs/MathSolverResult"
+        }
+      },
+      "required": [
+        "case_id",
+        "reasoning",
+        "solver",
+        "expected_exact_result",
+        "passed"
+      ],
+      "type": "object"
+    },
+    "MathExpertEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "cases": {
+          "items": {
+            "$ref": "#/$defs/MathBenchmarkCaseResult"
+          },
+          "type": "array"
+        },
+        "contract_version": {
+          "const": "fam.expert.math-evidence/v1alpha1"
+        },
+        "evidence_id": {
+          "type": "string"
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "reasoning_artifact_sha256": {
+          "type": "string"
+        },
+        "reasoning_expert_id": {
+          "type": "string"
+        },
+        "solver_artifact_sha256": {
+          "type": "string"
+        },
+        "solver_expert_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "evidence_id",
+        "reasoning_expert_id",
+        "reasoning_artifact_sha256",
+        "solver_expert_id",
+        "solver_artifact_sha256",
+        "cases",
+        "passed",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "MathReasoningAdvice": {
+      "additionalProperties": false,
+      "properties": {
+        "advisory_only": {
+          "type": "boolean"
+        },
+        "contract_version": {
+          "const": "fam.expert.math/v1alpha1"
+        },
+        "explanation": {
+          "type": "string"
+        },
+        "model_ref": {
+          "type": "string"
+        },
+        "problem_id": {
+          "type": "string"
+        },
+        "proposed_answer": {
+          "type": "string"
+        },
+        "proposed_expression": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "problem_id",
+        "explanation",
+        "proposed_expression",
+        "proposed_answer",
+        "model_ref",
+        "advisory_only",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "MathSolverResult": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.expert.math/v1alpha1"
+        },
+        "exact_result": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "exact_arithmetic",
+            "symbolic_equation"
+          ],
+          "type": "string"
+        },
+        "problem_id": {
+          "type": "string"
+        },
+        "solver_id": {
+          "type": "string"
+        },
+        "verified": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "problem_id",
+        "kind",
+        "exact_result",
+        "solver_id",
+        "verified",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.expert.math-evidence/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.expert.math-evidence/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/MathExpertEvidence"
+    },
+    "schema_id": {
+      "const": "fam.expert.math-evidence/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Mathematics expert benchmark evidence",
+  "type": "object"
+}

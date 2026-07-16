@@ -1,0 +1,62 @@
+{
+  "$defs": {
+    "MemoryDeletionReceipt": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.memory.lifecycle/v1alpha1"
+        },
+        "deleted_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "deleted_content_sha256": {
+          "type": "string"
+        },
+        "payload_removed": {
+          "type": "boolean"
+        },
+        "record_id": {
+          "type": "string"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "tombstone_sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "record_id",
+        "deleted_at",
+        "deleted_content_sha256",
+        "tombstone_sha256",
+        "payload_removed",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.memory.deletion-receipt/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.memory.lifecycle/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/MemoryDeletionReceipt"
+    },
+    "schema_id": {
+      "const": "fam.memory.deletion-receipt/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Memory deletion receipt",
+  "type": "object"
+}

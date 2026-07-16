@@ -1,0 +1,71 @@
+{
+  "$defs": {
+    "MemoryRejection": {
+      "additionalProperties": false,
+      "properties": {
+        "reason_code": {
+          "type": "string"
+        },
+        "record_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "record_id",
+        "reason_code"
+      ],
+      "type": "object"
+    },
+    "MemoryRelevanceDecision": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.memory.relevance/v1alpha1"
+        },
+        "rejections": {
+          "items": {
+            "$ref": "#/$defs/MemoryRejection"
+          },
+          "type": "array"
+        },
+        "selected_record_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "selected_tokens": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "selected_record_ids",
+        "selected_tokens",
+        "rejections",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.memory.relevance-decision/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.memory.relevance/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/MemoryRelevanceDecision"
+    },
+    "schema_id": {
+      "const": "fam.memory.relevance-decision/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Memory relevance gate decision",
+  "type": "object"
+}

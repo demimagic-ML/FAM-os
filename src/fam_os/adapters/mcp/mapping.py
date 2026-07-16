@@ -8,12 +8,11 @@ from enum import StrEnum
 
 from jsonschema import Draft202012Validator
 
-from fam_os.adapters.mcp.policy import McpConnectorPolicy, McpToolPolicy
-from fam_os.adapters.mcp.types import McpDiscoverySnapshot, McpTool, mutable_json
+from fam_os.adapters.mcp.policy import McpConnectorPolicy
+from fam_os.adapters.mcp.types import McpDiscoverySnapshot, mutable_json
 from fam_os.applications import (
     ApplicationAuthority, ApplicationInstance, CapabilityDescriptor,
-    CapabilityKind, CapabilityRegistryEntry, ConfirmationPolicy,
-    ConnectorRegistration, ConnectorTransportKind, Reversibility,
+    CapabilityKind, CapabilityRegistryEntry, ConnectorRegistration, ConnectorTransportKind,
 )
 
 

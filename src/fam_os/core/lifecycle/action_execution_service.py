@@ -5,7 +5,6 @@ from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from uuid import uuid4
 
-from fam_os.applications import ActionStatus
 from fam_os.core.contracts import StepOutcome
 from fam_os.core.lifecycle.action_audit_policy import requested_audit, terminal_audit
 from fam_os.core.lifecycle.action_execution_contracts import (

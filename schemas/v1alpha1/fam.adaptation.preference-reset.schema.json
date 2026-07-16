@@ -1,0 +1,59 @@
+{
+  "$defs": {
+    "PreferenceResetReceipt": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.adaptation.preferences/v1alpha1"
+        },
+        "owner_id": {
+          "type": "string"
+        },
+        "removed_keys": {
+          "items": {
+            "enum": [
+              "quality_priority",
+              "energy_priority",
+              "latency_priority",
+              "explanation_detail"
+            ],
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "reset_at": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "owner_id",
+        "reset_at",
+        "removed_keys",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.adaptation.preference-reset/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.adaptation.preferences/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/PreferenceResetReceipt"
+    },
+    "schema_id": {
+      "const": "fam.adaptation.preference-reset/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "User preference reset receipt",
+  "type": "object"
+}

@@ -1,0 +1,70 @@
+{
+  "$defs": {
+    "DeviceEnrollmentRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "identity": {
+          "$ref": "#/$defs/DeviceIdentity"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "requested_at": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "identity",
+        "requested_at"
+      ],
+      "type": "object"
+    },
+    "DeviceIdentity": {
+      "additionalProperties": false,
+      "properties": {
+        "device_id": {
+          "type": "string"
+        },
+        "display_name": {
+          "type": "string"
+        },
+        "fingerprint_sha256": {
+          "type": "string"
+        },
+        "public_key_base64": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "device_id",
+        "display_name",
+        "public_key_base64",
+        "fingerprint_sha256"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.fabric.enrollment-request/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.fabric.device-identity/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/DeviceEnrollmentRequest"
+    },
+    "schema_id": {
+      "const": "fam.fabric.enrollment-request/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Device enrollment request",
+  "type": "object"
+}

@@ -1,0 +1,53 @@
+{
+  "$defs": {
+    "EvaluationPlan": {
+      "additionalProperties": false,
+      "properties": {
+        "acceptance_id": {
+          "type": "string"
+        },
+        "evaluation_id": {
+          "type": "string"
+        },
+        "held_out_dataset_sha256": {
+          "type": "string"
+        },
+        "minimum_quality": {
+          "type": "number"
+        },
+        "regression_baseline_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "evaluation_id",
+        "acceptance_id",
+        "held_out_dataset_sha256",
+        "minimum_quality",
+        "regression_baseline_id"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.factory.evaluation-plan/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.factory.pipeline/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/EvaluationPlan"
+    },
+    "schema_id": {
+      "const": "fam.factory.evaluation-plan/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Expert evaluation plan",
+  "type": "object"
+}

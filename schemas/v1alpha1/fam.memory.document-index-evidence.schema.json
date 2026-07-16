@@ -1,0 +1,77 @@
+{
+  "$defs": {
+    "DocumentIndexEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.memory.document-index/v1alpha1"
+        },
+        "database_sha256": {
+          "type": "string"
+        },
+        "denied_scope_hit_count": {
+          "type": "integer"
+        },
+        "document_id": {
+          "type": "string"
+        },
+        "embedding_artifact_sha256": {
+          "type": "string"
+        },
+        "embedding_model_ref": {
+          "type": "string"
+        },
+        "evidence_id": {
+          "type": "string"
+        },
+        "indexed_chunk_count": {
+          "type": "integer"
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "source_sha256": {
+          "type": "string"
+        },
+        "top_chunk_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "evidence_id",
+        "document_id",
+        "source_sha256",
+        "embedding_model_ref",
+        "embedding_artifact_sha256",
+        "indexed_chunk_count",
+        "top_chunk_id",
+        "denied_scope_hit_count",
+        "database_sha256",
+        "passed",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.memory.document-index-evidence/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.memory.document-index/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/DocumentIndexEvidence"
+    },
+    "schema_id": {
+      "const": "fam.memory.document-index-evidence/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Approved document index evidence",
+  "type": "object"
+}

@@ -1,0 +1,73 @@
+{
+  "$defs": {
+    "Phase11ExitEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "adapted_latency_seconds": {
+          "type": "number"
+        },
+        "adapted_verified": {
+          "type": "boolean"
+        },
+        "baseline_latency_seconds": {
+          "type": "number"
+        },
+        "baseline_verified": {
+          "type": "boolean"
+        },
+        "contract_version": {
+          "const": "fam.adaptation.phase11-exit/v1alpha1"
+        },
+        "evidence_id": {
+          "type": "string"
+        },
+        "improved": {
+          "type": "boolean"
+        },
+        "model_ref": {
+          "type": "string"
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "user_reset_preserved": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "evidence_id",
+        "model_ref",
+        "baseline_latency_seconds",
+        "adapted_latency_seconds",
+        "baseline_verified",
+        "adapted_verified",
+        "user_reset_preserved",
+        "improved",
+        "passed",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.adaptation.phase11-exit/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.adaptation.phase11-exit/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/Phase11ExitEvidence"
+    },
+    "schema_id": {
+      "const": "fam.adaptation.phase11-exit/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Phase 11 repeated-workflow exit evidence",
+  "type": "object"
+}

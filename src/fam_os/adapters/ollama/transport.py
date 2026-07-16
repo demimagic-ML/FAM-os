@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import urllib.error
+import urllib.parse
 import urllib.request
 from typing import Protocol
 
@@ -31,6 +32,9 @@ class UrllibJsonTransport:
         payload: JsonObject | None,
         timeout_seconds: float,
     ) -> JsonObject:
+        scheme = urllib.parse.urlsplit(url).scheme.lower()
+        if scheme not in {"http", "https"}:
+            raise OllamaTransportError("Ollama URL must use HTTP or HTTPS")
         body = json.dumps(payload).encode() if payload is not None else None
         request = urllib.request.Request(
             url,
@@ -46,4 +50,3 @@ class UrllibJsonTransport:
         if not isinstance(decoded, dict):
             raise OllamaTransportError("Ollama response must be a JSON object")
         return decoded
-

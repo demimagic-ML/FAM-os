@@ -18,7 +18,7 @@ from fam_os.adapters.linux.x11_windows import (
 )
 from fam_os.applications import (
     ApplicationIdentity, ApplicationLaunchSpec, ApplicationProcess,
-    ApplicationWindow, DiscoveredApplication, DiscoverySurface,
+    ApplicationWindow, DiscoveredApplication,
 )
 
 

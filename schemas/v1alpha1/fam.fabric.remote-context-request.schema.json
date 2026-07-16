@@ -1,0 +1,66 @@
+{
+  "$defs": {
+    "RemoteContextRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "contains_raw_content": {
+          "type": "boolean"
+        },
+        "context_bytes": {
+          "type": "integer"
+        },
+        "device_id": {
+          "type": "string"
+        },
+        "owner_id": {
+          "type": "string"
+        },
+        "purpose_id": {
+          "type": "string"
+        },
+        "sensitivity": {
+          "enum": [
+            "public",
+            "private",
+            "restricted"
+          ],
+          "type": "string"
+        },
+        "workspace_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "owner_id",
+        "device_id",
+        "purpose_id",
+        "workspace_id",
+        "sensitivity",
+        "context_bytes",
+        "contains_raw_content"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.fabric.remote-context-request/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.fabric.remote-privacy/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/RemoteContextRequest"
+    },
+    "schema_id": {
+      "const": "fam.fabric.remote-context-request/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Remote context request",
+  "type": "object"
+}

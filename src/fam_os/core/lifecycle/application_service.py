@@ -13,7 +13,6 @@ from fam_os.applications import (
     ApplicationAuthority,
     CapabilityKind,
     CapabilityDescriptor,
-    CapabilityRegistryEntry,
     ObservationRequest,
     ObservationResult,
     ObservationStatus,
@@ -40,7 +39,6 @@ from fam_os.core.lifecycle.contracts import (
     PlanEvidenceKind,
     PlanEvidenceReference,
     PlanInstanceSnapshot,
-    PlanRejection,
 )
 from fam_os.core.lifecycle.service import PlanLifecycleService
 

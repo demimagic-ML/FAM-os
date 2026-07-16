@@ -1,0 +1,98 @@
+{
+  "$defs": {
+    "MemoryRetrievalCandidate": {
+      "additionalProperties": false,
+      "properties": {
+        "captured_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "estimated_tokens": {
+          "type": "integer"
+        },
+        "record_id": {
+          "type": "string"
+        },
+        "relevance_score": {
+          "type": "number"
+        },
+        "scope": {
+          "$ref": "#/$defs/MemoryScope"
+        }
+      },
+      "required": [
+        "record_id",
+        "scope",
+        "captured_at",
+        "relevance_score",
+        "estimated_tokens"
+      ],
+      "type": "object"
+    },
+    "MemoryScope": {
+      "additionalProperties": false,
+      "properties": {
+        "application_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "owner_id": {
+          "type": "string"
+        },
+        "purpose_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "session_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "workspace_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "owner_id",
+        "purpose_ids",
+        "application_ids",
+        "workspace_ids",
+        "session_id"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.memory.retrieval-candidate/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.memory.relevance/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/MemoryRetrievalCandidate"
+    },
+    "schema_id": {
+      "const": "fam.memory.retrieval-candidate/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Scoped memory retrieval candidate",
+  "type": "object"
+}

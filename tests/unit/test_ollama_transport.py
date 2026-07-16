@@ -34,7 +34,12 @@ class UrllibJsonTransportTests(unittest.TestCase):
         with self.assertRaisesRegex(OllamaTransportError, "JSON object"):
             UrllibJsonTransport().request("GET", "http://localhost/api/ps", None, 5)
 
+    @patch("fam_os.adapters.ollama.transport.urllib.request.urlopen")
+    def test_rejects_non_http_scheme_before_open(self, urlopen: MagicMock) -> None:
+        with self.assertRaisesRegex(OllamaTransportError, "HTTP or HTTPS"):
+            UrllibJsonTransport().request("GET", "file:///etc/passwd", None, 5)
+        urlopen.assert_not_called()
+
 
 if __name__ == "__main__":
     unittest.main()
-

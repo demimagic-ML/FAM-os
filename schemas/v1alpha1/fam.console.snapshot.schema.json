@@ -1,0 +1,112 @@
+{
+  "$defs": {
+    "ConsoleItem": {
+      "additionalProperties": false,
+      "properties": {
+        "detail": {
+          "type": "string"
+        },
+        "item_id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "item_id",
+        "label",
+        "value",
+        "status",
+        "detail"
+      ],
+      "type": "object"
+    },
+    "ConsoleSection": {
+      "additionalProperties": false,
+      "properties": {
+        "items": {
+          "items": {
+            "$ref": "#/$defs/ConsoleItem"
+          },
+          "type": "array"
+        },
+        "section_id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "section_id",
+        "title",
+        "items"
+      ],
+      "type": "object"
+    },
+    "ConsoleSnapshot": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.console/v1alpha1"
+        },
+        "observed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "owner_uid": {
+          "type": "integer"
+        },
+        "recovery_mode": {
+          "type": "boolean"
+        },
+        "release_id": {
+          "type": "string"
+        },
+        "sections": {
+          "items": {
+            "$ref": "#/$defs/ConsoleSection"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "observed_at",
+        "owner_uid",
+        "release_id",
+        "sections",
+        "recovery_mode",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.console.snapshot/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.console/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/ConsoleSnapshot"
+    },
+    "schema_id": {
+      "const": "fam.console.snapshot/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "FAM Console snapshot",
+  "type": "object"
+}

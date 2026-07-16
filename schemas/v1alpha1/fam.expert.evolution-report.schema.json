@@ -1,0 +1,116 @@
+{
+  "$defs": {
+    "ExpertEvolutionProposal": {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "enum": [
+            "split",
+            "merge",
+            "retire"
+          ],
+          "type": "string"
+        },
+        "approval_required": {
+          "type": "boolean"
+        },
+        "contract_version": {
+          "const": "fam.expert.evolution/v1alpha1"
+        },
+        "evidence_slice_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "proposal_id": {
+          "type": "string"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "state_mutated": {
+          "type": "boolean"
+        },
+        "subject_expert_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "proposal_id",
+        "action",
+        "subject_expert_ids",
+        "evidence_slice_ids",
+        "reason_codes",
+        "approval_required",
+        "state_mutated",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "ExpertEvolutionReport": {
+      "additionalProperties": false,
+      "properties": {
+        "applied_proposal_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "contract_version": {
+          "const": "fam.expert.evolution/v1alpha1"
+        },
+        "proposals": {
+          "items": {
+            "$ref": "#/$defs/ExpertEvolutionProposal"
+          },
+          "type": "array"
+        },
+        "report_id": {
+          "type": "string"
+        },
+        "source_benchmark_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "report_id",
+        "source_benchmark_ids",
+        "proposals",
+        "applied_proposal_ids",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.expert.evolution-report/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.expert.evolution/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/ExpertEvolutionReport"
+    },
+    "schema_id": {
+      "const": "fam.expert.evolution-report/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Advisory expert evolution report",
+  "type": "object"
+}

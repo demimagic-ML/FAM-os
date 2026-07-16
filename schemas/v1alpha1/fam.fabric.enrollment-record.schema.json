@@ -1,0 +1,78 @@
+{
+  "$defs": {
+    "DeviceEnrollmentRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.fabric.device-identity/v1alpha1"
+        },
+        "enrolled_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "identity": {
+          "$ref": "#/$defs/DeviceIdentity"
+        },
+        "owner_id": {
+          "type": "string"
+        },
+        "trusted": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "identity",
+        "enrolled_at",
+        "owner_id",
+        "trusted",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "DeviceIdentity": {
+      "additionalProperties": false,
+      "properties": {
+        "device_id": {
+          "type": "string"
+        },
+        "display_name": {
+          "type": "string"
+        },
+        "fingerprint_sha256": {
+          "type": "string"
+        },
+        "public_key_base64": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "device_id",
+        "display_name",
+        "public_key_base64",
+        "fingerprint_sha256"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.fabric.enrollment-record/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.fabric.device-identity/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/DeviceEnrollmentRecord"
+    },
+    "schema_id": {
+      "const": "fam.fabric.enrollment-record/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Owner-bound trusted device enrollment",
+  "type": "object"
+}

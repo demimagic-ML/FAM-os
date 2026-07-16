@@ -14,7 +14,6 @@ from fam_os.core.contracts import (
     FailureCategory, FailureComponent, FailureEnvelope, ResultStatus,
     RetryDisposition, TaskRequest, TaskResult,
 )
-from fam_os.core.ingress.contracts import CoreIngressRequest
 from fam_os.core.ingress.ports import CoreTaskExecutor, IngressCapabilityRegistry
 
 

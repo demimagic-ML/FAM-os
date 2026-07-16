@@ -3,6 +3,7 @@ import unittest
 from pathlib import Path
 
 from fam_os.adapters.ollama import OllamaRuntime, OllamaSettings
+from fam_os.core.ports.embedding import EmbeddingRequest
 from fam_os.adapters.ollama.errors import OllamaTransportError
 from fam_os.core.ports.inference import InferenceMessage, InferenceRequest, MessageRole
 
@@ -23,6 +24,23 @@ class FakeTransport:
 
 
 class OllamaRuntimeTests(unittest.TestCase):
+    def test_embed_uses_batch_endpoint_and_parses_vectors(self) -> None:
+        transport = FakeTransport([{
+            "embeddings": [[1, 0.5], [0.25, 1]], "prompt_eval_count": 7,
+        }])
+        times = iter((2.0, 2.4))
+        runtime = OllamaRuntime(
+            OllamaSettings("http://localhost:11434", 15), transport,
+            clock=lambda: next(times),
+        )
+
+        result = runtime.embed(EmbeddingRequest("embed-model", ("a", "b")))
+
+        self.assertEqual(((1.0, 0.5), (0.25, 1.0)), result.vectors)
+        self.assertEqual(7, result.prompt_tokens)
+        self.assertEqual("http://localhost:11434/api/embed", transport.requests[0][1])
+        self.assertEqual(["a", "b"], transport.requests[0][2]["input"])
+
     def test_chat_uses_transport_and_measures_wall_time(self) -> None:
         response = json.loads((FIXTURES / "chat-response.json").read_text())
         transport = FakeTransport([response])

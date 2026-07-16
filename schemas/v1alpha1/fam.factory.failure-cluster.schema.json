@@ -1,0 +1,59 @@
+{
+  "$defs": {
+    "FailureTraceCluster": {
+      "additionalProperties": false,
+      "properties": {
+        "capability_id": {
+          "type": "string"
+        },
+        "cluster_id": {
+          "type": "string"
+        },
+        "evidence_sha256s": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "failed_requirement_id": {
+          "type": "string"
+        },
+        "trace_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "cluster_id",
+        "capability_id",
+        "failed_requirement_id",
+        "trace_ids",
+        "evidence_sha256s"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.factory.failure-cluster/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.factory.discovery/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/FailureTraceCluster"
+    },
+    "schema_id": {
+      "const": "fam.factory.failure-cluster/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Clustered expert failures",
+  "type": "object"
+}

@@ -1,0 +1,53 @@
+{
+  "$defs": {
+    "AdaptationRollbackReceipt": {
+      "additionalProperties": false,
+      "properties": {
+        "applied": {
+          "type": "boolean"
+        },
+        "contract_version": {
+          "const": "fam.adaptation.drift/v1alpha1"
+        },
+        "rejected_snapshot_id": {
+          "type": "string"
+        },
+        "restored_payload_sha256": {
+          "type": "string"
+        },
+        "restored_snapshot_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "rejected_snapshot_id",
+        "restored_snapshot_id",
+        "restored_payload_sha256",
+        "applied",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.adaptation.rollback-receipt/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.adaptation.drift/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/AdaptationRollbackReceipt"
+    },
+    "schema_id": {
+      "const": "fam.adaptation.rollback-receipt/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Adaptation rollback receipt",
+  "type": "object"
+}

@@ -6,11 +6,12 @@ import time
 from collections.abc import Callable
 
 from fam_os.adapters.ollama.errors import OllamaTransportError
-from fam_os.adapters.ollama.payloads import build_chat_payload, build_unload_payload
-from fam_os.adapters.ollama.responses import parse_chat_response, parse_loaded_models
+from fam_os.adapters.ollama.payloads import build_chat_payload, build_embedding_payload, build_unload_payload
+from fam_os.adapters.ollama.responses import parse_chat_response, parse_embedding_response, parse_loaded_models
 from fam_os.adapters.ollama.settings import OllamaSettings
 from fam_os.adapters.ollama.transport import JsonTransport, UrllibJsonTransport
 from fam_os.core.ports.inference import InferenceRequest, InferenceResponse, LoadedModel
+from fam_os.core.ports.embedding import EmbeddingRequest, EmbeddingResponse
 
 
 class OllamaRuntime:
@@ -35,6 +36,16 @@ class OllamaRuntime:
             self._settings.timeout_seconds,
         )
         return parse_chat_response(request.model_ref, payload, self._clock() - started)
+
+    def embed(self, request: EmbeddingRequest) -> EmbeddingResponse:
+        started = self._clock()
+        payload = self._transport.request(
+            "POST", self._settings.endpoint("/api/embed"),
+            build_embedding_payload(request), self._settings.timeout_seconds,
+        )
+        return parse_embedding_response(
+            request.model_ref, payload, self._clock() - started,
+        )
 
     def unload(self, model_ref: str) -> None:
         self._transport.request(

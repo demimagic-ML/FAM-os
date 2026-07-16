@@ -9,6 +9,7 @@ from fam_os.core.execution.contracts import (
 from fam_os.core.execution.policy import GenerationSettings, VerifiedCodePolicy
 from fam_os.core.execution.repair_context import RepairContext
 from fam_os.core.execution.use_case import VerifiedCodeExecution
+from fam_os.core.execution.budgeted_attempt import BudgetedAttemptExecutor
 
 __all__ = [
     "AttemptKind",
@@ -19,4 +20,5 @@ __all__ = [
     "VerifiedCodeExecution",
     "VerifiedCodePolicy",
     "VerifiedExecutionOutcome",
+    "BudgetedAttemptExecutor",
 ]

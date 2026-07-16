@@ -1,0 +1,53 @@
+{
+  "$defs": {
+    "AdapterTrainingPlan": {
+      "additionalProperties": false,
+      "properties": {
+        "adapter_id": {
+          "type": "string"
+        },
+        "base_model_ref": {
+          "type": "string"
+        },
+        "rank": {
+          "type": "integer"
+        },
+        "target_capability_id": {
+          "type": "string"
+        },
+        "trainable_parameter_count": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "adapter_id",
+        "base_model_ref",
+        "target_capability_id",
+        "rank",
+        "trainable_parameter_count"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.factory.adapter-plan/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.factory.pipeline/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/AdapterTrainingPlan"
+    },
+    "schema_id": {
+      "const": "fam.factory.adapter-plan/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Adapter training plan",
+  "type": "object"
+}

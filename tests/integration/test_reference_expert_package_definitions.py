@@ -34,9 +34,8 @@ class ReferenceExpertPackageDefinitionTests(unittest.TestCase):
             self.load(path, ExpertRuntimeBinding)
             for path in sorted((PACKAGE_ROOT / "bindings").glob("*.json"))
         )
-        self.assertEqual(7, len(manifests))
-        self.assertEqual(7, len(bindings))
-        by_coordinate = {binding.coordinate: binding for binding in bindings}
+        self.assertEqual(19, len(manifests))
+        self.assertEqual(19, len(bindings))
         for manifest in manifests:
             coordinate = (
                 manifest.package.package_id,

@@ -1,0 +1,72 @@
+{
+  "$defs": {
+    "WorkflowOutcomePrediction": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.adaptation.outcome-prediction/v1alpha1"
+        },
+        "escalation_probability": {
+          "type": "number"
+        },
+        "local_only": {
+          "type": "boolean"
+        },
+        "observation_count": {
+          "type": "integer"
+        },
+        "predicted_context_tokens": {
+          "type": "integer"
+        },
+        "prediction_id": {
+          "type": "string"
+        },
+        "prewarm_escalation": {
+          "type": "boolean"
+        },
+        "source_observation_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "workflow_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "prediction_id",
+        "workflow_id",
+        "observation_count",
+        "predicted_context_tokens",
+        "escalation_probability",
+        "prewarm_escalation",
+        "source_observation_ids",
+        "local_only",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.adaptation.workflow-prediction/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.adaptation.outcome-prediction/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/WorkflowOutcomePrediction"
+    },
+    "schema_id": {
+      "const": "fam.adaptation.workflow-prediction/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Local context and escalation prediction",
+  "type": "object"
+}

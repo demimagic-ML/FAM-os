@@ -1,0 +1,1 @@
+"""Packaged FAM Console assets."""

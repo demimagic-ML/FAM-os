@@ -1,0 +1,62 @@
+{
+  "$defs": {
+    "OperatingPolicyDecision": {
+      "additionalProperties": false,
+      "properties": {
+        "background_adaptation_allowed": {
+          "type": "boolean"
+        },
+        "contract_version": {
+          "const": "fam.adaptation.resource-policy/v1alpha1"
+        },
+        "maximum_expert_tier": {
+          "enum": [
+            "micro",
+            "economical",
+            "escalation",
+            "remote"
+          ],
+          "type": "string"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "speculative_prefetch_allowed": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "maximum_expert_tier",
+        "speculative_prefetch_allowed",
+        "background_adaptation_allowed",
+        "reason_codes",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.adaptation.operating-policy/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.adaptation.resource-policy/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/OperatingPolicyDecision"
+    },
+    "schema_id": {
+      "const": "fam.adaptation.operating-policy/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Operating-state adaptation policy",
+  "type": "object"
+}

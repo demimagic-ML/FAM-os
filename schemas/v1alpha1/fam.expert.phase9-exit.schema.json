@@ -1,0 +1,71 @@
+{
+  "$defs": {
+    "Phase9ExitEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.expert.phase9-exit/v1alpha1"
+        },
+        "evidence_id": {
+          "type": "string"
+        },
+        "largest_tier_task_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "mixed_benchmark_passed": {
+          "type": "boolean"
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "phase_artifact_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "tasks_stopped_before_largest_tier": {
+          "type": "integer"
+        },
+        "total_tasks": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "evidence_id",
+        "mixed_benchmark_passed",
+        "total_tasks",
+        "tasks_stopped_before_largest_tier",
+        "largest_tier_task_ids",
+        "phase_artifact_ids",
+        "passed",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.expert.phase9-exit/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.expert.phase9-exit/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/Phase9ExitEvidence"
+    },
+    "schema_id": {
+      "const": "fam.expert.phase9-exit/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Phase 9 expert hierarchy exit evidence",
+  "type": "object"
+}

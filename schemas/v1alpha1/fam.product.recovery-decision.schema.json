@@ -1,0 +1,65 @@
+{
+  "$defs": {
+    "RecoveryDecision": {
+      "additionalProperties": false,
+      "properties": {
+        "allowed": {
+          "type": "boolean"
+        },
+        "contract_version": {
+          "const": "fam.product.recovery/v1alpha1"
+        },
+        "network_allowed": {
+          "type": "boolean"
+        },
+        "operation": {
+          "enum": [
+            "diagnose",
+            "export_audit",
+            "export_memory",
+            "rollback_release",
+            "repair_state",
+            "run_inference",
+            "application_action",
+            "mutate_memory",
+            "train_expert",
+            "network_access"
+          ],
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "operation",
+        "allowed",
+        "network_allowed",
+        "reason",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.product.recovery-decision/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.product.recovery/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/RecoveryDecision"
+    },
+    "schema_id": {
+      "const": "fam.product.recovery-decision/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Recovery-mode decision",
+  "type": "object"
+}

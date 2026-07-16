@@ -1,0 +1,67 @@
+{
+  "$defs": {
+    "OperatingState": {
+      "additionalProperties": false,
+      "properties": {
+        "battery_percent": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "charging": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "foreground_load": {
+          "type": "number"
+        },
+        "idle_seconds": {
+          "type": "number"
+        },
+        "thermal_celsius": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "battery_percent",
+        "charging",
+        "thermal_celsius",
+        "foreground_load",
+        "idle_seconds"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.adaptation.operating-state/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.adaptation.resource-policy/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/OperatingState"
+    },
+    "schema_id": {
+      "const": "fam.adaptation.operating-state/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Observed battery thermal load and idle state",
+  "type": "object"
+}

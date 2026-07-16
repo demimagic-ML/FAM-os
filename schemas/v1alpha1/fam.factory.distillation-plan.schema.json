@@ -1,0 +1,81 @@
+{
+  "$defs": {
+    "DistillationPlan": {
+      "additionalProperties": false,
+      "properties": {
+        "dataset": {
+          "$ref": "#/$defs/TeacherDataset"
+        },
+        "held_out_fraction": {
+          "type": "number"
+        },
+        "maximum_epochs": {
+          "type": "integer"
+        },
+        "plan_id": {
+          "type": "string"
+        },
+        "student_interface_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "plan_id",
+        "dataset",
+        "student_interface_id",
+        "maximum_epochs",
+        "held_out_fraction"
+      ],
+      "type": "object"
+    },
+    "TeacherDataset": {
+      "additionalProperties": false,
+      "properties": {
+        "dataset_id": {
+          "type": "string"
+        },
+        "example_count": {
+          "type": "integer"
+        },
+        "examples_sha256": {
+          "type": "string"
+        },
+        "license_id": {
+          "type": "string"
+        },
+        "teacher_model_ref": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "dataset_id",
+        "teacher_model_ref",
+        "example_count",
+        "examples_sha256",
+        "license_id"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.factory.distillation-plan/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.factory.pipeline/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/DistillationPlan"
+    },
+    "schema_id": {
+      "const": "fam.factory.distillation-plan/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Distillation plan",
+  "type": "object"
+}

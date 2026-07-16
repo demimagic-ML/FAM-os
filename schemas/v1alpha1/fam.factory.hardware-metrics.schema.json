@@ -1,0 +1,53 @@
+{
+  "$defs": {
+    "HardwareTrainingMetrics": {
+      "additionalProperties": false,
+      "properties": {
+        "activated_parameters": {
+          "type": "integer"
+        },
+        "bytes_moved": {
+          "type": "integer"
+        },
+        "energy_joules": {
+          "type": "number"
+        },
+        "latency_seconds": {
+          "type": "number"
+        },
+        "quality": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "quality",
+        "activated_parameters",
+        "bytes_moved",
+        "latency_seconds",
+        "energy_joules"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.factory.hardware-metrics/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.factory.hardware-objective/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/HardwareTrainingMetrics"
+    },
+    "schema_id": {
+      "const": "fam.factory.hardware-metrics/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Hardware-aware training metrics",
+  "type": "object"
+}

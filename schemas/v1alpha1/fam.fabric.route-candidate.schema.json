@@ -1,0 +1,61 @@
+{
+  "$defs": {
+    "FabricRouteCandidate": {
+      "additionalProperties": false,
+      "properties": {
+        "device_id": {
+          "type": "string"
+        },
+        "expert_id": {
+          "type": "string"
+        },
+        "inference_milliseconds": {
+          "type": "number"
+        },
+        "local": {
+          "type": "boolean"
+        },
+        "network_round_trip_milliseconds": {
+          "type": "number"
+        },
+        "privacy_allowed": {
+          "type": "boolean"
+        },
+        "trusted": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "device_id",
+        "expert_id",
+        "local",
+        "inference_milliseconds",
+        "network_round_trip_milliseconds",
+        "privacy_allowed",
+        "trusted"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.fabric.route-candidate/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.fabric.scheduling/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/FabricRouteCandidate"
+    },
+    "schema_id": {
+      "const": "fam.fabric.route-candidate/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Local or remote fabric route candidate",
+  "type": "object"
+}

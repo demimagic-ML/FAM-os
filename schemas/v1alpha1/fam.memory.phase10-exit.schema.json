@@ -1,0 +1,69 @@
+{
+  "$defs": {
+    "Phase10ExitEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.memory.phase10-exit/v1alpha1"
+        },
+        "cross_scope_hits": {
+          "type": "integer"
+        },
+        "deletion_left_zero_chunks": {
+          "type": "boolean"
+        },
+        "encrypted_plaintext_leaks": {
+          "type": "integer"
+        },
+        "evidence_id": {
+          "type": "string"
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "persistent_items_deletable": {
+          "type": "boolean"
+        },
+        "persistent_items_inspectable": {
+          "type": "boolean"
+        },
+        "retrieval_top1_accuracy": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "evidence_id",
+        "persistent_items_inspectable",
+        "persistent_items_deletable",
+        "deletion_left_zero_chunks",
+        "cross_scope_hits",
+        "encrypted_plaintext_leaks",
+        "retrieval_top1_accuracy",
+        "passed",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.memory.phase10-exit/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.memory.phase10-exit/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/Phase10ExitEvidence"
+    },
+    "schema_id": {
+      "const": "fam.memory.phase10-exit/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Phase 10 memory-fabric exit evidence",
+  "type": "object"
+}

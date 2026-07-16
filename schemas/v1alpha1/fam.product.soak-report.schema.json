@@ -1,0 +1,107 @@
+{
+  "$defs": {
+    "SoakReport": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.product.soak/v1alpha1"
+        },
+        "duration_seconds": {
+          "type": "number"
+        },
+        "failures": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "injected_crashes": {
+          "type": "integer"
+        },
+        "minimum_free_storage_bytes": {
+          "type": "integer"
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "peak_temperature_celsius": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "profile_id": {
+          "type": "string"
+        },
+        "rss_end_bytes": {
+          "type": "integer"
+        },
+        "rss_peak_bytes": {
+          "type": "integer"
+        },
+        "rss_start_bytes": {
+          "type": "integer"
+        },
+        "samples": {
+          "type": "integer"
+        },
+        "storage_bytes_verified": {
+          "type": "integer"
+        },
+        "storage_cycles": {
+          "type": "integer"
+        },
+        "successful_recoveries": {
+          "type": "integer"
+        },
+        "thermal_samples": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "profile_id",
+        "duration_seconds",
+        "samples",
+        "rss_start_bytes",
+        "rss_peak_bytes",
+        "rss_end_bytes",
+        "minimum_free_storage_bytes",
+        "storage_cycles",
+        "storage_bytes_verified",
+        "thermal_samples",
+        "peak_temperature_celsius",
+        "injected_crashes",
+        "successful_recoveries",
+        "failures",
+        "passed",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.product.soak-report/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.product.soak/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/SoakReport"
+    },
+    "schema_id": {
+      "const": "fam.product.soak-report/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Production soak report",
+  "type": "object"
+}
