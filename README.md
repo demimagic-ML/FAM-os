@@ -1,10 +1,16 @@
-# FAM_OS — For All Mankind Operating System
+<p align="center">
+  <img src="FamOS.jpeg" alt="FAM_OS" width="220"/>
+</p>
 
-![FAM_OS profile photo](FamOS.jpeg)
+<h1 align="center">FAM_OS</h1>
+<h3 align="center">For All Mankind Operating System</h3>
+<p align="center"><b>Local AI that actually runs on your Linux desktop — verified, resource-aware, and under your control.</b></p>
 
-FAM_OS is an **always-on operating-system intelligence service** built above the Linux kernel. It weaves together local models, your real hardware, the applications you already use, deterministic tools, memory, and trusted devices into one supervised, privacy-first intelligence fabric.
+---
 
-> **FAM_OS is not an LLM living inside the Linux kernel.** Linux still owns hardware, processes, memory, filesystems, networking, and drivers. FAM_OS adds a thin deterministic supervisor and unprivileged user-space services on top.
+FAM_OS is an always-on operating-system intelligence service built **above the Linux kernel**. It turns your existing applications, files, and tools into permissioned AI capabilities, then schedules models across your CPU, RAM, GPU/VRAM, and SSD with explicit budgets.
+
+No cloud. No kernel replacement. No screen-clicking guessing game.
 
 ```text
 Linux kernel
@@ -20,11 +26,11 @@ A simple way to think about it: FAM_OS makes your whole PC itself intelligent, w
 
 ## Author
 
-FAM_OS is being built by **[Ivan Dimitrov](https://www.linkedin.com/in/ivan-dimitrov-online/)**, an architect of intelligent systems based in Bulgaria. He specializes in turning complex technical environments into practical, local-first AI infrastructure.
+FAM_OS is being built by **[Ivan Dimitrov](https://www.linkedin.com/in/ivan-dimitrov-online/)**, an architect of intelligent systems based in Bulgaria.
 
 ---
 
-## What problem does it solve?
+## Why this matters
 
 Today's AI assistants are usually one of the following:
 
@@ -74,13 +80,9 @@ If the VS Code: extension is not running, the same task degrades gracefully: FAM
 
 ---
 
-## Routing example: small expert, bigger fallback, graceful degradation
+## Smallest verified model first
 
-You ask the FAM Shell:
-
-> "Explain this Python traceback in my terminal."
-
-FAM_OS does not reach for the biggest model first. Its router treats experts as a scheduled fabric:
+FAM_OS does not reach for the biggest model by default. Its router treats experts as a scheduled fabric:
 
 1. **Estimate complexity.** A short traceback is routed to a small, fast code-explanation expert, for example `qwen3:1.7b`.
 2. **Run the small expert.** It loads quickly and stays within a tight RAM/VRAM budget.
@@ -89,6 +91,19 @@ FAM_OS does not reach for the biggest model first. Its router treats experts as 
 5. **Degrade safely.** If the stronger model also fails, FAM_OS returns a deterministic traceback parse and a structured failure instead of a guessed answer. If the GPU is already full, it falls back to the `compat-cpu-16gb` profile. If nothing can satisfy the task, it declines and records the reason in the audit log.
 
 This is the opposite of both "always call the biggest model" and "always call the smallest model": FAM_OS picks the smallest model that can be *verified* for the task, and every fallback is explicit.
+
+---
+
+## Context windows are memory, not a model spec
+
+Most AI tools treat "context window" as a fixed number on a model card. FAM_OS treats context as a **scheduled memory allocation**:
+
+- It reads the machine's actual **cgroup limits** instead of trusting the memory number reported by an inference engine.
+- It budgets prompt tokens, KV cache, model weights, and working set across **RAM, GPU/VRAM, and SSD-backed cache**.
+- It can page a small expert out and load a larger one only when verification evidence justifies the cost, but it never silently counts SSD capacity as RAM.
+- A stronger host exposes its full CPU, RAM, accelerator memory, and storage tiers to the scheduler with explicit OS headroom, so a 1.7B model can answer a quick question, be evicted, and then a 26B model can be loaded for a harder one — without everything resident at once or crashing into swap.
+
+In short: FAM_OS schedules intelligence like an operating system schedules processes, because that is exactly what it is.
 
 ---
 
@@ -110,7 +125,7 @@ FAM_OS overlaps with several active areas. None of the projects below is a direc
 
 ---
 
-## What makes FAM_OS different?
+## What makes FAM_OS different
 
 The combination below is the project's core bet:
 
@@ -125,19 +140,6 @@ The combination below is the project's core bet:
 | **MCP as an adapter** | Not locked into one connector protocol. |
 | **Local-first and privacy-reviewed** | Workstation captures scrub identifiers and retain failed baselines as evidence. |
 | **Audit + approval as first-class** | Every action carries scope, reversibility, confirmation policy, and an audit event. |
-
----
-
-## Context windows are memory, not a model spec
-
-Most AI tools treat "context window" as a fixed number on a model card. FAM_OS treats context as a **scheduled memory allocation**:
-
-- It reads the machine's actual **cgroup limits** instead of trusting the memory number reported by an inference engine.
-- It budgets prompt tokens, KV cache, model weights, and working set across **RAM, GPU/VRAM, and SSD-backed cache**.
-- It can page a small expert out and load a larger one only when verification evidence justifies the cost, but it never silently counts SSD capacity as RAM.
-- A stronger host exposes its full CPU, RAM, accelerator memory, and storage tiers to the scheduler with explicit OS headroom, so a 1.7B model can answer a quick question, be evicted, and then a 26B model can be loaded for a harder one — without everything resident at once or crashing into swap.
-
-In short: FAM_OS schedules intelligence like an operating system schedules processes, because that is exactly what it is.
 
 ---
 
@@ -161,7 +163,9 @@ These numbers come from local runs on the `full-reference-workstation` profile. 
 
 Full architecture records, implementation handoffs, and decision records are kept inside the repository under `docs/` and `handoffs/`.
 
-## Future work
+---
+
+## Roadmap
 
 - **Phase 7 — Hardware scheduler and neural pager:** Turn context length and model residency into scheduled memory allocations across CPU, RAM, GPU/VRAM, and SSD cache.
 - **Phase 8 — Verification Fabric:** Plug-in verifier packages, deterministic sandbox policy, and stronger postcondition checking.
@@ -170,20 +174,16 @@ Full architecture records, implementation handoffs, and decision records are kep
 - **Phase 11 — Local adaptation and predictive behavior:** Learn from your workflows without baking personal data into model weights.
 - **Phase 12 — Trusted multi-device fabric:** Extend the same supervised boundary to trusted local devices.
 - **Phase 13 — Expert Factory and hardware-aware training:** Tools to build, verify, and optimize experts for the target machine.
-- **Phase 14 — Reliability, security, and productization:** Hardening, packaging, and making FAM_OS installable as a real local service.
+- **Phase 14 — Reliability, security, and productization:** Make FAM_OS trivial to install, update, diagnose, repair, and completely remove on Linux; harden the runtime; and publish reproducible benchmarks.
 
 ---
 
-## Quick start for readers
+## Get involved
 
-1. Read the architecture overview in `docs/architecture/APPLICATION_WEAVING.md`.
-2. Read the MCP boundary in `docs/architecture/MCP_APPLICATION_CONNECTOR.md`.
-3. Read the hardware profiles in `docs/architecture/HARDWARE_VALIDATION_PROFILES.md`.
-4. Read the latest handoff in `handoffs/`.
-5. Run the test suite: `PYTHONPATH=src:. python3 -m unittest discover -s tests`
-
----
+1. Read the architecture overview: `docs/architecture/APPLICATION_WEAVING.md`
+2. Read the MCP boundary: `docs/architecture/MCP_APPLICATION_CONNECTOR.md`
+3. Run the tests: `PYTHONPATH=src:. python3 -m unittest discover -s tests`
 
 ## License
 
-See the repository's `LICENSE` file for the exact terms.
+MIT — see `LICENSE`.
