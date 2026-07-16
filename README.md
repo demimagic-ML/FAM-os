@@ -166,7 +166,8 @@ The combination below is the project's core bet:
 
 FAM_OS is a working prototype, not a packaged product.
 
-- **Phases 1–8 are complete.** This includes the FAM Shell terminal UI, the Application Fabric, MCP client/server adapters, Linux accessibility and discovery bridges, deterministic tool adapters, action safety, a real cross-application acceptance demo, the Expert Fabric manifest schema, the Hardware Scheduler with cgroup-aware resource observation and GPU/VRAM/NPU/SSD budgeting, and the Verification Fabric with verifier manifests, hardened sandboxing, and quality gates for Python, JavaScript/TypeScript, Rust, math, retrieval, and application actions.
+- **Phases 1–15 are complete.** This includes the FAM Shell terminal UI, the Application Fabric, MCP client/server adapters, Linux accessibility and discovery bridges, deterministic tool adapters, action safety, a real cross-application acceptance demo, the Expert Fabric manifest schema, the Hardware Scheduler with cgroup-aware resource observation and GPU/VRAM/NPU/SSD budgeting, the Verification Fabric with verifier manifests and hardened sandboxing, the multi-task Expert Fabric, permissioned memory and retrieval, local adaptation, trusted multi-device fabric, expert factory, and full productization with install/update/diagnose/repair/remove support.
+- **Installed operational acceptance passed.** A fresh isolated installation starts `fam-service`, answers a real `qwen3:1.7b` request through Ollama, serves the authenticated Console, repairs damage, and removes every installed artifact cleanly.
 
 ### Evidence snapshot
 
@@ -174,12 +175,19 @@ These numbers come from local runs on the `full-reference-workstation` profile. 
 
 | Milestone | Result |
 |---|---|
-| Unit + contract test suite | **551 passed** |
+| Unit + contract test suite | **842 passed** (2 environment-dependent skips) |
 | Cross-application acceptance demo (Phase 5.12) | **Passed**: accessibility 2/2, MCP 1/1, OS/tool 5/5, native semantic 4/4 |
 | Strong-model quality rerun (Phase 2.14) | `laguna-xs.2:q4_K_M` **passed after one repair**; `gemma4:26b` **passed on first attempt** |
 | Original 7B/14B smoke baseline | **Preserved as failed baseline** for comparison; verification requirements were not weakened |
 | Hardware scheduler (Phase 7) | cgroup-aware observation, GPU/VRAM split-offload, SSD-backed model paging, NPU feasibility, cache telemetry, and bounded predictive prefetching |
 | Verification Fabric (Phase 8) | Verifier manifests, hardened sandbox, and quality gates for Python, JS/TS, Rust, math, retrieval, and application actions |
+| Multi-task Expert Fabric (Phase 9) | Five-family benchmark, micro-experts, verified code escalation, retrieval tiers, verified math, local media, efficiency reports, and expert evolution |
+| Memory + retrieval fabric (Phase 10) | Permissioned document indexes, encrypted chunks, scope-first relevance, inspection/export/deletion, 100% live top-1 retrieval |
+| Local adaptation (Phase 11) | Repeated-workflow latency improvement (1.0 s → 0.13 s), verified-outcome prediction, preference adapters, operating-state policy, drift rollback |
+| Trusted multi-device fabric (Phase 12) | Encrypted authenticated desktop/laptop/home-server demo with remote expert selection and disconnect recovery |
+| Expert Factory (Phase 13) | End-to-end train, package, sign, publish, regression-gate, and retire lifecycle |
+| Reliability + security (Phase 14) | Threat models, atomic update/rollback, multi-user isolation, recovery mode, long-running soak/crash tests, reproducible benchmarks |
+| Productization / install (Phase 15) | Isolated prefix install, systemd unit verification, real Shell request through Ollama, authenticated Console, diagnose/repair/remove |
 | Resource discipline | **Zero swap**, **zero OOM kills**; CPU/RAM/VRAM/NPU/SSD measured per run |
 
 Full architecture records, implementation handoffs, and decision records are kept inside the repository under `docs/` and `handoffs/`.
@@ -198,12 +206,15 @@ Together they make the "smallest verified model first" strategy real: you can sa
 
 - **[x] Phase 7 — Hardware scheduler and neural pager:** Turn context length and model residency into scheduled memory allocations across CPU, RAM, GPU/VRAM, NPU, and SSD cache.
 - **[x] Phase 8 — Verification Fabric:** Plug-in verifier packages, deterministic sandbox policy, and stronger postcondition checking.
-- **Phase 9 — Multi-task Expert Fabric:** Smaller, swappable experts coordinated by a router instead of one giant model per request.
-- **Phase 10 — Memory and retrieval fabric:** Permissioned short-term and long-term memory with provenance and retrieval.
-- **Phase 11 — Local adaptation and predictive behavior:** Learn from your workflows without baking personal data into model weights.
-- **Phase 12 — Trusted multi-device fabric:** Extend the same supervised boundary to trusted local devices.
-- **Phase 13 — Expert Factory and hardware-aware training:** Tools to build, verify, and optimize experts for the target machine.
-- **Phase 14 — Reliability, security, and productization:** Make FAM_OS trivial to install, update, diagnose, repair, and completely remove on Linux; harden the runtime; and publish reproducible benchmarks.
+- **[x] Phase 9 — Multi-task Expert Fabric:** Smaller, swappable experts coordinated by a router instead of one giant model per request.
+- **[x] Phase 10 — Memory and retrieval fabric:** Permissioned short-term and long-term memory with provenance and retrieval.
+- **[x] Phase 11 — Local adaptation and predictive behavior:** Learn from your workflows without baking personal data into model weights.
+- **[x] Phase 12 — Trusted multi-device fabric:** Extend the same supervised boundary to trusted local devices.
+- **[x] Phase 13 — Expert Factory and hardware-aware training:** Tools to build, verify, and optimize experts for the target machine.
+- **[x] Phase 14 — Reliability, security, and productization:** Make FAM_OS trivial to install, update, diagnose, repair, and completely remove on Linux; harden the runtime; and publish reproducible benchmarks.
+- **[x] Phase 15 — Installed operational acceptance:** Prove FAM_OS works as an installed, startable local AI product answering real requests through Ollama.
+
+The core roadmap is complete. The remaining item is a third-party human penetration test, which is explicitly not represented as certification.
 
 ---
 
