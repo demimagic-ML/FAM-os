@@ -18,6 +18,12 @@ A simple way to think about it: FAM_OS makes your whole PC itself intelligent, w
 
 ---
 
+## Author
+
+FAM_OS is being built by **[Ivan Dimitrov](https://www.linkedin.com/in/ivan-dimitrov-online/)**, an architect of intelligent systems based in Bulgaria. He specializes in turning complex technical environments into practical, local-first AI infrastructure.
+
+---
+
 ## What problem does it solve?
 
 Today's AI assistants are usually one of the following:
