@@ -166,7 +166,7 @@ The combination below is the project's core bet:
 
 FAM_OS is a working prototype, not a packaged product.
 
-- **Phases 1–6 are complete.** This includes the FAM Shell terminal UI, the Application Fabric, MCP client/server adapters, Linux accessibility and discovery bridges, deterministic tool adapters, action safety, a real cross-application acceptance demo, and the Expert Fabric manifest schema, capability namespace, and local registry.
+- **Phases 1–8 are complete.** This includes the FAM Shell terminal UI, the Application Fabric, MCP client/server adapters, Linux accessibility and discovery bridges, deterministic tool adapters, action safety, a real cross-application acceptance demo, the Expert Fabric manifest schema, the Hardware Scheduler with cgroup-aware resource observation and GPU/VRAM/NPU/SSD budgeting, and the Verification Fabric with verifier manifests, hardened sandboxing, and quality gates for Python, JavaScript/TypeScript, Rust, math, retrieval, and application actions.
 
 ### Evidence snapshot
 
@@ -178,8 +178,9 @@ These numbers come from local runs on the `full-reference-workstation` profile. 
 | Cross-application acceptance demo (Phase 5.12) | **Passed**: accessibility 2/2, MCP 1/1, OS/tool 5/5, native semantic 4/4 |
 | Strong-model quality rerun (Phase 2.14) | `laguna-xs.2:q4_K_M` **passed after one repair**; `gemma4:26b` **passed on first attempt** |
 | Original 7B/14B smoke baseline | **Preserved as failed baseline** for comparison; verification requirements were not weakened |
+| Hardware scheduler (Phase 7) | cgroup-aware observation, GPU/VRAM split-offload, SSD-backed model paging, NPU feasibility, cache telemetry, and bounded predictive prefetching |
+| Verification Fabric (Phase 8) | Verifier manifests, hardened sandbox, and quality gates for Python, JS/TS, Rust, math, retrieval, and application actions |
 | Resource discipline | **Zero swap**, **zero OOM kills**; CPU/RAM/VRAM/NPU/SSD measured per run |
-| NPU feasibility (Phase 7.8) | Intel Arrow Lake NPU routing micro-expert executed with OpenVINO; `fallback_used: false` |
 
 Full architecture records, implementation handoffs, and decision records are kept inside the repository under `docs/` and `handoffs/`.
 
@@ -187,8 +188,8 @@ Full architecture records, implementation handoffs, and decision records are kep
 
 ## Roadmap
 
-- **Phase 7 — Hardware scheduler and neural pager:** Turn context length and model residency into scheduled memory allocations across CPU, RAM, GPU/VRAM, NPU, and SSD cache.
-- **Phase 8 — Verification Fabric:** Plug-in verifier packages, deterministic sandbox policy, and stronger postcondition checking.
+- **[x] Phase 7 — Hardware scheduler and neural pager:** Turn context length and model residency into scheduled memory allocations across CPU, RAM, GPU/VRAM, NPU, and SSD cache.
+- **[x] Phase 8 — Verification Fabric:** Plug-in verifier packages, deterministic sandbox policy, and stronger postcondition checking.
 - **Phase 9 — Multi-task Expert Fabric:** Smaller, swappable experts coordinated by a router instead of one giant model per request.
 - **Phase 10 — Memory and retrieval fabric:** Permissioned short-term and long-term memory with provenance and retrieval.
 - **Phase 11 — Local adaptation and predictive behavior:** Learn from your workflows without baking personal data into model weights.
