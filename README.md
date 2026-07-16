@@ -84,10 +84,6 @@ FAM_OS does not reach for the biggest model first. Its router treats experts as 
 
 This is the opposite of both "always call the biggest model" and "always call the smallest model": FAM_OS picks the smallest model that can be *verified* for the task, and every fallback is explicit.
 
-`@/home/demimagic/Desktop/NewLLM/FAM_OS/docs/protocols/CORE_ROUTING_LIFECYCLE.md:1-16`
-
-`@/home/demimagic/Desktop/NewLLM/FAM_OS/docs/architecture/HARDWARE_VALIDATION_PROFILES.md:1-81`
-
 ---
 
 ## The landscape — what else exists?
@@ -136,10 +132,6 @@ Most AI tools treat "context window" as a fixed number on a model card. FAM_OS t
 - A stronger host exposes its full CPU, RAM, accelerator memory, and storage tiers to the scheduler with explicit OS headroom, so a 1.7B model can answer a quick question, be evicted, and then a 26B model can be loaded for a harder one — without everything resident at once or crashing into swap.
 
 In short: FAM_OS schedules intelligence like an operating system schedules processes, because that is exactly what it is.
-
-`@/home/demimagic/Desktop/NewLLM/FAM_OS/AGENTS.md:102-109`
-
-`@/home/demimagic/Desktop/NewLLM/FAM_OS/MASTER_PLAN.md:34-36`
 
 ---
 
