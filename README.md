@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="FamOS.jpeg" alt="FAM_OS" width="220"/>
+  <img src="FamOS.jpeg" alt="FAM_OS"/>
 </p>
 
 <h1 align="center">FAM_OS</h1>
