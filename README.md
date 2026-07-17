@@ -23,6 +23,8 @@ Linux kernel
 
 A simple way to think about it: FAM_OS makes your whole PC itself intelligent, while keeping every action **scoped, approved, verified, and auditable**.
 
+<img src="Screenshot from 2026-07-17 23-05-56.png" width="220"/>
+
 ---
 
 ## Author
