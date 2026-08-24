@@ -110,6 +110,8 @@ class ProductEngineeringReviewApi:
             item for item in self._service.for_task(task_id)
             if item.changeset_sha256 == digest
         )
+        if not selections and not checkpoints:
+            return ()
         if len(selections) != 1 or not checkpoints:
             raise PermissionError(
                 "policy-selected independent engineering review is missing"

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import logging
+
 from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
@@ -341,6 +343,9 @@ class ProductNaturalEngineeringApi:
                     session_id=transport_session_id, principal_id=owner_id,
                 )
         except BaseException as error:
+            logging.getLogger(__name__).exception(
+                "Natural engineering activation failed for %s", proposal_id,
+            )
             self._proposals.mark_interrupted(
                 proposal_id, f"{type(error).__name__}:activation_interrupted",
             )
@@ -429,9 +434,19 @@ class ProductNaturalEngineeringApi:
             )
         )
         verifications = []
-        for index, (toolchain, recipe) in enumerate(
-            self._loop.select_verification_recipes(owner_id, task_id)
-        ):
+        agent_reverification_id = None
+        try:
+            selected_recipes = self._loop.select_verification_recipes(
+                owner_id, task_id,
+            )
+        except (LookupError, RuntimeError):
+            if self._executor is None:
+                raise
+            agent_reverification_id = self._executor.reverify_agent(
+                owner_id, proposal.definition,
+            )
+            selected_recipes = ()
+        for index, (toolchain, recipe) in enumerate(selected_recipes):
             verifications.append(self._loop.reverify_candidate(
                 owner_id, task_id,
                 verification_id=f"postapply-{changeset_id}-{index}",
@@ -453,6 +468,8 @@ class ProductNaturalEngineeringApi:
             item.status is CandidateVerificationStatus.COMPLETED and item.passed
             for item in verifications
         )
+        if not verifications:
+            verification_passed = agent_reverification_id is not None
         database_passed = (
             (not database_expected)
             or bool(database_postapply) and all(
@@ -517,6 +534,7 @@ class ProductNaturalEngineeringApi:
                 owner_id, task_id,
                 (
                     *(item.verification_id for item in verifications),
+                    *((agent_reverification_id,) if agent_reverification_id else ()),
                     *(item.receipt_id for item in database_postapply),
                     *(() if integration is None else (
                         integration.cleanup_receipt.receipt_id,
@@ -551,6 +569,7 @@ class ProductNaturalEngineeringApi:
             "postapply_verifications": [
                 encode_document(item) for item in verifications
             ],
+            "postapply_agent_verification_id": agent_reverification_id,
             "postapply_runtime_diagnostic_requests": [
                 encode_document(item) for item in diagnostic_requests
             ],

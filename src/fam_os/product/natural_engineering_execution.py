@@ -25,7 +25,7 @@ from fam_os.core.engineering import EngineeringReviewStatus
 class NaturalEngineeringExecutionCoordinator:
     def __init__(
         self, loop, context_reader, generation: CandidateGenerationService,
-        documentation=None, reviewer=None, integration=None,
+        documentation=None, reviewer=None, integration=None, agent=None,
     ) -> None:
         self._loop = loop
         self._context_reader = context_reader
@@ -33,6 +33,7 @@ class NaturalEngineeringExecutionCoordinator:
         self._documentation = documentation
         self._reviewer = reviewer
         self._integration = integration
+        self._agent = agent
         self._repair = NaturalEngineeringRepairCoordinator(
             loop, context_reader, generation,
         )
@@ -50,6 +51,7 @@ class NaturalEngineeringExecutionCoordinator:
         context = self._context_reader.read(
             preparation.candidate, task.intent, preferred,
         )
+        agent_evidence_ids = ()
         try:
             baseline_requests, baseline_receipts = (
                 self._loop.capture_runtime_performance_baseline(
@@ -75,32 +77,57 @@ class NaturalEngineeringExecutionCoordinator:
                 tuple(item.receipt_id for item in baseline_receipts),
             )
         budget = self._loop.remaining_budget(owner_id, task.task_id)
-        generation_id = f"generation-{task.task_id}-1"
-        record = self._generation.generate(
-            definition, preparation, context, generation_id=generation_id,
-            session_id=session_id, principal_id=principal_id,
-            available_tokens=budget["tokens"],
-            available_wall_seconds=budget["wall_seconds"],
-        )
-        self._loop.record_generation_budget(owner_id, task.task_id, record)
-        if record.status is not CandidateGenerationStatus.PLAN_VALIDATED:
-            return _failure(
-                self._loop, owner_id,
-                self._loop.inspect(owner_id, task.task_id),
-                "generation_failed", record.failure_code,
-                (record.generation_id,),
+        record = None
+        if self._agent is None:
+            generation_id = f"generation-{task.task_id}-1"
+            record = self._generation.generate(
+                definition, preparation, context, generation_id=generation_id,
+                session_id=session_id, principal_id=principal_id,
+                available_tokens=budget["tokens"],
+                available_wall_seconds=budget["wall_seconds"],
             )
-        changeset_id = _changeset_identity(
-            task.task_id, generated_candidate_plan_digest(record.plan),
-        )
-        edits = bind_generated_candidate_plan(
-            task.task_id, preparation.candidate, record.plan,
-            maximum_operations=min(task.max_changed_files, budget["files"]),
-            maximum_content_bytes=min(task.max_changed_bytes, budget["storage_bytes"]),
-        )
-        applied = self._apply_edits(
-            owner_id, task.task_id, session_id, principal_id, edits,
-        )
+            self._loop.record_generation_budget(owner_id, task.task_id, record)
+            if record.status is not CandidateGenerationStatus.PLAN_VALIDATED:
+                return _failure(
+                    self._loop, owner_id,
+                    self._loop.inspect(owner_id, task.task_id),
+                    "generation_failed", record.failure_code,
+                    (record.generation_id,),
+                )
+            producer_id = record.generation_id
+            generation_summary = record.plan.summary
+            generation_attempt_count = record.attempt_count
+            generation_consumed_tokens = record.consumed_tokens
+            changeset_seed = generated_candidate_plan_digest(record.plan)
+            edits = bind_generated_candidate_plan(
+                task.task_id, preparation.candidate, record.plan,
+                maximum_operations=min(task.max_changed_files, budget["files"]),
+                maximum_content_bytes=min(task.max_changed_bytes, budget["storage_bytes"]),
+            )
+            applied = self._apply_edits(
+                owner_id, task.task_id, session_id, principal_id, edits,
+            )
+        else:
+            try:
+                agent_result = self._agent.execute(
+                    owner_id, definition, preparation,
+                    session_id=session_id, principal_id=principal_id,
+                )
+            except (OSError, PermissionError, RuntimeError, ValueError) as error:
+                return _failure(
+                    self._loop, owner_id,
+                    self._loop.inspect(owner_id, task.task_id),
+                    "generation_failed", f"iterative_agent_failed:{type(error).__name__}",
+                    (),
+                )
+            producer_id = agent_result.producer_id
+            generation_summary = agent_result.summary
+            generation_attempt_count = agent_result.agent_outcome.model_steps
+            generation_consumed_tokens = 0
+            applied = agent_result.applied_edits
+            agent_verified = bool(agent_result.successful_verifications)
+            changeset_seed = _applied_digest(applied)
+        changeset_id = _changeset_identity(task.task_id, changeset_seed)
         if any(item.status is not CandidateEditStatus.APPLIED for item in applied):
             return _failure(
                 self._loop, owner_id,
@@ -160,11 +187,20 @@ class NaturalEngineeringExecutionCoordinator:
                     self._loop.inspect(owner_id, task.task_id),
                     "documentation_failed",
                     "signed_documentation_generation_failed",
-                    (record.generation_id,),
+                    (producer_id,),
                 )
-        verifications = self._verify(
-            owner_id, task.task_id, session_id, principal_id, record,
-        )
+        try:
+            verifications = self._verify(
+                owner_id, task.task_id, session_id, principal_id, producer_id,
+            )
+        except (LookupError, RuntimeError):
+            if self._agent is None or not agent_verified:
+                raise
+            agent_evidence_ids = (self._loop.accept_agent_verification(
+                owner_id, task.task_id, producer_id,
+                tuple(item.operation.path for item in applied),
+            ),)
+            verifications = ()
         if any(
             item.status is not CandidateVerificationStatus.COMPLETED or not item.passed
             for item in verifications
@@ -177,41 +213,84 @@ class NaturalEngineeringExecutionCoordinator:
                     "database_candidate_verification_failed",
                     tuple(item.verification_id for item in verifications),
                 )
-            def regenerate(_record, repair_edits):
-                paths = tuple(dict.fromkeys(
-                    tuple(item.operation.path for item in (*applied, *repair_edits))
-                    + preparation.analysis.relevant_paths
-                    + preparation.analysis.affected_test_paths
-                ))
-                return self._documentation.generate(
-                    owner_id, definition, session_id=session_id,
-                    principal_id=principal_id, preferred_paths=paths,
+            if self._agent is not None:
+                feedback = _verification_feedback(verifications)
+                try:
+                    repair_agent = self._agent.execute(
+                        owner_id, definition, preparation,
+                        session_id=session_id, principal_id=principal_id,
+                        objective=(
+                            f"{task.intent}\n\nThe candidate verification failed. "
+                            "Inspect the current candidate, diagnose the failure, fix it, "
+                            f"and rerun the relevant checks.\n{feedback}"
+                        ),
+                        turn_suffix="repair-1",
+                    )
+                except (OSError, PermissionError, RuntimeError, ValueError):
+                    return _failure(
+                        self._loop, owner_id,
+                        self._loop.inspect(owner_id, task.task_id),
+                        "verification_failed", "iterative_agent_repair_failed",
+                        tuple(item.verification_id for item in verifications),
+                    )
+                applied = (*applied, *repair_agent.applied_edits)
+                producer_id = repair_agent.producer_id
+                generation_summary = repair_agent.summary
+                generation_attempt_count += repair_agent.agent_outcome.model_steps
+                verifications = self._verify(
+                    owner_id, task.task_id, session_id, principal_id, producer_id,
                 )
+                if any(
+                    item.status is not CandidateVerificationStatus.COMPLETED
+                    or not item.passed for item in verifications
+                ):
+                    return _failure(
+                        self._loop, owner_id,
+                        self._loop.inspect(owner_id, task.task_id),
+                        "verification_failed", "iterative_agent_repair_exhausted",
+                        tuple(item.verification_id for item in verifications),
+                    )
+                repaired_incident = None
+            else:
+                def regenerate(_record, repair_edits):
+                    paths = tuple(dict.fromkeys(
+                        tuple(item.operation.path for item in (*applied, *repair_edits))
+                        + preparation.analysis.relevant_paths
+                        + preparation.analysis.affected_test_paths
+                    ))
+                    return self._documentation.generate(
+                        owner_id, definition, session_id=session_id,
+                        principal_id=principal_id, preferred_paths=paths,
+                    )
 
-            repair = self._repair.attempt(
-                owner_id, definition, preparation, verifications, preferred,
-                session_id=session_id, principal_id=principal_id,
-                verify=self._verify,
-                before_verify=regenerate if documentation else None,
-            )
-            if not repair.passed:
-                return _known_failure(
-                    self._loop, owner_id, task.task_id,
-                    (
-                        "documentation_failed"
-                        if repair.failure_code
-                        == "repair_documentation_regeneration_failed"
-                        else "verification_failed"
-                    ),
-                    repair.failure_code,
-                    repair.incident,
+                repair = self._repair.attempt(
+                    owner_id, definition, preparation, verifications, preferred,
+                    session_id=session_id, principal_id=principal_id,
+                    verify=self._verify,
+                    before_verify=regenerate if documentation else None,
                 )
-            record = repair.generation
-            applied = (*applied, *repair.edits)
-            verifications = repair.verifications
-            if documentation:
-                documentation = repair.documentation
-            repaired_incident = repair.incident
+                if not repair.passed:
+                    return _known_failure(
+                        self._loop, owner_id, task.task_id,
+                        (
+                            "documentation_failed"
+                            if repair.failure_code
+                            == "repair_documentation_regeneration_failed"
+                            else "verification_failed"
+                        ),
+                        repair.failure_code,
+                        repair.incident,
+                    )
+                record = repair.generation
+                producer_id = record.generation_id
+                generation_summary = record.plan.summary
+                generation_attempt_count += record.attempt_count
+                generation_consumed_tokens += record.consumed_tokens
+                applied = (*applied, *repair.edits)
+                verifications = repair.verifications
+                if documentation:
+                    documentation = repair.documentation
+                repaired_incident = repair.incident
         else:
             repaired_incident = None
         diagnostic_paths = tuple(dict.fromkeys(
@@ -291,6 +370,7 @@ class NaturalEngineeringExecutionCoordinator:
                     integration.postgresql_verification,
                 ),)
             ),
+            agent_verification_evidence_ids=agent_evidence_ids,
         )
         if changeset.status is not CandidateChangesetStatus.PREVIEWED:
             return _failure(
@@ -304,7 +384,7 @@ class NaturalEngineeringExecutionCoordinator:
             try:
                 selection, checkpoint = self._reviewer.review(
                     owner_id, definition, changeset,
-                    producer_id=record.generation_id,
+                    producer_id=producer_id,
                 )
             except Exception:
                 return _failure(
@@ -322,10 +402,10 @@ class NaturalEngineeringExecutionCoordinator:
                 else "changeset_approval_required"
             ),
             "generation": {
-                "generation_id": record.generation_id,
-                "summary": record.plan.summary,
-                "attempt_count": record.attempt_count,
-                "consumed_tokens": record.consumed_tokens,
+                "generation_id": producer_id,
+                "summary": generation_summary,
+                "attempt_count": generation_attempt_count,
+                "consumed_tokens": generation_consumed_tokens,
             },
             "candidate_edits": [encode_document(item) for item in applied],
             "generated_documentation": [
@@ -409,6 +489,22 @@ class NaturalEngineeringExecutionCoordinator:
             result["failure_code"] = "signed_runtime_diagnostic_failed"
         return result
 
+    def reverify_agent(self, owner_id: str, definition) -> str:
+        if self._agent is None:
+            raise LookupError("iterative engineering agent is unavailable")
+        workspace = definition.task.workspace_roots[0]
+        turn_id = self._agent.replay_verification(
+            definition.task.task_id, workspace,
+        )
+        return self._loop.accept_agent_reverification(
+            owner_id, definition.task.task_id, turn_id,
+            tuple(
+                item.operation.path for item in self._loop.candidate_edits(
+                    owner_id, definition.task.task_id,
+                )
+            ),
+        )
+
     def reverify_diagnostics(
         self, owner_id: str, definition, *, session_id: str,
         principal_id: str,
@@ -478,6 +574,9 @@ class NaturalEngineeringExecutionCoordinator:
         return tuple(values)
 
     def _verify(self, owner_id, task_id, session_id, principal_id, generation):
+        producer_id = (
+            generation if isinstance(generation, str) else generation.generation_id
+        )
         values = []
         selected = self._loop.select_verification_recipes(owner_id, task_id)
         if not selected:
@@ -485,7 +584,7 @@ class NaturalEngineeringExecutionCoordinator:
         for index, (toolchain, recipe) in enumerate(selected):
             values.append(self._loop.verify_candidate(
                 owner_id, task_id,
-                verification_id=f"verification-{generation.generation_id}-{index}",
+                verification_id=f"verification-{producer_id}-{index}",
                 session_id=session_id, principal_id=principal_id,
                 toolchain=toolchain, recipe_id=recipe.recipe_id,
                 recipe_version=recipe.recipe_version,
@@ -508,7 +607,7 @@ class NaturalEngineeringExecutionCoordinator:
 def _failure(loop, owner_id, task, outcome, code, evidence_ids):
     task.update({"outcome": outcome, "failure_code": code})
     record = getattr(loop, "record_incident", None)
-    if record is not None:
+    if record is not None and evidence_ids:
         incident = record(
             owner_id, task["task_id"], code or outcome, evidence_ids,
         )
@@ -532,6 +631,27 @@ def _known_failure(loop, owner_id, task_id, outcome, code, incident):
 def _changeset_identity(task_id: str, plan_sha256: str) -> str:
     digest = hashlib.sha256(f"{task_id}:{plan_sha256}".encode("utf-8")).hexdigest()
     return f"changeset-{digest[:32]}"
+
+
+def _applied_digest(edits) -> str:
+    payload = "\0".join(
+        f"{item.operation.operation_id}:{item.operation.kind.value}:"
+        f"{item.operation.path}:{item.after_sha256 or ''}"
+        for item in edits
+    )
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def _verification_feedback(records) -> str:
+    rows = []
+    for item in records:
+        evidence = getattr(item, "evidence", None)
+        rows.append(
+            f"- {item.verification_id}: passed={item.passed}; "
+            f"failure={getattr(item, 'failure_code', None) or 'unspecified'}; "
+            f"summary={getattr(evidence, 'summary', '') if evidence else ''}"
+        )
+    return "\n".join(rows)
 
 
 def _database_view(result) -> dict:

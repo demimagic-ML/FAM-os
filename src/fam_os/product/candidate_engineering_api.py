@@ -137,7 +137,7 @@ class ProductCandidateEngineeringApi:
         self, owner_id: str, task_id: str, changeset_id: str, *,
         verification_ids=None, runtime_diagnostic_receipts=(),
         database_evidence=(), integration_environment_evidence=(),
-        postgresql_evidence=(),
+        postgresql_evidence=(), agent_verification_evidence_ids=(),
     ):
         self._require_owner(owner_id)
         if self._changesets is None or self._edits is None or self._verifications is None:
@@ -172,6 +172,7 @@ class ProductCandidateEngineeringApi:
             database_evidence=database_evidence,
             integration_environment_evidence=integration_environment_evidence,
             postgresql_evidence=postgresql_evidence,
+            agent_verification_evidence_ids=agent_verification_evidence_ids,
         )
         self._lifecycle.request_changeset_checkpoint(task_id, record.preview)
         return record

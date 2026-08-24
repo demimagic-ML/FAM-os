@@ -77,6 +77,15 @@ class SQLiteAgentTurnStore:
         if cursor.rowcount != 1:
             raise RuntimeError("agent turn completion state changed")
 
+    def fail_turn(self, thread_id: str, turn_id: str, failure: str) -> None:
+        cursor = self._database.execute(
+            "UPDATE agent_turns SET status='failed',failure=?,completed_at=? "
+            "WHERE thread_id=? AND turn_id=? AND status='running'",
+            (failure, _now(), thread_id, turn_id),
+        )
+        if cursor.rowcount != 1:
+            raise RuntimeError("agent turn failure state changed")
+
     def thread(self, thread_id: str) -> dict[str, object] | None:
         row = self._database.fetchone(
             "SELECT workspace_root,authority_profile,created_at,updated_at "
@@ -86,7 +95,7 @@ class SQLiteAgentTurnStore:
             return None
         turns = self._database.fetchall(
             "SELECT turn_id,objective,authority_profile,status,final_response,"
-            "created_at,completed_at FROM agent_turns WHERE thread_id=? "
+            "failure,created_at,completed_at FROM agent_turns WHERE thread_id=? "
             "ORDER BY created_at,turn_id", (thread_id,),
         )
         return {
@@ -98,8 +107,8 @@ class SQLiteAgentTurnStore:
             "turns": [{
                 "turn_id": item[0], "objective": item[1],
                 "authority_profile": item[2], "status": item[3],
-                "final_response": item[4], "created_at": item[5],
-                "completed_at": item[6],
+                "final_response": item[4], "failure": item[5],
+                "created_at": item[6], "completed_at": item[7],
                 "events": self.events(item[0]),
             } for item in turns],
         }

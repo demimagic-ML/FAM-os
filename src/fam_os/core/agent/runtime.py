@@ -41,6 +41,8 @@ class AgentTurnStore(Protocol):
         self, thread_id: str, turn_id: str, response: AgentFinalResponse,
     ) -> None: ...
 
+    def fail_turn(self, thread_id: str, turn_id: str, failure: str) -> None: ...
+
 
 class AgentToolRegistry:
     def __init__(self) -> None:
@@ -107,11 +109,14 @@ class IterativeModelAgent:
         settings: IterativeAgentSettings,
         tools: AgentToolRegistry,
         store: AgentTurnStore,
+        completion_validator: Callable[[tuple[AgentToolResult, ...]], str | None]
+        | None = None,
     ) -> None:
         self._runtime = runtime
         self._settings = settings
         self._tools = tools
         self._store = store
+        self._completion_validator = completion_validator
 
     def run(
         self,
@@ -129,6 +134,17 @@ class IterativeModelAgent:
             objective, prior_context, profile, self._tools.descriptors(),
         ))
         results: list[AgentToolResult] = []
+        try:
+            return self._run_steps(
+                thread_id, turn_id, profile, messages, results,
+            )
+        except Exception as error:
+            self._store.fail_turn(
+                thread_id, turn_id, f"{type(error).__name__}: {str(error)[:2_000]}",
+            )
+            raise
+
+    def _run_steps(self, thread_id, turn_id, profile, messages, results):
         for step in range(1, self._settings.maximum_steps + 1):
             response = self._runtime.chat(InferenceRequest(
                 model_ref=self._settings.model_ref,
@@ -142,6 +158,23 @@ class IterativeModelAgent:
             decision = parse_agent_decision(response.content, step)
             messages.append(InferenceMessage(MessageRole.ASSISTANT, response.content))
             if isinstance(decision, AgentFinalResponse):
+                rejection = (
+                    None if self._completion_validator is None
+                    else self._completion_validator(tuple(results))
+                )
+                if rejection is not None:
+                    messages.append(InferenceMessage(
+                        MessageRole.USER,
+                        json.dumps({
+                            "type": "completion_rejected",
+                            "reason": rejection,
+                            "instruction": (
+                                "Continue using tools, adapt to the observed failures, "
+                                "and only finish when this condition is satisfied."
+                            ),
+                        }, sort_keys=True, separators=(",", ":")),
+                    ))
+                    continue
                 self._store.complete_turn(thread_id, turn_id, decision)
                 return AgentTurnOutcome(
                     thread_id, turn_id, decision, tuple(results), step,
@@ -196,6 +229,19 @@ def _initial_messages(objective, prior_context, profile, descriptors):
         "You are an iterative local coding and operating-system agent. Work toward "
         "the objective by choosing one tool at a time, observing its real result, and "
         "adapting. Do not stop at a plan when the objective requests implementation. "
+        "For coding work, inspect both the relevant implementation and its acceptance "
+        "tests before editing. Preserve tests unless changing requirements explicitly "
+        "require a test change. Diagnose causes rather than rewriting evidence, and run "
+        "the relevant available checks after edits. Do not claim completion without a "
+        "successful tool result that verifies the requested behavior. The editable "
+        "workspace may be a staged candidate without repository metadata; Git tools "
+        "describe the owner repository and file tools describe the candidate. Commands "
+        "are direct argv, not shell syntax. If a preferred test runner is unavailable "
+        "and dependency installation is not authorized, use the existing language "
+        "runtime to perform a focused behavioral check instead of repeatedly installing. "
+        "Use run_command for setup and exploratory processes. Use verify_command for "
+        "the final test, build, diagnostic, or behavioral assertion whose zero exit "
+        "status proves the implementation works. "
         "Return only one strict JSON object per step. To use a tool return "
         '{"type":"tool_call","tool":"tool id","arguments":{},"reason":"why now"}. '
         "When the objective is actually complete return "

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -23,6 +24,8 @@ from fam_os.core.engineering import (
     EngineeringTaskDefinition,
     MasterEngineeringLoop,
     EngineeringPreparationOrchestrator,
+    EngineeringEvidence,
+    EngineeringOutcome,
     CandidateArtifact,
     CandidateOperation,
     CandidateVerificationService,
@@ -236,6 +239,47 @@ class ProductEngineeringLoopApi:
             postapply=False,
         )
 
+    def accept_agent_verification(
+        self, owner_id: str, task_id: str, turn_id: str,
+        changed_paths: tuple[str, ...],
+    ) -> str:
+        """Record a successful model-selected sandbox check as lifecycle evidence."""
+        self._require_owner(owner_id)
+        identity = "\0".join((task_id, turn_id, *changed_paths))
+        digest = hashlib.sha256(identity.encode()).hexdigest()
+        evidence_id = f"agent-verification-{digest[:32]}"
+        self.lifecycle.record_verification(EngineeringEvidence(
+            evidence_id=evidence_id,
+            task_id=task_id,
+            recorded_at=datetime.now(timezone.utc),
+            outcome=EngineeringOutcome.SUCCEEDED,
+            snapshot_ids=(), proposal_ids=(), checkpoint_decision_ids=(),
+            tool_run_ids=(turn_id,), verifier_run_ids=(turn_id,),
+            artifact_sha256=(), changed_paths=changed_paths,
+            unresolved_risks=(),
+        ))
+        return evidence_id
+
+    def accept_agent_reverification(
+        self, owner_id: str, task_id: str, turn_id: str,
+        changed_paths: tuple[str, ...],
+    ) -> str:
+        """Record replay of a model-selected check against the applied workspace."""
+        self._require_owner(owner_id)
+        identity = "\0".join(("postapply", task_id, turn_id, *changed_paths))
+        evidence_id = f"agent-reverification-{hashlib.sha256(identity.encode()).hexdigest()[:32]}"
+        self.lifecycle.record_reverification(EngineeringEvidence(
+            evidence_id=evidence_id,
+            task_id=task_id,
+            recorded_at=datetime.now(timezone.utc),
+            outcome=EngineeringOutcome.SUCCEEDED,
+            snapshot_ids=(), proposal_ids=(), checkpoint_decision_ids=(),
+            tool_run_ids=(f"{turn_id}-postapply",),
+            verifier_run_ids=(turn_id,), artifact_sha256=(),
+            changed_paths=changed_paths, unresolved_risks=(),
+        ))
+        return evidence_id
+
     def accept_postapply_verifications(
         self, owner_id: str, task_id: str, records,
     ) -> None:
@@ -246,7 +290,7 @@ class ProductEngineeringLoopApi:
         self, owner_id: str, task_id: str, changeset_id: str, *,
         verification_ids=None, runtime_diagnostic_receipt_ids=(),
         database_receipt_ids=(), integration_environment_evidence=(),
-        postgresql_evidence=(),
+        postgresql_evidence=(), agent_verification_evidence_ids=(),
     ):
         selected = set(runtime_diagnostic_receipt_ids)
         diagnostics = tuple(
@@ -274,6 +318,7 @@ class ProductEngineeringLoopApi:
             ),
             integration_environment_evidence=integration_environment_evidence,
             postgresql_evidence=postgresql_evidence,
+            agent_verification_evidence_ids=agent_verification_evidence_ids,
         )
 
     def current_candidate(self, owner_id: str, task_id: str):

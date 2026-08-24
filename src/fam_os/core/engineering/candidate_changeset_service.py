@@ -11,8 +11,7 @@ from fam_os.core.engineering.candidate_changeset import (
 )
 from fam_os.core.engineering.evidence import CheckpointDecision, CheckpointDisposition
 from fam_os.core.engineering.grants import (
-    EngineeringAuthorizationDecision, EngineeringAuthorizationRequest,
-    EngineeringResourceImpact,
+    EngineeringAuthorizationRequest, EngineeringResourceImpact,
 )
 from fam_os.core.engineering.preparation import EngineeringPreparationResult
 from fam_os.core.engineering.task_definition import EngineeringTaskDefinition
@@ -50,7 +49,7 @@ class CandidateChangesetService:
         changeset_id: str, *, final_operations=None, final_artifacts=None,
         verification_ids=None, runtime_diagnostic_receipts=(),
         database_evidence=(), integration_environment_evidence=(),
-        postgresql_evidence=(),
+        postgresql_evidence=(), agent_verification_evidence_ids=(),
     ) -> CandidateChangesetRecord:
         applied = tuple(item for item in edits if item.status.value == "applied")
         selected = None if verification_ids is None else set(verification_ids)
@@ -129,7 +128,16 @@ class CandidateChangesetService:
             definition, preparation, changeset_id, postgresql_evidence,
             environments,
         )
-        if not passed and not database and not environments and not postgresql_ids:
+        agent_ids = tuple(agent_verification_evidence_ids)
+        if (
+            any(not isinstance(item, str) or not item.strip() for item in agent_ids)
+            or len(set(agent_ids)) != len(agent_ids)
+        ):
+            raise ValueError("candidate preview agent verification evidence is invalid")
+        if (
+            not passed and not database and not environments
+            and not postgresql_ids and not agent_ids
+        ):
             raise ValueError(
                 "candidate preview requires trusted passing verification evidence"
             )
@@ -141,10 +149,12 @@ class CandidateChangesetService:
             f"{len(diagnostics)} runtime diagnostic run(s) and "
             f"{len(database)} database lifecycle(s) and "
             f"{len(environments)} integration environment(s) and "
-            f"{len(postgresql_ids)} PostgreSQL lifecycle(s) passed",
+            f"{len(postgresql_ids)} PostgreSQL lifecycle(s) and "
+            f"{len(agent_ids)} model-selected sandbox check(s) passed",
             verification_evidence_ids=(
                 *evidence_ids, *diagnostic_ids, *database_ids,
                 *environment_ids, *postgresql_ids,
+                *agent_ids,
             ),
             now=now,
         )

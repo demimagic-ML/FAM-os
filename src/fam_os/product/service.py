@@ -84,6 +84,9 @@ from fam_os.product.storage.owner_contract_codec import (
 from fam_os.product.natural_engineering_execution import (
     NaturalEngineeringExecutionCoordinator,
 )
+from fam_os.product.natural_engineering_agent import (
+    NaturalEngineeringAgentService,
+)
 from fam_os.product.natural_engineering_documentation import (
     NaturalEngineeringDocumentationCoordinator,
     UnavailableNaturalEngineeringDocumentationCoordinator,
@@ -615,7 +618,7 @@ class LocalProductService:
         self._engineering_runtime = engineering_inference.runtime
         self._engineering_model_ref = engineering_inference.model_ref
         core = self._storage_unit.core
-        if core is None or storage.cipher is None:
+        if core is None or storage.cipher is None or storage.database is None:
             raise RuntimeError("production Core storage was not composed")
         if self._storage_unit.engineering_authorizer is None:
             raise RuntimeError("engineering authority was not composed")
@@ -808,6 +811,12 @@ class LocalProductService:
                     )
                 ),
                 integration=natural_integration,
+                agent=NaturalEngineeringAgentService(
+                    engineering_inference.runtime,
+                    engineering_inference.model_ref,
+                    storage.database,
+                    self.engineering_loop_api,
+                ),
             ),
             publication_remote_name=self.settings.git_publication_remote_name,
             publication_credential_ref=(

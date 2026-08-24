@@ -98,12 +98,36 @@ class IterativeAgentTests(unittest.TestCase):
         self.assertEqual([], calls)
         self.assertIn("does not allow", runtime.requests[1].messages[-1].content)
 
+    def test_rejected_completion_returns_feedback_and_keeps_agent_running(self):
+        runtime = _Runtime([
+            {"type": "final", "content": "Done."},
+            {"type": "tool_call", "tool": "check", "arguments": {},
+             "reason": "Verify the result."},
+            {"type": "final", "content": "Verified."},
+        ])
+        tools = AgentToolRegistry()
+        tools.register(_tool("check", AgentToolEffect.OBSERVE), lambda _: "passed")
+        store = _Store()
+        agent = IterativeModelAgent(
+            runtime, IterativeAgentSettings("model"), tools, store,
+            completion_validator=lambda results: None if results else "verification required",
+        )
+
+        outcome = agent.run(
+            thread_id="thread", turn_id="turn", objective="Do and verify.",
+            profile=AgentAuthorityProfile.WORKSPACE,
+        )
+
+        self.assertEqual(3, outcome.model_steps)
+        self.assertIn("completion_rejected", runtime.requests[1].messages[-1].content)
+
 
 class _Store:
     def begin_turn(self, *args): pass
     def record_call(self, *args): pass
     def record_result(self, *args): pass
     def complete_turn(self, *args): pass
+    def fail_turn(self, *args): pass
 
 
 def _tool(tool_id, effect):
