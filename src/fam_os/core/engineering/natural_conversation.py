@@ -4,18 +4,9 @@ from __future__ import annotations
 
 from collections import OrderedDict
 from dataclasses import dataclass
-import re
 from threading import Lock
 
 from fam_os.core.engineering.repository.planning import ArchitectureProposal
-
-
-_PLAN_REFERENCE = re.compile(
-    r"(?:\b(?:implement|apply|execute|continue|finish|follow)\s+"
-    r"(?:the|that|this)\s+(?:plan|proposal|design|analysis|task|change|changes)\b|"
-    r"\b(?:do|implement|apply|continue|finish|proceed)\s+(?:it|that|this)\b)",
-    re.IGNORECASE,
-)
 
 
 @dataclass(frozen=True, slots=True)
@@ -27,7 +18,7 @@ class NaturalEngineeringPlanContext:
 
 
 class NaturalEngineeringConversation:
-    """Keep the latest approved analysis plan per session and exact workspace."""
+    """Keep the latest analysis plan as model context for a workspace session."""
 
     def __init__(self, maximum_plans: int = 64) -> None:
         if maximum_plans < 1:
@@ -42,22 +33,13 @@ class NaturalEngineeringConversation:
         self, owner_id: str, session_id: str | None, workspace_root: str,
         prompt: str,
     ) -> str:
-        """Resolve explicit follow-up language without granting prior authority."""
-        if not _PLAN_REFERENCE.search(" ".join(prompt.split())):
-            return prompt
+        """Attach available plan context without classifying command phrases."""
         if session_id is None:
-            raise ValueError(
-                "This request refers to an earlier plan, but no engineering "
-                "conversation session was supplied. Restate the requested change."
-            )
+            return prompt
         with self._lock:
             plan = self._plans.get((owner_id, session_id, workspace_root))
         if plan is None:
-            raise ValueError(
-                "This request refers to an earlier plan, but no approved plan is "
-                "available in this session for this workspace. Ask FAM to analyze "
-                "and plan first, or restate the complete requested change."
-            )
+            return prompt
         return (
             "Current engineering request (the only source of authority):\n"
             f"{prompt.strip()}\n\n"

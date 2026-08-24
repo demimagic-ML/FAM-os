@@ -50,6 +50,22 @@ class SQLiteAgentTurnStore:
                 (turn_id, thread_id, objective, profile.value, "running", now),
             )
 
+    def conversation_context(self, thread_id: str) -> str:
+        rows = self._database.fetchall(
+            "SELECT objective,final_response FROM agent_turns "
+            "WHERE thread_id=? AND status='completed' "
+            "ORDER BY created_at DESC,turn_id DESC LIMIT 12",
+            (thread_id,),
+        )
+        if not rows:
+            return ""
+        turns = [
+            f"User: {objective}\nFAM: {response}"
+            for objective, response in reversed(rows)
+            if response
+        ]
+        return _bounded("\n\n".join(turns), 24_000)
+
     def record_call(
         self, thread_id: str, turn_id: str, call: AgentToolCall,
     ) -> None:
@@ -134,3 +150,10 @@ class SQLiteAgentTurnStore:
 
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def _bounded(value: str, maximum_bytes: int) -> str:
+    encoded = value.encode("utf-8")
+    if len(encoded) <= maximum_bytes:
+        return value
+    return encoded[-maximum_bytes:].decode("utf-8", errors="ignore")

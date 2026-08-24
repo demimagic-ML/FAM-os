@@ -26,6 +26,8 @@ from fam_os.core.ports.inference import (
 
 
 class AgentTurnStore(Protocol):
+    def conversation_context(self, thread_id: str) -> str: ...
+
     def begin_turn(
         self, thread_id: str, turn_id: str, objective: str,
         profile: AgentAuthorityProfile,
@@ -129,9 +131,11 @@ class IterativeModelAgent:
     ) -> AgentTurnOutcome:
         if not thread_id.strip() or not turn_id.strip() or not objective.strip():
             raise ValueError("agent turn identity and objective are required")
+        history_reader = getattr(self._store, "conversation_context", None)
+        history = history_reader(thread_id) if callable(history_reader) else ""
         self._store.begin_turn(thread_id, turn_id, objective, profile)
         messages = list(_initial_messages(
-            objective, prior_context, profile, self._tools.descriptors(),
+            objective, prior_context, history, profile, self._tools.descriptors(),
         ))
         results: list[AgentToolResult] = []
         decision_counts: dict[str, int] = {}
@@ -244,7 +248,7 @@ def parse_agent_decision(content: str, step: int) -> AgentModelDecision:
     raise ValueError("agent model decision schema is invalid")
 
 
-def _initial_messages(objective, prior_context, profile, descriptors):
+def _initial_messages(objective, prior_context, conversation_history, profile, descriptors):
     tools = [{
         "tool": item.tool_id,
         "description": item.description,
@@ -279,6 +283,7 @@ def _initial_messages(objective, prior_context, profile, descriptors):
         "objective": objective,
         "authority_profile": profile.value,
         "prior_context": prior_context,
+        "conversation_history": conversation_history,
         "available_tools": tools,
     }, sort_keys=True, separators=(",", ":"))
     return (

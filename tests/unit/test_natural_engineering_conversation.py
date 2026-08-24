@@ -13,31 +13,37 @@ NOW = datetime(2026, 7, 19, 21, 0, tzinfo=timezone.utc)
 
 
 class NaturalEngineeringConversationTests(unittest.TestCase):
-    def test_follow_up_requires_a_plan_in_the_same_session_and_workspace(self):
+    def test_plan_is_attached_without_phrase_classification(self):
         conversation = NaturalEngineeringConversation()
 
-        with self.assertRaisesRegex(ValueError, "no approved plan"):
+        self.assertEqual(
+            "Implement the plan.",
             conversation.resolve(
                 "owner-1", "session-1", "/workspace/a", "Implement the plan.",
-            )
+            ),
+        )
 
         conversation.remember(
             "owner-1", "session-1", "/workspace/a", _proposal(),
         )
         resolved = conversation.resolve(
-            "owner-1", "session-1", "/workspace/a", "Implement the plan.",
+            "owner-1", "session-1", "/workspace/a", "Make it better.",
         )
 
         self.assertIn("the only source of authority", resolved)
         self.assertIn("Decision-complete design", resolved)
-        with self.assertRaisesRegex(ValueError, "no approved plan"):
+        self.assertEqual(
+            "Implement the plan.",
             conversation.resolve(
                 "owner-1", "session-2", "/workspace/a", "Implement the plan.",
-            )
-        with self.assertRaisesRegex(ValueError, "no approved plan"):
+            ),
+        )
+        self.assertEqual(
+            "Implement the plan.",
             conversation.resolve(
                 "owner-1", "session-1", "/workspace/b", "Implement the plan.",
-            )
+            ),
+        )
 
     def test_self_contained_request_does_not_require_conversation_state(self):
         prompt = "Create src/status.js and add a Node test for it."

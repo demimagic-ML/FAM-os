@@ -69,6 +69,23 @@ class IterativeAgentTests(unittest.TestCase):
                 persisted = store.thread("thread-1")
                 self.assertEqual("completed", persisted["turns"][0]["status"])
                 self.assertEqual(4, len(persisted["turns"][0]["events"]))
+
+                follow_up = _Runtime([
+                    {"type": "final", "content": "Used the earlier result."},
+                ])
+                IterativeModelAgent(
+                    follow_up, IterativeAgentSettings("model"), tools, store,
+                ).run(
+                    thread_id="thread-1", turn_id="turn-2",
+                    objective="Continue from that change.",
+                    profile=AgentAuthorityProfile.WORKSPACE,
+                )
+                initial = json.loads(follow_up.requests[0].messages[-1].content)
+                self.assertIn("Implement the feature.", initial["conversation_history"])
+                self.assertIn(
+                    "Implemented and verified the change.",
+                    initial["conversation_history"],
+                )
             finally:
                 database.close()
 
