@@ -3,6 +3,7 @@ import json
 import tempfile
 import threading
 import unittest
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -54,6 +55,11 @@ class ConsoleNaturalEngineeringTests(unittest.TestCase):
             self.base + "/api/v1/engineering/natural-language/proposals/"
             + proposed["proposal_id"] + "/progress",
         )
+        thread = _get(
+            opener,
+            self.base + "/api/v1/engineering/natural-language/proposals/thread?"
+            + urllib.parse.urlencode({"workspace_root": "/workspace/project"}),
+        )
         completed = _post(
             opener,
             self.base + "/api/v1/engineering/natural-language/proposals/"
@@ -88,6 +94,7 @@ class ConsoleNaturalEngineeringTests(unittest.TestCase):
         self.assertEqual("approved", resources["proposal"]["resource_status"])
         self.assertEqual("candidate_ready", activated["engineering_task"]["stage"])
         self.assertEqual("candidate_ready", progress["engineering_task"]["stage"])
+        self.assertEqual("thread-1", thread["thread_id"])
         self.assertEqual("reverified", completed["engineering_task"]["stage"])
         self.assertEqual("changeset_approval_required", waived["engineering_task"]["outcome"])
         self.assertEqual("completed", published["engineering_task"]["stage"])
@@ -99,6 +106,7 @@ class ConsoleNaturalEngineeringTests(unittest.TestCase):
         self.assertEqual(self.api.activation_session_id, self.api.publication_session_id)
         self.assertEqual(self.api.activation_session_id, self.api.review_session_id)
         self.assertEqual(self.api.activation_session_id, self.api.resource_session_id)
+        self.assertEqual(self.api.activation_session_id, self.api.thread_session_id)
 
 
 class _Api:
@@ -112,6 +120,7 @@ class _Api:
         self.review_session_id = None
         self.resource_session_id = None
         self.proposal_session_id = None
+        self.thread_session_id = None
 
     def propose(
         self, owner_id, prompt, workspace_root, *, transport_session_id=None,
@@ -120,6 +129,13 @@ class _Api:
         self.proposal_session_id = transport_session_id
         self.authority_profile = authority_profile
         return {"proposal_id": "proposal-1", "status": "proposed"}
+
+    def thread(self, owner_id, session_id, workspace_root):
+        self.thread_session_id = session_id
+        return {
+            "thread_id": "thread-1", "workspace_root": workspace_root,
+            "authority_profile": "workspace", "turns": [],
+        }
 
     def activate(self, owner_id, proposal_id, session_id, confirmed):
         self.activation_session_id = session_id

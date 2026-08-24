@@ -5,6 +5,7 @@ const FamNaturalEngineering = (() => {
   let api = null;
   let hooks = null;
   let current = null;
+  let restoredWorkspace = null;
 
   const byId = id => document.getElementById(id);
 
@@ -38,6 +39,64 @@ const FamNaturalEngineering = (() => {
       renderProposal();
     }
     hooks.setBusy(false);
+  }
+
+  async function restore(workspaceRoot, scope) {
+    if (!workspaceRoot || restoredWorkspace === workspaceRoot) return;
+    const thread = await api(
+      `${prefix}/thread?workspace_root=${encodeURIComponent(workspaceRoot)}`,
+    );
+    restoredWorkspace = workspaceRoot;
+    hooks.resetTranscript();
+    const turns = thread.turns || [];
+    for (const saved of turns) {
+      const turn = hooks.startTurn(
+        saved.objective,
+        `${profileLabel(saved.authority_profile)} · ${scope}`,
+        saved.turn_id,
+      );
+      current = {turn, phase: null, proposal: null};
+      const failed = saved.status === "failed";
+      const running = saved.status === "running";
+      renderText(
+        saved.final_response || saved.failure || (running
+          ? "This turn was interrupted before it produced a final response."
+          : "This turn did not retain a final response."),
+        failed ? "Agent turn failed" : running ? "Agent turn interrupted" : "Completed agent turn",
+        `${saved.events?.length || 0} durable tool event(s)`,
+      );
+    }
+    if (turns.length) renderAgentEvents(turns[turns.length - 1].events || []);
+    current = null;
+  }
+
+  function profileLabel(profile) {
+    return {ask: "Ask", workspace: "Workspace", full_os: "Full OS"}[profile]
+      || profile || "Agent";
+  }
+
+  function renderAgentEvents(events) {
+    const calls = new Map();
+    for (const event of events) {
+      if (event.event_kind === "call") calls.set(event.call_id, event);
+    }
+    const rows = events.filter(event => event.event_kind === "result").map(event => {
+      const call = calls.get(event.call_id);
+      const item = document.createElement("li");
+      item.dataset.status = event.payload.succeeded ? "succeeded" : "failed";
+      const head = document.createElement("header");
+      const label = document.createElement("strong");
+      label.textContent = event.tool_id.replaceAll("_", " ");
+      const status = document.createElement("span");
+      status.textContent = event.payload.succeeded ? "completed" : "failed";
+      const output = document.createElement("pre");
+      const reason = call?.payload?.reason ? `${call.payload.reason}\n` : "";
+      output.textContent = limit(`${reason}${event.payload.output || ""}`, 6000);
+      head.append(label, status);
+      item.append(head, output);
+      return item;
+    });
+    if (rows.length) byId("tool-activity").replaceChildren(...rows);
   }
 
   async function decide(approved) {
@@ -256,6 +315,7 @@ const FamNaturalEngineering = (() => {
         checkpointText(task), "Verified changeset ready",
         `${task.candidate_verifications.length} verifier, ${diagnostics.length} runtime diagnostic, ${databases} database, and ${integrations} cleaned integration-environment receipt(s)`,
       );
+      renderChangeset(task);
       showApproval(
         `Apply ${changeset.preview.items.length} verified change(s)`,
         `${changeset.changeset_id} · rollback journal required`,
@@ -439,11 +499,34 @@ const FamNaturalEngineering = (() => {
   function checkpointText(task) {
     const plan = task.generation?.summary || "Generated repository changes";
     const items = task.changeset.payload.preview.items;
-    const previews = items.map(item => {
-      const risks = item.risk_codes.length ? ` [${item.risk_codes.join(", ")}]` : "";
-      return `${item.operation_kind}: ${item.path}${risks}\n${item.preview}`;
-    }).join("\n\n");
-    return limit(`${plan}\n\n${previews}`, 16000);
+    return limit(`${plan}\n\n${items.length} exact file change(s) are shown below.`, 16000);
+  }
+
+  function renderChangeset(task) {
+    current.turn.answerShell.querySelector(".changeset-preview")?.remove();
+    const section = document.createElement("section");
+    section.className = "changeset-preview";
+    const heading = document.createElement("h4");
+    heading.textContent = "Proposed changes";
+    section.append(heading);
+    for (const item of task.changeset.payload.preview.items) {
+      const details = document.createElement("details");
+      details.open = task.changeset.payload.preview.items.length <= 3;
+      const summary = document.createElement("summary");
+      const operation = document.createElement("span");
+      operation.textContent = item.operation_kind.replaceAll("_", " ");
+      const path = document.createElement("strong");
+      path.textContent = item.path;
+      const risks = document.createElement("small");
+      risks.textContent = item.risk_codes.length
+        ? item.risk_codes.join(" · ") : "verified candidate";
+      summary.append(operation, path, risks);
+      const diff = document.createElement("pre");
+      diff.textContent = limit(item.preview, 12000);
+      details.append(summary, diff);
+      section.append(details);
+    }
+    current.turn.answerShell.append(section);
   }
 
   function publicationText(proposal, digest) {
@@ -541,5 +624,5 @@ const FamNaturalEngineering = (() => {
       ? value : `${value.slice(0, maximum)}\n… preview truncated in Console`;
   }
 
-  return {configure, start, decide, active};
+  return {configure, start, restore, decide, active};
 })();

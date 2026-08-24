@@ -1,6 +1,6 @@
 """Authenticated Console routes for natural-language engineering proposals."""
 
-from urllib.parse import unquote
+from urllib.parse import parse_qs, unquote, urlsplit
 
 from fam_os.core.agent import AgentAuthorityProfile
 
@@ -11,12 +11,21 @@ _PREFIX = "/api/v1/engineering/natural-language/proposals"
 def handle_natural_engineering_get(handler, path: str) -> bool:
     if not path.startswith(_PREFIX + "/"):
         return False
-    if handler._session() is None:
+    session = handler._session()
+    if session is None:
         handler.send_error(401)
         return True
     api = handler.server.natural_engineering_api
     if api is None:
         handler._json(503, {"error": "Natural engineering is unavailable."})
+        return True
+    if path == _PREFIX + "/thread":
+        query = parse_qs(urlsplit(handler.path).query, strict_parsing=True)
+        if set(query) != {"workspace_root"} or len(query["workspace_root"]) != 1:
+            raise ValueError("agent thread query must contain one workspace_root")
+        handler._json(200, api.thread(
+            api.owner_id, session.session_id, _text(query["workspace_root"][0]),
+        ))
         return True
     proposal_id, operation = _path(path)
     if operation not in {"inspect", "progress"}:

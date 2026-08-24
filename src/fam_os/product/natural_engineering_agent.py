@@ -179,6 +179,18 @@ class NaturalEngineeringAgentService:
             raise RuntimeError(output)
         return rows[0][0]
 
+    def thread(
+        self, owner_id: str, session_id: str, workspace: str,
+    ) -> dict[str, object]:
+        store = SQLiteAgentTurnStore(self._database, workspace)
+        thread_id = _thread_id(owner_id, session_id, workspace)
+        return store.thread(thread_id) or {
+            "thread_id": thread_id,
+            "workspace_root": workspace,
+            "authority_profile": AgentAuthorityProfile.WORKSPACE.value,
+            "turns": [],
+        }
+
 
 def _thread_id(owner_id: str, session_id: str, workspace: str) -> str:
     digest = hashlib.sha256(

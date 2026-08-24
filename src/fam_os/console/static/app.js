@@ -43,7 +43,15 @@ async function request(path, options = {}) {
   const response = await fetch(path, {...options, headers});
   if (!response.ok) {
     const body = await response.text();
-    throw new RequestError(response.status, `${response.status} ${body.slice(0, 120)}`);
+    let detail = "Request failed.";
+    try {
+      const parsed = JSON.parse(body);
+      if (typeof parsed.error === "string") detail = parsed.error;
+    } catch (_) {
+      if (response.status === 401) detail = "The local Console session expired. Reopen FAM from its launcher.";
+      else if (response.status === 404) detail = "The requested local resource is unavailable.";
+    }
+    throw new RequestError(response.status, detail);
   }
   return response.json();
 }
@@ -245,6 +253,15 @@ function startTurn(prompt, scope, taskId) {
   state.activeTurn = turn;
   requestAnimationFrame(() => scrollToTurn(turn));
   return turn;
+}
+
+function resetEngineeringTranscript() {
+  finishTyping();
+  state.turns = [];
+  state.activeTurn = null;
+  $("#transcript").querySelectorAll(".user-turn,.fam-turn").forEach(node => node.remove());
+  $("#empty-task").classList.remove("hidden");
+  FamWorkspace.resetActivity();
 }
 
 function setComposerBusy(busy) {
@@ -587,11 +604,17 @@ function selectWorkspaceResource(context, resource) {
   }
   $("#resource").value = resource.uri;
   updateScopeSummary();
+  const workspacePath = FamWorkspace.selectedPath();
+  if (workspacePath) {
+    FamNaturalEngineering.restore(
+      workspacePath, contextLabel(context, workspacePath),
+    ).catch(fail);
+  }
   $("#prompt").focus();
 }
 
 function fail(error) {
-  $("#connection").textContent = error.message;
+  $("#connection").textContent = error.message || "Local request failed.";
   $(".runtime").classList.remove("live");
 }
 
@@ -625,6 +648,7 @@ $("#prompt").onkeydown = event => {
 FamWorkspace.configure(request, {onSelected: selectWorkspaceResource});
   FamNaturalEngineering.configure(request, {
     startTurn, setBusy: setComposerBusy,
+    resetTranscript: resetEngineeringTranscript,
   });
   FamUsefulTasks.configure(request);
   FamIntegrationCenter.configure(request);

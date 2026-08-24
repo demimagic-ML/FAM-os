@@ -721,7 +721,52 @@ main {
 }
 
 .execution-head .kicker { margin-bottom: 8px; }
-.execution h2 { margin: 0; font: 500 24px/1.15 "Noto Serif Display", Georgia, serif; }
+.execution h2 {
+  margin: 0;
+  min-width: 0;
+  font: 500 24px/1.15 "Noto Serif Display", Georgia, serif;
+  overflow-wrap: anywhere;
+}
+
+.execution-head > div { min-width: 0; }
+
+.changeset-preview {
+  display: grid;
+  gap: 9px;
+  margin-top: 22px;
+}
+
+.changeset-preview h4 {
+  margin: 0 0 3px;
+  font: 700 10px/1.4 "Noto Sans Mono", monospace;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.changeset-preview details { border: 1px solid var(--line); background: var(--fog); }
+.changeset-preview summary {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  cursor: pointer;
+  font-size: 11px;
+}
+.changeset-preview summary span { color: var(--signal); text-transform: uppercase; font-size: 9px; }
+.changeset-preview summary strong { overflow-wrap: anywhere; }
+.changeset-preview summary small { color: var(--muted); }
+.changeset-preview pre {
+  max-height: 420px;
+  margin: 0;
+  padding: 13px;
+  overflow: auto;
+  border-top: 1px solid var(--line);
+  background: #18262d;
+  color: #e7efef;
+  white-space: pre;
+  font: 11px/1.55 "Noto Sans Mono", monospace;
+}
 
 .activity-empty {
   min-height: 360px;

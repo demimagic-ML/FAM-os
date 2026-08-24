@@ -114,6 +114,20 @@ class ProductNaturalEngineeringApi:
             raise PermissionError("natural engineering proposal owner is invalid")
         return self._view(proposal)
 
+    def thread(
+        self, owner_id: str, transport_session_id: str, workspace_root: str,
+    ) -> dict[str, object]:
+        self._require_owner(owner_id)
+        if self._executor is None:
+            raise LookupError("iterative engineering agent is unavailable")
+        workspace = Path(workspace_root)
+        canonical = workspace.resolve(strict=True)
+        if canonical != workspace or not canonical.is_dir() or canonical.is_symlink():
+            raise PermissionError("engineering workspace must be an exact real directory")
+        return self._executor.thread(
+            owner_id, transport_session_id, str(canonical),
+        )
+
     def progress(self, owner_id: str, proposal_id: str) -> dict:
         """Reconstruct the current owner-visible proposal and lifecycle checkpoint."""
         self._require_owner(owner_id)
