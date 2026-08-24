@@ -8,6 +8,16 @@ from fam_os.product.agent_workspace_tools import WorkspaceAgentTools
 
 
 class AgentWorkspaceToolsTests(unittest.TestCase):
+    def test_plain_folder_does_not_advertise_unusable_git_tools(self):
+        with tempfile.TemporaryDirectory() as directory:
+            registry = AgentToolRegistry()
+            WorkspaceAgentTools(Path(directory)).register(registry)
+
+            identifiers = {item.tool_id for item in registry.descriptors()}
+
+            self.assertNotIn("git_status", identifiers)
+            self.assertNotIn("git_diff", identifiers)
+
     def test_large_file_is_read_in_bounded_pages(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

@@ -5,7 +5,9 @@ from pathlib import Path
 from fam_os.adapters.ollama import OllamaRuntime, OllamaSettings
 from fam_os.core.ports.embedding import EmbeddingRequest
 from fam_os.adapters.ollama.errors import OllamaTransportError
-from fam_os.core.ports.inference import InferenceMessage, InferenceRequest, MessageRole
+from fam_os.core.ports.inference import (
+    InferenceMessage, InferenceRequest, InferenceTool, MessageRole,
+)
 
 
 FIXTURES = Path(__file__).parents[1] / "fixtures" / "ollama"
@@ -24,6 +26,30 @@ class FakeTransport:
 
 
 class OllamaRuntimeTests(unittest.TestCase):
+    def test_normalizes_template_tool_json_only_for_offered_schema(self) -> None:
+        transport = FakeTransport([{
+            "message": {
+                "role": "assistant",
+                "content": '{"name":"read_file","arguments":{"path":"README.md"}}',
+            },
+        }])
+        runtime = OllamaRuntime(OllamaSettings("http://localhost:11434", 15), transport)
+
+        result = runtime.chat(InferenceRequest(
+            "qwen", (InferenceMessage(MessageRole.USER, "Read it"),), 4096, 128,
+            tools=(InferenceTool(
+                "read_file", "Read a file.", {
+                    "type": "object",
+                    "properties": {"path": {"type": "string"}},
+                    "required": ["path"],
+                },
+            ),), tool_choice="auto",
+        ))
+
+        self.assertEqual("", result.content)
+        self.assertEqual("read_file", result.tool_calls[0].name)
+        self.assertEqual({"path": "README.md"}, result.tool_calls[0].arguments)
+
     def test_embed_uses_batch_endpoint_and_parses_vectors(self) -> None:
         transport = FakeTransport([{
             "embeddings": [[1, 0.5], [0.25, 1]], "prompt_eval_count": 7,

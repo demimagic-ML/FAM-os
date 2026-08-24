@@ -6,10 +6,51 @@ from fam_os.adapters.ollama.payloads import (
     build_prewarm_payload,
     build_unload_payload,
 )
-from fam_os.core.ports.inference import InferenceMessage, InferenceRequest, MessageRole
+from fam_os.core.ports.inference import (
+    InferenceMessage, InferenceRequest, InferenceTool, InferenceToolCall,
+    MessageRole,
+)
 
 
 class OllamaPayloadTests(unittest.TestCase):
+    def test_translates_native_tools_and_tool_result_messages(self) -> None:
+        request = InferenceRequest(
+            "qwen2.5-coder:7b",
+            (
+                InferenceMessage(MessageRole.USER, "Read README.md"),
+                InferenceMessage(
+                    MessageRole.ASSISTANT, "",
+                    tool_calls=(InferenceToolCall(
+                        "call-1", "read_file", {"path": "README.md"},
+                    ),),
+                ),
+                InferenceMessage(
+                    MessageRole.TOOL, "file content",
+                    tool_call_id="call-1", tool_name="read_file",
+                ),
+            ),
+            4096, 256, json_output=True,
+            tools=(InferenceTool(
+                "read_file", "Read a workspace file.", {
+                    "type": "object",
+                    "properties": {"path": {"type": "string"}},
+                    "required": ["path"],
+                },
+            ),),
+            tool_choice="auto",
+        )
+
+        payload = build_chat_payload(request)
+
+        self.assertNotIn("format", payload)
+        self.assertEqual("read_file", payload["tools"][0]["function"]["name"])
+        self.assertEqual(
+            {"path": "README.md"},
+            payload["messages"][1]["tool_calls"][0]["function"]["arguments"],
+        )
+        self.assertEqual("tool", payload["messages"][2]["role"])
+        self.assertEqual("read_file", payload["messages"][2]["tool_name"])
+
     def test_translates_provider_neutral_chat_request(self) -> None:
         request = InferenceRequest(
             "fam-test-model",

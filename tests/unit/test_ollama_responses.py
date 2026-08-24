@@ -10,6 +10,24 @@ FIXTURES = Path(__file__).parents[1] / "fixtures" / "ollama"
 
 
 class OllamaResponseTests(unittest.TestCase):
+    def test_parses_native_tool_call_without_assistant_text(self) -> None:
+        response = parse_chat_response("qwen", {
+            "message": {
+                "role": "assistant", "content": "",
+                "tool_calls": [{
+                    "function": {
+                        "name": "list_directory",
+                        "arguments": {"path": "."},
+                    },
+                }],
+            },
+            "done_reason": "stop",
+        }, 0.1)
+
+        self.assertEqual("list_directory", response.tool_calls[0].name)
+        self.assertEqual({"path": "."}, response.tool_calls[0].arguments)
+        self.assertEqual("stop", response.finish_reason)
+
     def test_converts_nanosecond_metrics(self) -> None:
         payload = json.loads((FIXTURES / "chat-response.json").read_text())
         response = parse_chat_response("fam-test-model", payload, wall_seconds=2.0)
@@ -40,4 +58,3 @@ class OllamaResponseTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

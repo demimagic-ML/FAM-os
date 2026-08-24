@@ -5,6 +5,8 @@ from fam_os.core.ports.inference import (
     InferenceRequest,
     InferenceResponse,
     InferenceRuntime,
+    InferenceTool,
+    InferenceToolCall,
     LoadedModel,
     MessageRole,
 )
@@ -14,6 +16,8 @@ __all__ = [
     "InferenceRequest",
     "InferenceResponse",
     "InferenceRuntime",
+    "InferenceTool",
+    "InferenceToolCall",
     "LoadedModel",
     "MessageRole",
 ]

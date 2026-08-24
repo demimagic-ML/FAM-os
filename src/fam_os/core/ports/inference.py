@@ -13,6 +13,33 @@ class MessageRole(StrEnum):
     SYSTEM = "system"
     USER = "user"
     ASSISTANT = "assistant"
+    TOOL = "tool"
+
+
+@dataclass(frozen=True, slots=True)
+class InferenceTool:
+    name: str
+    description: str
+    parameters: dict[str, object]
+
+    def __post_init__(self) -> None:
+        if not self.name.strip() or not self.description.strip():
+            raise ValueError("inference tool name and description are required")
+        if self.parameters.get("type") != "object":
+            raise ValueError("inference tool parameters must be an object schema")
+
+
+@dataclass(frozen=True, slots=True)
+class InferenceToolCall:
+    call_id: str
+    name: str
+    arguments: dict[str, object]
+
+    def __post_init__(self) -> None:
+        if not self.call_id.strip() or not self.name.strip():
+            raise ValueError("inference tool call identity is required")
+        if not isinstance(self.arguments, dict):
+            raise ValueError("inference tool call arguments must be an object")
 
 
 @dataclass(frozen=True, slots=True)
@@ -20,14 +47,24 @@ class InferenceMessage:
     role: MessageRole
     content: str
     images: tuple[bytes, ...] = ()
+    tool_calls: tuple[InferenceToolCall, ...] = ()
+    tool_call_id: str | None = None
+    tool_name: str | None = None
 
     def __post_init__(self) -> None:
-        if not self.content:
+        if not self.content and not self.tool_calls:
             raise ValueError("message content must not be empty")
         if len(self.images) > 8 or any(not item for item in self.images):
             raise ValueError("inference message images are invalid")
         if sum(len(item) for item in self.images) > 25 * 1024 * 1024:
             raise ValueError("inference message images exceed their byte bound")
+        if self.role is MessageRole.TOOL:
+            if not self.tool_call_id or not self.tool_name or self.tool_calls:
+                raise ValueError("tool message requires one call identity and name")
+        elif self.tool_call_id is not None or self.tool_name is not None:
+            raise ValueError("only tool messages may carry tool result identity")
+        if self.tool_calls and self.role is not MessageRole.ASSISTANT:
+            raise ValueError("only assistant messages may carry tool calls")
 
 
 @dataclass(frozen=True, slots=True)
@@ -42,6 +79,8 @@ class InferenceRequest:
     seed: int | None = 42
     accelerator_layer_count: int | None = None
     main_accelerator_index: int | None = None
+    tools: tuple[InferenceTool, ...] = ()
+    tool_choice: str | None = None
 
     def __post_init__(self) -> None:
         if not self.model_ref.strip():
@@ -61,12 +100,24 @@ class InferenceRequest:
                 raise ValueError("main_accelerator_index cannot be negative")
             if not self.accelerator_layer_count:
                 raise ValueError("main accelerator requires positive accelerator layers")
+        if self.tool_choice not in {None, "auto", "required", "none"}:
+            raise ValueError("inference tool choice is invalid")
+        if self.tool_choice in {"auto", "required"} and not self.tools:
+            raise ValueError("tool choice requires inference tools")
+        if len({item.name for item in self.tools}) != len(self.tools):
+            raise ValueError("inference tool names must be unique")
 
 
 @dataclass(frozen=True, slots=True)
 class InferenceResponse:
     content: str
     metrics: InferenceMetrics
+    tool_calls: tuple[InferenceToolCall, ...] = ()
+    finish_reason: str | None = None
+
+    def __post_init__(self) -> None:
+        if not self.content and not self.tool_calls:
+            raise ValueError("inference response requires content or tool calls")
 
 
 @dataclass(frozen=True, slots=True)

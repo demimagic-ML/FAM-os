@@ -33,7 +33,10 @@ class WorkspaceAgentTools:
         registry.register(_descriptor(
             "list_directory", "List one relative workspace directory; globs are not accepted.",
             AgentToolEffect.OBSERVE,
-            {"path": {"type": "string"}},
+            {"path": {"type": "string", "description": (
+                "Directory relative to the selected workspace; use '.' for "
+                "the selected folder itself."
+            )}},
         ), self.list_directory)
         registry.register(_descriptor(
             "read_file", (
@@ -42,7 +45,9 @@ class WorkspaceAgentTools:
             ),
             AgentToolEffect.OBSERVE,
             {
-                "path": {"type": "string"},
+                "path": {"type": "string", "description": (
+                    "File path relative to the selected workspace."
+                )},
                 "offset_bytes": {"type": "integer"},
                 "maximum_bytes": {"type": "integer"},
             },
@@ -79,14 +84,16 @@ class WorkspaceAgentTools:
             AgentToolEffect.WORKSPACE_WRITE,
             {"source": {"type": "string"}, "destination": {"type": "string"}},
         ), self.move_path)
-        registry.register(_descriptor(
-            "git_status", "Show the workspace Git status.", AgentToolEffect.OBSERVE, {},
-        ), self.git_status)
-        registry.register(_descriptor(
-            "git_diff", "Show the current workspace Git diff.",
-            AgentToolEffect.OBSERVE,
-            {"staged": {"type": "boolean"}},
-        ), self.git_diff)
+        if self._git_available():
+            registry.register(_descriptor(
+                "git_status", "Show the workspace Git status.",
+                AgentToolEffect.OBSERVE, {},
+            ), self.git_status)
+            registry.register(_descriptor(
+                "git_diff", "Show the current workspace Git diff.",
+                AgentToolEffect.OBSERVE,
+                {"staged": {"type": "boolean"}},
+            ), self.git_diff)
 
     def list_directory(self, arguments: dict[str, object]) -> str:
         path = self._path(_text(arguments, "path", default="."), must_exist=True)
@@ -240,6 +247,14 @@ class WorkspaceAgentTools:
         if process.returncode != 0:
             raise RuntimeError(_bounded(output, 16_384))
         return _bounded(output or "No output.", self.maximum_result_bytes)
+
+    def _git_available(self) -> bool:
+        process = subprocess.run(
+            ("git", "rev-parse", "--is-inside-work-tree"), cwd=self.root,
+            stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+            timeout=5, check=False,
+        )
+        return process.returncode == 0 and process.stdout.strip() == b"true"
 
     def _path(self, relative: str, *, must_exist: bool) -> Path:
         if relative == ".":

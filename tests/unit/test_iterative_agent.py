@@ -13,6 +13,7 @@ from fam_os.core.agent import (
     IterativeModelAgent,
 )
 from fam_os.core.ports.inference import InferenceResponse
+from fam_os.core.ports.inference import InferenceToolCall, MessageRole
 from fam_os.product.agent_turn_store import SQLiteAgentTurnStore
 from fam_os.product.storage.database import ProductionDatabase, StorageSettings
 from fam_os.core.agent.runtime import AgentTurnCancelled
@@ -32,7 +33,53 @@ class _Runtime:
         )
 
 
+class _NativeRuntime:
+    supports_native_tools = True
+
+    def __init__(self, responses):
+        self.responses = list(responses)
+        self.requests = []
+
+    def chat(self, request):
+        self.requests.append(request)
+        return self.responses.pop(0)
+
+
 class IterativeAgentTests(unittest.TestCase):
+    def test_native_tool_protocol_uses_runtime_tools_and_tool_role_results(self):
+        metrics = InferenceMetrics("model", 0, 0, 1, 1)
+        runtime = _NativeRuntime([
+            InferenceResponse("", metrics, (
+                InferenceToolCall("native-1", "read_file", {"path": "README.md"}),
+            )),
+            InferenceResponse("README.md contains the project overview.", metrics),
+        ])
+        tools = AgentToolRegistry()
+        tools.register(
+            AgentToolDescriptor(
+                "read_file", "Read a file.", AgentToolEffect.OBSERVE,
+                {"type": "object", "properties": {
+                    "path": {"type": "string"},
+                }, "required": ["path"]},
+            ),
+            lambda arguments: f"content of {arguments['path']}",
+        )
+
+        outcome = IterativeModelAgent(
+            runtime, IterativeAgentSettings("model"), tools, _Store(),
+        ).run(
+            thread_id="thread", turn_id="turn", objective="Read README.md.",
+            profile=AgentAuthorityProfile.ASK,
+        )
+
+        self.assertEqual("README.md contains the project overview.",
+                         outcome.response.content)
+        self.assertEqual("read_file", runtime.requests[0].tools[0].name)
+        self.assertEqual("auto", runtime.requests[0].tool_choice)
+        self.assertFalse(runtime.requests[0].json_output)
+        self.assertEqual(MessageRole.TOOL, runtime.requests[1].messages[-1].role)
+        self.assertEqual("native-1", runtime.requests[1].messages[-1].tool_call_id)
+
     def test_sqlite_store_delivers_durable_owner_controls_once(self):
         with tempfile.TemporaryDirectory() as directory:
             database = ProductionDatabase(StorageSettings(

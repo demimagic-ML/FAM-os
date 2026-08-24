@@ -27,7 +27,21 @@ def build_chat_payload(request: InferenceRequest) -> JsonObject:
         "think": False,
         "options": options,
     }
-    if request.json_output:
+    if request.tools:
+        payload["tools"] = [
+            {
+                "type": "function",
+                "function": {
+                    "name": item.name,
+                    "description": item.description,
+                    "parameters": item.parameters,
+                },
+            }
+            for item in request.tools
+        ]
+        if request.tool_choice is not None:
+            payload["tool_choice"] = request.tool_choice
+    elif request.json_output:
         payload["format"] = "json"
     return payload
 
@@ -38,6 +52,18 @@ def _message_payload(message) -> JsonObject:
     value: JsonObject = {"role": message.role.value, "content": message.content}
     if message.images:
         value["images"] = [base64.b64encode(item).decode("ascii") for item in message.images]
+    if message.tool_calls:
+        value["tool_calls"] = [
+            {
+                "function": {
+                    "name": item.name,
+                    "arguments": item.arguments,
+                },
+            }
+            for item in message.tool_calls
+        ]
+    if message.tool_name is not None:
+        value["tool_name"] = message.tool_name
     return value
 
 

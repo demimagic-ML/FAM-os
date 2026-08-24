@@ -21,6 +21,7 @@ from fam_os.core.ports.inference import (
     ChatInferenceRuntime,
     InferenceMessage,
     InferenceRequest,
+    InferenceTool,
     MessageRole,
 )
 
@@ -146,15 +147,17 @@ class IterativeModelAgent:
         history_reader = getattr(self._store, "conversation_context", None)
         history = history_reader(thread_id) if callable(history_reader) else ""
         self._store.begin_turn(thread_id, turn_id, objective, profile)
+        native_tools = bool(getattr(self._runtime, "supports_native_tools", False))
         messages = list(_initial_messages(
             objective, prior_context, history, profile, self._tools.descriptors(),
+            native_tools=native_tools,
         ))
         results: list[AgentToolResult] = []
         decision_counts: dict[str, int] = {}
         try:
             return self._run_steps(
                 thread_id, turn_id, objective, profile, messages, results,
-                decision_counts,
+                decision_counts, native_tools,
             )
         except AgentTurnCancelled as error:
             cancel = getattr(self._store, "cancel_turn", None)
@@ -171,7 +174,7 @@ class IterativeModelAgent:
 
     def _run_steps(
         self, thread_id, turn_id, objective, profile, messages, results,
-        decision_counts,
+        decision_counts, native_tools,
     ):
         for step in range(1, self._settings.maximum_steps + 1):
             consume = getattr(self._store, "consume_controls", None)
@@ -195,11 +198,41 @@ class IterativeModelAgent:
                 messages=tuple(messages),
                 context_tokens=self._settings.context_tokens,
                 max_output_tokens=self._settings.maximum_output_tokens,
-                json_output=True,
+                json_output=not native_tools,
                 temperature=0.0,
                 seed=42,
+                tools=(
+                    _native_tools(self._tools.descriptors())
+                    if native_tools else ()
+                ),
+                tool_choice="auto" if native_tools else None,
             ))
-            decision = parse_agent_decision(response.content, step)
+            if native_tools and response.tool_calls:
+                messages.append(InferenceMessage(
+                    MessageRole.ASSISTANT, response.content,
+                    tool_calls=response.tool_calls,
+                ))
+                for index, native_call in enumerate(response.tool_calls, 1):
+                    decision = AgentToolCall(
+                        native_call.call_id or f"call-{step}-{index}",
+                        native_call.name, native_call.arguments,
+                        "Selected through native model tool calling.",
+                    )
+                    result, repeated = self._invoke_tool(
+                        thread_id, turn_id, profile, decision, decision_counts,
+                    )
+                    results.append(result)
+                    messages.append(InferenceMessage(
+                        MessageRole.TOOL, result.output,
+                        tool_call_id=result.call_id, tool_name=result.tool_id,
+                    ))
+                    if repeated >= 3:
+                        messages.append(_repeat_intervention())
+                continue
+            decision = (
+                AgentFinalResponse(response.content)
+                if native_tools else parse_agent_decision(response.content, step)
+            )
             messages.append(InferenceMessage(MessageRole.ASSISTANT, response.content))
             if isinstance(decision, AgentFinalResponse):
                 rejection = (
@@ -233,22 +266,9 @@ class IterativeModelAgent:
                 return AgentTurnOutcome(
                     thread_id, turn_id, decision, tuple(results), step,
                 )
-            self._store.record_call(thread_id, turn_id, decision)
-            signature = json.dumps({
-                "tool": decision.tool_id,
-                "arguments": decision.arguments,
-            }, sort_keys=True, separators=(",", ":"))
-            decision_counts[signature] = decision_counts.get(signature, 0) + 1
-            repeated = decision_counts[signature]
-            if repeated >= 3:
-                result = AgentToolResult(
-                    decision.call_id, decision.tool_id, False,
-                    "Repeated-call loop detected. This action has already produced the "
-                    "same result; inspect different evidence or choose another strategy.",
-                )
-            else:
-                result = self._tools.invoke(decision, profile)
-            self._store.record_result(thread_id, turn_id, result)
+            result, repeated = self._invoke_tool(
+                thread_id, turn_id, profile, decision, decision_counts,
+            )
             results.append(result)
             messages.append(InferenceMessage(
                 MessageRole.USER,
@@ -261,16 +281,29 @@ class IterativeModelAgent:
                 }, sort_keys=True, separators=(",", ":")),
             ))
             if repeated >= 3:
-                messages.append(InferenceMessage(
-                    MessageRole.SYSTEM,
-                    "The last tool and arguments are blocked for the remainder of this "
-                    "turn because they repeatedly made no progress. Do not call them "
-                    "again. Reassess the objective from existing evidence, inspect the "
-                    "project's declared workflows, and choose a materially different "
-                    "tool or approach. Missing optional tooling is not a reason to "
-                    "install it unless installation is itself part of the objective.",
-                ))
+                messages.append(_repeat_intervention())
         raise RuntimeError("agent turn exhausted its model-step budget")
+
+    def _invoke_tool(
+        self, thread_id, turn_id, profile, decision, decision_counts,
+    ):
+        self._store.record_call(thread_id, turn_id, decision)
+        signature = json.dumps({
+            "tool": decision.tool_id,
+            "arguments": decision.arguments,
+        }, sort_keys=True, separators=(",", ":"))
+        decision_counts[signature] = decision_counts.get(signature, 0) + 1
+        repeated = decision_counts[signature]
+        if repeated >= 3:
+            result = AgentToolResult(
+                decision.call_id, decision.tool_id, False,
+                "Repeated-call loop detected. This action has already produced the "
+                "same result; inspect different evidence or choose another strategy.",
+            )
+        else:
+            result = self._tools.invoke(decision, profile)
+        self._store.record_result(thread_id, turn_id, result)
+        return result, repeated
 
 
 def parse_agent_decision(content: str, step: int) -> AgentModelDecision:
@@ -295,7 +328,10 @@ def parse_agent_decision(content: str, step: int) -> AgentModelDecision:
     raise ValueError("agent model decision schema is invalid")
 
 
-def _initial_messages(objective, prior_context, conversation_history, profile, descriptors):
+def _initial_messages(
+    objective, prior_context, conversation_history, profile, descriptors, *,
+    native_tools=False,
+):
     tools = [{
         "tool": item.tool_id,
         "description": item.description,
@@ -324,11 +360,16 @@ def _initial_messages(objective, prior_context, conversation_history, profile, d
         "Use run_command for setup and exploratory processes. Use verify_command for "
         "the final test, build, diagnostic, or behavioral assertion whose zero exit "
         "status proves the implementation works. "
-        "Return only one strict JSON object per step. To use a tool return "
-        '{"type":"tool_call","tool":"tool id","arguments":{},"reason":"why now"}. '
-        "When the objective is actually complete return "
-        '{"type":"final","content":"concise outcome and verification"}. '
-        "A denied tool result means request a suitable alternative or explain the exact "
+        + (
+            "Use only the native tools supplied with this request. When the objective "
+            "is complete, return the concise final answer as normal assistant text. "
+            if native_tools else
+            "Return only one strict JSON object per step. To use a tool return "
+            '{"type":"tool_call","tool":"tool id","arguments":{},"reason":"why now"}. '
+            "When the objective is actually complete return "
+            '{"type":"final","content":"concise outcome and verification"}. '
+        )
+        + "A denied tool result means request a suitable alternative or explain the exact "
         "remaining authority; never claim an effect occurred without a successful result. "
         "Only call tool identifiers present in available_tools; never invent a tool. "
         + (
@@ -343,11 +384,29 @@ def _initial_messages(objective, prior_context, conversation_history, profile, d
         "authority_profile": profile.value,
         "prior_context": prior_context,
         "conversation_history": conversation_history,
-        "available_tools": tools,
+        "available_tools": None if native_tools else tools,
     }, sort_keys=True, separators=(",", ":"))
     return (
         InferenceMessage(MessageRole.SYSTEM, system),
         InferenceMessage(MessageRole.USER, user),
+    )
+
+
+def _native_tools(descriptors) -> tuple[InferenceTool, ...]:
+    return tuple(
+        InferenceTool(item.tool_id, item.description, item.input_schema)
+        for item in descriptors
+    )
+
+
+def _repeat_intervention() -> InferenceMessage:
+    return InferenceMessage(
+        MessageRole.SYSTEM,
+        "The last tool and arguments are blocked for the remainder of this turn "
+        "because they repeatedly made no progress. Do not call them again. Reassess "
+        "the objective from existing evidence and choose a materially different tool "
+        "or approach. Missing optional tooling is not a reason to install it unless "
+        "installation is itself part of the objective.",
     )
 
 

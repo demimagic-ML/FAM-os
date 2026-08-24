@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from fam_os.adapters.ollama.errors import OllamaProtocolError
 from fam_os.adapters.ollama.transport import JsonObject
-from fam_os.core.ports.inference import InferenceResponse, LoadedModel
+from fam_os.core.ports.inference import (
+    InferenceResponse, InferenceToolCall, LoadedModel,
+)
 from fam_os.core.ports.embedding import EmbeddingResponse
 from fam_os.telemetry import InferenceMetrics
 
@@ -32,6 +34,10 @@ def parse_chat_response(
     message = payload.get("message")
     if not isinstance(message, dict) or not isinstance(message.get("content"), str):
         raise OllamaProtocolError("chat response requires message.content")
+    tool_calls = _tool_calls(message.get("tool_calls", []))
+    content = message.get("content", "")
+    if not content and not tool_calls:
+        raise OllamaProtocolError("chat response requires content or tool calls")
     output_tokens = _optional_integer(payload, "eval_count") or 0
     duration_ns = _optional_integer(payload, "eval_duration") or 0
     rate = output_tokens / (duration_ns / 1e9) if duration_ns else None
@@ -43,7 +49,31 @@ def parse_chat_response(
         output_tokens=output_tokens,
         generation_tokens_per_second=rate,
     )
-    return InferenceResponse(content=message["content"], metrics=metrics)
+    done_reason = payload.get("done_reason")
+    if done_reason is not None and not isinstance(done_reason, str):
+        raise OllamaProtocolError("done_reason must be text")
+    return InferenceResponse(
+        content=content, metrics=metrics, tool_calls=tool_calls,
+        finish_reason=done_reason,
+    )
+
+
+def _tool_calls(raw: object) -> tuple[InferenceToolCall, ...]:
+    if not isinstance(raw, list):
+        raise OllamaProtocolError("message.tool_calls must be a list")
+    values = []
+    for index, item in enumerate(raw, 1):
+        if not isinstance(item, dict) or not isinstance(item.get("function"), dict):
+            raise OllamaProtocolError("tool call requires function")
+        function = item["function"]
+        name, arguments = function.get("name"), function.get("arguments")
+        if not isinstance(name, str) or not isinstance(arguments, dict):
+            raise OllamaProtocolError("tool call function is invalid")
+        call_id = item.get("id", f"ollama-call-{index}")
+        if not isinstance(call_id, str):
+            raise OllamaProtocolError("tool call id must be text")
+        values.append(InferenceToolCall(call_id, name, arguments))
+    return tuple(values)
 
 
 def parse_loaded_models(payload: JsonObject) -> tuple[LoadedModel, ...]:
