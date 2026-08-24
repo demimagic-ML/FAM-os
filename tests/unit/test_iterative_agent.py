@@ -160,6 +160,39 @@ class IterativeAgentTests(unittest.TestCase):
         self.assertEqual(3, outcome.model_steps)
         self.assertIn("completion_rejected", runtime.requests[1].messages[-1].content)
 
+    def test_grounding_reviewer_rejects_unrelated_final_and_requests_resynthesis(self):
+        runtime = _Runtime([
+            {"type": "tool_call", "tool": "list_directory", "arguments": {},
+             "reason": "List the requested folder."},
+            {"type": "final", "content": "Python is unavailable."},
+            {"type": "final", "content": "The folder contains README.md."},
+        ])
+        tools = AgentToolRegistry()
+        tools.register(
+            _tool("list_directory", AgentToolEffect.OBSERVE),
+            lambda _: "file\tREADME.md",
+        )
+        reviews = []
+
+        def review(_objective, response, _results):
+            reviews.append(response.content)
+            return (
+                "The answer is unrelated to the requested folder listing."
+                if "Python" in response.content else None
+            )
+
+        outcome = IterativeModelAgent(
+            runtime, IterativeAgentSettings("model"), tools, _Store(),
+            completion_reviewer=review,
+        ).run(
+            thread_id="thread", turn_id="turn", objective="What's inside?",
+            profile=AgentAuthorityProfile.ASK,
+        )
+
+        self.assertEqual("The folder contains README.md.", outcome.response.content)
+        self.assertEqual(2, len(reviews))
+        self.assertIn("completion_rejected", runtime.requests[2].messages[-1].content)
+
     def test_repeated_tool_call_is_not_reexecuted_and_requests_new_strategy(self):
         repeated = {"type": "tool_call", "tool": "inspect", "arguments": {},
                     "reason": "Try the same observation."}

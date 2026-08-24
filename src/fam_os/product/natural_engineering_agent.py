@@ -16,6 +16,9 @@ from fam_os.core.agent import (
     IterativeModelAgent,
 )
 from fam_os.core.engineering import EngineeringAuthority
+from fam_os.core.ports.inference import (
+    InferenceMessage, InferenceRequest, MessageRole,
+)
 from fam_os.product.agent_command_tools import WorkspaceCommandTools
 from fam_os.product.agent_application_tools import ApplicationAgentTools
 from fam_os.product.agent_host_command_tools import HostCommandTools
@@ -153,6 +156,7 @@ class NaturalEngineeringAgentService:
                     "directories, not globs; use '.' to search the whole workspace."
                 )
             ),
+            completion_reviewer=self._review_answer,
         )
         return agent.run(
             thread_id=thread_id,
@@ -161,6 +165,59 @@ class NaturalEngineeringAgentService:
             profile=AgentAuthorityProfile.ASK,
             prior_context=_context(preparation),
         )
+
+    def _review_answer(self, objective, response, results) -> str | None:
+        evidence = []
+        used = 0
+        for item in results:
+            output = item.output[:8_000]
+            size = len(output.encode("utf-8"))
+            if used + size > 24_000:
+                break
+            evidence.append({
+                "tool": item.tool_id,
+                "succeeded": item.succeeded,
+                "output": output,
+            })
+            used += size
+        review = self._runtime.chat(InferenceRequest(
+            model_ref=self._model_ref,
+            messages=(
+                InferenceMessage(
+                    MessageRole.SYSTEM,
+                    "Review a local agent answer against its exact objective and tool "
+                    "evidence. Accept only when it directly answers the question and its "
+                    "claims follow from successful evidence. Reject unrelated environment "
+                    "diagnoses, conclusions based on failed or unknown tools, and answers "
+                    "that omit requested directory or file facts present in evidence. "
+                    "Return only JSON: {\"accepted\":true|false,\"reason\":\"...\"}.",
+                ),
+                InferenceMessage(MessageRole.USER, json.dumps({
+                    "objective": objective,
+                    "proposed_answer": response.content,
+                    "tool_evidence": evidence,
+                }, sort_keys=True, separators=(",", ":"))),
+            ),
+            context_tokens=32_768,
+            max_output_tokens=512,
+            json_output=True,
+            temperature=0.0,
+            seed=43,
+        ))
+        try:
+            decision = json.loads(review.content)
+        except (json.JSONDecodeError, TypeError):
+            return "The grounding reviewer could not validate this answer; resynthesize it."
+        if (
+            not isinstance(decision, dict)
+            or set(decision) != {"accepted", "reason"}
+            or not isinstance(decision.get("accepted"), bool)
+            or not isinstance(decision.get("reason"), str)
+        ):
+            return "The grounding reviewer returned an invalid decision; resynthesize it."
+        if decision["accepted"]:
+            return None
+        return f"Grounding review rejected the answer: {decision['reason'][:1_000]}"
 
     def replay_verification(
         self, task_id: str, workspace: str, *, full_os: bool = False,

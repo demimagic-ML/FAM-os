@@ -121,12 +121,16 @@ class IterativeModelAgent:
         store: AgentTurnStore,
         completion_validator: Callable[[tuple[AgentToolResult, ...]], str | None]
         | None = None,
+        completion_reviewer: Callable[
+            [str, AgentFinalResponse, tuple[AgentToolResult, ...]], str | None
+        ] | None = None,
     ) -> None:
         self._runtime = runtime
         self._settings = settings
         self._tools = tools
         self._store = store
         self._completion_validator = completion_validator
+        self._completion_reviewer = completion_reviewer
 
     def run(
         self,
@@ -149,7 +153,8 @@ class IterativeModelAgent:
         decision_counts: dict[str, int] = {}
         try:
             return self._run_steps(
-                thread_id, turn_id, profile, messages, results, decision_counts,
+                thread_id, turn_id, objective, profile, messages, results,
+                decision_counts,
             )
         except AgentTurnCancelled as error:
             cancel = getattr(self._store, "cancel_turn", None)
@@ -165,7 +170,8 @@ class IterativeModelAgent:
             raise
 
     def _run_steps(
-        self, thread_id, turn_id, profile, messages, results, decision_counts,
+        self, thread_id, turn_id, objective, profile, messages, results,
+        decision_counts,
     ):
         for step in range(1, self._settings.maximum_steps + 1):
             consume = getattr(self._store, "consume_controls", None)
@@ -200,6 +206,10 @@ class IterativeModelAgent:
                     None if self._completion_validator is None
                     else self._completion_validator(tuple(results))
                 )
+                if rejection is None and self._completion_reviewer is not None:
+                    rejection = self._completion_reviewer(
+                        objective, decision, tuple(results),
+                    )
                 if rejection is not None:
                     signature = f"final:{decision.content}"
                     decision_counts[signature] = decision_counts.get(signature, 0) + 1
@@ -319,7 +329,14 @@ def _initial_messages(objective, prior_context, conversation_history, profile, d
         "When the objective is actually complete return "
         '{"type":"final","content":"concise outcome and verification"}. '
         "A denied tool result means request a suitable alternative or explain the exact "
-        "remaining authority; never claim an effect occurred without a successful result."
+        "remaining authority; never claim an effect occurred without a successful result. "
+        "Only call tool identifiers present in available_tools; never invent a tool. "
+        + (
+            "This is a read-only question. Answer the exact question directly from file "
+            "or directory evidence. Do not run builds, verification commands, package "
+            "installers, or environment diagnostics unless the user explicitly asks."
+            if profile is AgentAuthorityProfile.ASK else ""
+        )
     )
     user = json.dumps({
         "objective": objective,

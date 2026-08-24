@@ -8,6 +8,26 @@ from fam_os.product.agent_workspace_tools import WorkspaceAgentTools
 
 
 class AgentWorkspaceToolsTests(unittest.TestCase):
+    def test_large_file_is_read_in_bounded_pages(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            content = "0123456789" * 20
+            (root / "large.txt").write_text(content)
+            registry = AgentToolRegistry()
+            WorkspaceAgentTools(root, maximum_read_bytes=64).register(registry)
+
+            first = _invoke(registry, "read_file", {
+                "path": "large.txt", "maximum_bytes": 50,
+            })
+            second = _invoke(registry, "read_file", {
+                "path": "large.txt", "offset_bytes": 50, "maximum_bytes": 50,
+            })
+
+            self.assertTrue(first.succeeded, first.output)
+            self.assertIn("bytes=0-50/200", first.output)
+            self.assertIn("next_offset=50", first.output)
+            self.assertIn("bytes=50-100/200", second.output)
+
     def test_agent_can_discover_create_patch_move_and_delete_without_file_count_cap(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

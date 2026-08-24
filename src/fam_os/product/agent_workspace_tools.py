@@ -36,9 +36,16 @@ class WorkspaceAgentTools:
             {"path": {"type": "string"}},
         ), self.list_directory)
         registry.register(_descriptor(
-            "read_file", "Read one relative UTF-8 workspace file; globs are not accepted.",
+            "read_file", (
+                "Read a bounded page of one relative UTF-8 workspace file. Use "
+                "next_offset from the result to continue large files; globs are not accepted."
+            ),
             AgentToolEffect.OBSERVE,
-            {"path": {"type": "string"}},
+            {
+                "path": {"type": "string"},
+                "offset_bytes": {"type": "integer"},
+                "maximum_bytes": {"type": "integer"},
+            },
         ), self.read_file)
         registry.register(_descriptor(
             "search_text", (
@@ -99,15 +106,33 @@ class WorkspaceAgentTools:
         return _bounded("\n".join(rows), self.maximum_result_bytes)
 
     def read_file(self, arguments: dict[str, object]) -> str:
+        _exact(arguments, {"path", "offset_bytes", "maximum_bytes"}, optional=True)
         path = self._path(_text(arguments, "path"), must_exist=True)
         if not path.is_file() or path.is_symlink():
             raise ValueError("read_file path is not a regular file")
-        content = path.read_bytes()
-        if len(content) > self.maximum_read_bytes:
-            raise ValueError("read_file content exceeds its bound")
-        text = content.decode("utf-8")
-        digest = hashlib.sha256(content).hexdigest()
-        return f"sha256={digest}\n{text}"
+        offset = arguments.get("offset_bytes", 0)
+        maximum = arguments.get("maximum_bytes", self.maximum_read_bytes)
+        if not isinstance(offset, int) or isinstance(offset, bool) or offset < 0:
+            raise ValueError("read_file offset_bytes must be a non-negative integer")
+        if (
+            not isinstance(maximum, int) or isinstance(maximum, bool)
+            or not 1 <= maximum <= self.maximum_read_bytes
+        ):
+            raise ValueError("read_file maximum_bytes is outside its bound")
+        size = path.stat().st_size
+        if offset > size:
+            raise ValueError("read_file offset exceeds file size")
+        with path.open("rb") as stream:
+            digest = hashlib.file_digest(stream, "sha256").hexdigest()
+            stream.seek(offset)
+            content = stream.read(maximum)
+        text = content.decode("utf-8", "replace")
+        end = offset + len(content)
+        next_offset = end if end < size else None
+        return (
+            f"sha256={digest}\nbytes={offset}-{end}/{size}\n"
+            f"next_offset={next_offset}\n{text}"
+        )
 
     def search_text(self, arguments: dict[str, object]) -> str:
         query = _text(arguments, "query")

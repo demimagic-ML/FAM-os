@@ -62,7 +62,11 @@ class AuthorizedCandidateAgentTools:
                   {"path": {"type": "string"}})
         _register(registry, "read_file", "Read one candidate file and its digest.",
                   AgentToolEffect.OBSERVE, self._workspace.read_file,
-                  {"path": {"type": "string"}})
+                  {
+                      "path": {"type": "string"},
+                      "offset_bytes": {"type": "integer"},
+                      "maximum_bytes": {"type": "integer"},
+                  })
         _register(registry, "search_text", "Search candidate files for literal text.",
                   AgentToolEffect.OBSERVE, self._workspace.search_text, {
                       "query": {"type": "string"}, "path": {"type": "string"},
