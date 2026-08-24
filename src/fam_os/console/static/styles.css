@@ -792,6 +792,17 @@ main {
   margin: 0;
 }
 
+.agent-control {
+  margin-top: 18px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  background: var(--fog);
+}
+.agent-control > label { display: block; margin: 4px 0 9px; color: var(--muted); font-size: 11px; }
+.agent-control > div { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+.agent-control input { min-width: 0; border: 1px solid var(--line); background: white; padding: 9px; }
+.agent-control p:last-child { min-height: 1.4em; margin: 8px 0 0; color: var(--muted); font-size: 10px; }
+
 .spine li {
   display: grid;
   grid-template-columns: 30px 1fr;

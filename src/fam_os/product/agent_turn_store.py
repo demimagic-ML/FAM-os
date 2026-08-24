@@ -102,6 +102,46 @@ class SQLiteAgentTurnStore:
         if cursor.rowcount != 1:
             raise RuntimeError("agent turn failure state changed")
 
+    def cancel_turn(self, thread_id: str, turn_id: str, reason: str) -> None:
+        cursor = self._database.execute(
+            "UPDATE agent_turns SET status='cancelled',failure=?,completed_at=? "
+            "WHERE thread_id=? AND turn_id=? AND status='running'",
+            (reason, _now(), thread_id, turn_id),
+        )
+        if cursor.rowcount != 1:
+            raise RuntimeError("agent turn cancellation state changed")
+
+    def request_control(
+        self, thread_id: str, kind: str, content: str,
+    ) -> None:
+        if kind not in {"steer", "cancel"} or not content.strip():
+            raise ValueError("agent control is invalid")
+        row = self._database.fetchone(
+            "SELECT 1 FROM agent_turns WHERE thread_id=? AND status='running'",
+            (thread_id,),
+        )
+        if row is None:
+            raise LookupError("agent thread has no running turn")
+        self._database.execute(
+            "INSERT INTO agent_thread_controls(thread_id,control_kind,content,created_at) "
+            "VALUES(?,?,?,?)", (thread_id, kind, content, _now()),
+        )
+
+    def consume_controls(self, thread_id: str) -> tuple[dict[str, str], ...]:
+        consumed = _now()
+        with self._database.transaction() as connection:
+            rows = connection.execute(
+                "SELECT control_id,control_kind,content FROM agent_thread_controls "
+                "WHERE thread_id=? AND consumed_at IS NULL ORDER BY control_id",
+                (thread_id,),
+            ).fetchall()
+            if rows:
+                connection.executemany(
+                    "UPDATE agent_thread_controls SET consumed_at=? WHERE control_id=?",
+                    ((consumed, row[0]) for row in rows),
+                )
+        return tuple({"kind": row[1], "content": row[2]} for row in rows)
+
     def thread(self, thread_id: str) -> dict[str, object] | None:
         row = self._database.fetchone(
             "SELECT workspace_root,authority_profile,created_at,updated_at "

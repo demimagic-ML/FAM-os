@@ -45,6 +45,14 @@ class AgentTurnStore(Protocol):
 
     def fail_turn(self, thread_id: str, turn_id: str, failure: str) -> None: ...
 
+    def cancel_turn(self, thread_id: str, turn_id: str, reason: str) -> None: ...
+
+    def consume_controls(self, thread_id: str) -> tuple[dict[str, str], ...]: ...
+
+
+class AgentTurnCancelled(RuntimeError):
+    """Raised when the owner cancels an active iterative turn."""
+
 
 class AgentToolRegistry:
     def __init__(self) -> None:
@@ -143,6 +151,13 @@ class IterativeModelAgent:
             return self._run_steps(
                 thread_id, turn_id, profile, messages, results, decision_counts,
             )
+        except AgentTurnCancelled as error:
+            cancel = getattr(self._store, "cancel_turn", None)
+            if callable(cancel):
+                cancel(thread_id, turn_id, str(error))
+            else:
+                self._store.fail_turn(thread_id, turn_id, str(error))
+            raise
         except Exception as error:
             self._store.fail_turn(
                 thread_id, turn_id, f"{type(error).__name__}: {str(error)[:2_000]}",
@@ -153,6 +168,22 @@ class IterativeModelAgent:
         self, thread_id, turn_id, profile, messages, results, decision_counts,
     ):
         for step in range(1, self._settings.maximum_steps + 1):
+            consume = getattr(self._store, "consume_controls", None)
+            controls = consume(thread_id) if callable(consume) else ()
+            for control in controls:
+                if control.get("kind") == "cancel":
+                    raise AgentTurnCancelled(
+                        control.get("content") or "Cancelled by owner.",
+                    )
+                if control.get("kind") == "steer":
+                    messages.append(InferenceMessage(
+                        MessageRole.USER,
+                        json.dumps({
+                            "type": "owner_guidance",
+                            "instruction": control.get("content", ""),
+                            "priority": "Apply this guidance to the current objective.",
+                        }, sort_keys=True, separators=(",", ":")),
+                    ))
             response = self._runtime.chat(InferenceRequest(
                 model_ref=self._settings.model_ref,
                 messages=tuple(messages),

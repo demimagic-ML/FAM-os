@@ -467,6 +467,16 @@ class NaturalEngineeringExecutionCoordinator:
             raise LookupError("iterative engineering agent is unavailable")
         return self._agent.thread(owner_id, session_id, workspace)
 
+    def control_thread(
+        self, owner_id: str, session_id: str, workspace: str,
+        kind: str, content: str,
+    ) -> dict[str, object]:
+        if self._agent is None:
+            raise LookupError("iterative engineering agent is unavailable")
+        return self._agent.control_thread(
+            owner_id, session_id, workspace, kind, content,
+        )
+
     def execute_diagnostics_only(
         self, owner_id: str, definition, *, session_id: str,
         principal_id: str,

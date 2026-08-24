@@ -630,7 +630,11 @@ $("#deny").onclick = () => (
   FamNaturalEngineering.active()
     ? FamNaturalEngineering.decide(false) : decide("deny")
 ).catch(fail);
-$("#cancel").onclick = () => cancelTask().catch(fail);
+$("#cancel").onclick = () => (
+  FamNaturalEngineering.running()
+    ? FamNaturalEngineering.cancel() : cancelTask()
+).catch(fail);
+$("#steer-agent").onclick = () => FamNaturalEngineering.steer().catch(fail);
 $("#undo").onclick = () => undoTask().catch(fail);
 $("#refresh").onclick = () => refresh().catch(fail);
 $("#context").onchange = updateScopeSummary;

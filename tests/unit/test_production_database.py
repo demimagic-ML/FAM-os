@@ -70,6 +70,8 @@ EXPECTED_TABLES = {
     "useful_automations",
     "useful_recipes",
     "useful_automation_runs", "useful_notifications",
+    "agent_threads", "agent_turns", "agent_tool_events",
+    "agent_thread_controls",
 }
 
 
@@ -115,7 +117,7 @@ class ProductionDatabaseTests(unittest.TestCase):
             initial.close()
             reopened = ProductionDatabase(StorageSettings(path, os.geteuid()))
             reopened.open()
-            self.assertEqual(39, reopened.execute("SELECT count(*) FROM schema_migrations").fetchone()[0])
+            self.assertEqual(42, reopened.execute("SELECT count(*) FROM schema_migrations").fetchone()[0])
             reopened.close()
 
     def test_changed_or_future_migration_is_rejected(self) -> None:

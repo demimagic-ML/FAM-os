@@ -112,6 +112,12 @@
           <p>The plan, expert, application access, approvals, and verification will appear here.</p>
         </div>
         <ol class="spine hidden" id="spine"></ol>
+        <section class="agent-control hidden" id="agent-control">
+          <p class="kicker">Guide this run</p>
+          <label for="agent-guidance">Add context without restarting</label>
+          <div><input id="agent-guidance" type="text" placeholder="Keep the public API unchanged"><button class="quiet" id="steer-agent" type="button">Send guidance</button></div>
+          <p id="agent-control-status" role="status"></p>
+        </section>
         <section class="approval hidden" id="approval">
           <p class="kicker">Your decision</p><h3 id="approval-summary"></h3>
           <p id="approval-scope"></p>

@@ -15,6 +15,7 @@ from fam_os.core.agent import (
 from fam_os.core.ports.inference import InferenceResponse
 from fam_os.product.agent_turn_store import SQLiteAgentTurnStore
 from fam_os.product.storage.database import ProductionDatabase, StorageSettings
+from fam_os.core.agent.runtime import AgentTurnCancelled
 from fam_os.telemetry.contracts import InferenceMetrics
 
 
@@ -32,6 +33,27 @@ class _Runtime:
 
 
 class IterativeAgentTests(unittest.TestCase):
+    def test_sqlite_store_delivers_durable_owner_controls_once(self):
+        with tempfile.TemporaryDirectory() as directory:
+            database = ProductionDatabase(StorageSettings(
+                Path(directory) / "state.sqlite3", os.geteuid(),
+            ))
+            database.open()
+            try:
+                store = SQLiteAgentTurnStore(database, "/workspace")
+                store.begin_turn(
+                    "thread", "turn", "Implement it.",
+                    AgentAuthorityProfile.WORKSPACE,
+                )
+                store.request_control("thread", "steer", "Preserve compatibility.")
+                self.assertEqual(
+                    ({"kind": "steer", "content": "Preserve compatibility."},),
+                    store.consume_controls("thread"),
+                )
+                self.assertEqual((), store.consume_controls("thread"))
+            finally:
+                database.close()
+
     def test_model_observes_tool_result_and_continues_until_complete(self):
         runtime = _Runtime([
             {"type": "tool_call", "tool": "read_file", "arguments": {
@@ -163,6 +185,37 @@ class IterativeAgentTests(unittest.TestCase):
         self.assertFalse(outcome.tool_results[2].succeeded)
         self.assertIn("loop detected", outcome.tool_results[2].output.lower())
 
+    def test_owner_guidance_is_injected_before_the_next_model_step(self):
+        runtime = _Runtime([
+            {"type": "final", "content": "Followed the owner's guidance."},
+        ])
+        store = _ControlStore([{"kind": "steer", "content": "Keep the API name."}])
+
+        IterativeModelAgent(
+            runtime, IterativeAgentSettings("model"), AgentToolRegistry(), store,
+        ).run(
+            thread_id="thread", turn_id="turn", objective="Refactor the API.",
+            profile=AgentAuthorityProfile.WORKSPACE,
+        )
+
+        self.assertIn("owner_guidance", runtime.requests[0].messages[-1].content)
+        self.assertIn("Keep the API name", runtime.requests[0].messages[-1].content)
+
+    def test_owner_cancel_stops_before_another_model_call(self):
+        runtime = _Runtime([])
+        store = _ControlStore([{"kind": "cancel", "content": "Stop now."}])
+
+        with self.assertRaisesRegex(AgentTurnCancelled, "Stop now"):
+            IterativeModelAgent(
+                runtime, IterativeAgentSettings("model"), AgentToolRegistry(), store,
+            ).run(
+                thread_id="thread", turn_id="turn", objective="Keep working.",
+                profile=AgentAuthorityProfile.WORKSPACE,
+            )
+
+        self.assertEqual([], runtime.requests)
+        self.assertEqual("Stop now.", store.cancelled)
+
 
 class _Store:
     def begin_turn(self, *args): pass
@@ -170,6 +223,19 @@ class _Store:
     def record_result(self, *args): pass
     def complete_turn(self, *args): pass
     def fail_turn(self, *args): pass
+
+
+class _ControlStore(_Store):
+    def __init__(self, controls):
+        self.controls = tuple(controls)
+        self.cancelled = None
+
+    def consume_controls(self, _thread_id):
+        controls, self.controls = self.controls, ()
+        return controls
+
+    def cancel_turn(self, _thread_id, _turn_id, reason):
+        self.cancelled = reason
 
 
 def _tool(tool_id, effect):

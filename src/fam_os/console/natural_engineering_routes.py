@@ -62,6 +62,12 @@ def handle_natural_engineering_post(
                 _text(document["authority_profile"]),
             ),
         )
+    elif path == _PREFIX + "/thread/control":
+        _exact(document, {"workspace_root", "kind", "content"})
+        response = api.control_thread(
+            api.owner_id, session_id, _text(document["workspace_root"]),
+            _text(document["kind"]), _text(document["content"]),
+        )
     else:
         proposal_id, operation = _path(path)
         if operation not in {

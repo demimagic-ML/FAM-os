@@ -191,6 +191,15 @@ class NaturalEngineeringAgentService:
             "turns": [],
         }
 
+    def control_thread(
+        self, owner_id: str, session_id: str, workspace: str,
+        kind: str, content: str,
+    ) -> dict[str, object]:
+        store = SQLiteAgentTurnStore(self._database, workspace)
+        thread_id = _thread_id(owner_id, session_id, workspace)
+        store.request_control(thread_id, kind, content)
+        return {"thread_id": thread_id, "accepted": True, "control_kind": kind}
+
 
 def _thread_id(owner_id: str, session_id: str, workspace: str) -> str:
     digest = hashlib.sha256(

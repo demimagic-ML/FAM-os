@@ -6,6 +6,7 @@ const FamNaturalEngineering = (() => {
   let hooks = null;
   let current = null;
   let restoredWorkspace = null;
+  let liveTimer = null;
 
   const byId = id => document.getElementById(id);
 
@@ -16,6 +17,10 @@ const FamNaturalEngineering = (() => {
 
   function active() {
     return ["resources", "grant", "review", "changeset", "publication", "rollback"].includes(current?.phase);
+  }
+
+  function running() {
+    return current?.phase === "running";
   }
 
   async function start(prompt, scope, workspaceRoot, authorityProfile = "workspace") {
@@ -31,7 +36,7 @@ const FamNaturalEngineering = (() => {
     const turn = hooks.startTurn(prompt, scope, proposal.proposal_id);
     current = {
       proposal, turn, phase: "grant", changesetId: null,
-      rollbackRequired: false,
+      rollbackRequired: false, workspaceRoot,
     };
     if (authorityProfile === "ask") {
       await activate();
@@ -183,14 +188,80 @@ const FamNaturalEngineering = (() => {
   }
 
   async function activate() {
-    const result = await api(
-      `${prefix}/${encodeURIComponent(current.proposal.proposal_id)}/activate`,
-      {
-        method: "POST", headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({confirmed: true}),
-      },
+    current.phase = "running";
+    renderSteps([
+      ["succeeded", "Authorize the selected agent profile", "owner grant"],
+      ["running", "Model is inspecting and working with tools", "live local agent"],
+      ["waiting", "Verify the requested outcome", "real command evidence"],
+      ["waiting", "Present exact changes for approval", "owner checkpoint"],
+    ]);
+    showLiveControls();
+    liveTimer = setInterval(() => refreshLive().catch(() => {}), 350);
+    try {
+      const result = await api(
+        `${prefix}/${encodeURIComponent(current.proposal.proposal_id)}/activate`,
+        {
+          method: "POST", headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({confirmed: true}),
+        },
+      );
+      await refreshLive().catch(() => {});
+      renderOutcome(result.engineering_task);
+    } finally {
+      clearInterval(liveTimer);
+      liveTimer = null;
+      hideLiveControls();
+    }
+  }
+
+  async function refreshLive() {
+    if (!current?.workspaceRoot) return;
+    const thread = await api(
+      `${prefix}/thread?workspace_root=${encodeURIComponent(current.workspaceRoot)}`,
     );
-    renderOutcome(result.engineering_task);
+    const turn = (thread.turns || []).at(-1);
+    if (!turn) return;
+    renderAgentEvents(turn.events || []);
+    const results = (turn.events || []).filter(event => event.event_kind === "result");
+    current.turn.answer.textContent = results.length
+      ? `Working… ${results.length} tool result(s) observed. Latest: ${results.at(-1).tool_id.replaceAll("_", " ")}.`
+      : "Starting the local model and preparing its tools…";
+  }
+
+  async function sendControl(kind, content) {
+    if (!running() || !current.workspaceRoot) return false;
+    const instruction = content.trim();
+    if (!instruction) return false;
+    await api(`${prefix}/thread/control`, {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({
+        workspace_root: current.workspaceRoot, kind, content: instruction,
+      }),
+    });
+    byId("agent-control-status").textContent = kind === "cancel"
+      ? "Cancellation requested; the agent will stop before its next model step."
+      : "Guidance queued for the agent's next model step.";
+    return true;
+  }
+
+  async function steer() {
+    const input = byId("agent-guidance");
+    if (await sendControl("steer", input.value)) input.value = "";
+  }
+
+  async function cancel() {
+    return sendControl("cancel", "Cancelled by the owner from the Console.");
+  }
+
+  function showLiveControls() {
+    byId("agent-control").classList.remove("hidden");
+    byId("cancel").classList.remove("hidden");
+    byId("agent-control-status").textContent = "Tool results will appear here while the run is active.";
+  }
+
+  function hideLiveControls() {
+    byId("agent-control").classList.add("hidden");
+    byId("cancel").classList.add("hidden");
   }
 
   async function approveIntegrationResources() {
@@ -624,5 +695,5 @@ const FamNaturalEngineering = (() => {
       ? value : `${value.slice(0, maximum)}\n… preview truncated in Console`;
   }
 
-  return {configure, start, restore, decide, active};
+  return {configure, start, restore, decide, active, running, steer, cancel};
 })();
