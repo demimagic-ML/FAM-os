@@ -118,12 +118,11 @@ def system_prompt(intent: ModelIntent) -> str:
         "verification, active application, or current workspace unless authorized context "
         "proves it. Never copy internal context labels, serialized observation records, "
         "or raw evidence envelopes into the answer. If no authorized context identifies "
-        "an active application or workspace, say so. An authorized observation containing "
-        "a resource URI, filesystem path, or directory entries positively identifies that "
-        "workspace; use it rather than claiming no context exists. If there is truly no "
-        "such authorized context, "
-        "say that no application or workspace context is currently selected or available "
-        "instead of guessing."
+        "an active application or workspace, say so. The Authorized selection section is "
+        "the source of truth for the selected application and workspace. A selected resource "
+        "URI plus observed filesystem path or entries proves that workspace is active. Answer "
+        "from those facts. Only report that context is unavailable when the Authorized "
+        "selection section contains no workspace/resource and observations contain no path."
     )
 
 

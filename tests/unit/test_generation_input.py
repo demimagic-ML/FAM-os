@@ -65,9 +65,10 @@ class PreparedGenerationInputTests(unittest.TestCase):
             messages[0].content,
         )
         self.assertIn(
-            "no application or workspace context is currently selected or available",
+            "Authorized selection section is the source of truth",
             messages[0].content,
         )
+        self.assertIn("observations contain no path", messages[0].content)
         self.assertIn("Never copy internal context labels", messages[0].content)
 
 
