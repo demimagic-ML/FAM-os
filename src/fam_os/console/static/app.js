@@ -604,7 +604,10 @@ $("#prompt").onkeydown = event => {
   }
 };
 FamWorkspace.configure(request, {onSelected: selectWorkspaceResource});
-FamNaturalEngineering.configure(request, {
-  startTurn, setBusy: setComposerBusy,
-});
-boot().catch(fail);
+  FamNaturalEngineering.configure(request, {
+    startTurn, setBusy: setComposerBusy,
+  });
+  FamUsefulTasks.configure(request);
+  FamIntegrationCenter.configure(request);
+  FamProductivity.configure(request);
+  boot().catch(fail);

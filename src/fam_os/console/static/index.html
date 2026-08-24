@@ -26,6 +26,8 @@
       <p class="rail-title">Work surfaces</p>
       <nav aria-label="Console sections">
         <button class="nav-item active" data-view="work" type="button"><b>Weave</b><span>Tasks and approvals</span></button>
+        <button class="nav-item" data-view="workflows" type="button"><b>Workflows</b><span>Useful everyday outcomes</span></button>
+        <button class="nav-item" data-view="automations" type="button"><b>Automations</b><span>Triggers and recurring work</span></button>
         <button class="nav-item" data-view="integrations" type="button"><b>Applications</b><span>Connectors and fallbacks</span></button>
         <button class="nav-item" data-view="machine" type="button"><b>Machine</b><span>Resources and experts</span></button>
         <button class="nav-item" data-view="adaptation" type="button"><b>Adaptation</b><span>Learning and rollback</span></button>
@@ -117,6 +119,29 @@
       </aside>
     </section>
 
+    <section class="useful-workspace hidden" data-panel="workflows" aria-labelledby="useful-heading">
+      <div class="section-heading"><p class="kicker">Outcomes, not infrastructure</p><h1 id="useful-heading">Useful workflows</h1><p>Choose a folder, run a complete local workflow, and inspect the files FAM creates.</p></div>
+      <div class="useful-layout">
+        <form class="useful-form" id="useful-form">
+          <label>Workspace folder<input id="useful-root" type="text" required placeholder="/home/you/Documents"></label>
+          <label>Workflow<select id="useful-workflow" required></select></label>
+          <label>What should the result accomplish?<textarea id="useful-prompt" rows="4" required placeholder="Summarize the important decisions and action items."></textarea></label>
+          <label>Input files, one relative path per line <small>(optional; otherwise FAM discovers matching files)</small><textarea id="useful-inputs" rows="4" placeholder="report.pdf"></textarea></label>
+          <label>Research URLs, one per line <small>(only for a research brief)</small><textarea id="useful-urls" rows="4" placeholder="https://example.com/source"></textarea></label>
+          <button class="primary" id="useful-run" type="submit">Run workflow</button>
+          <p id="useful-message" role="status" aria-live="polite"></p>
+        </form>
+        <section class="useful-history"><div class="tool-section-head"><h2>Recent work</h2><button class="quiet" id="useful-refresh" type="button">Refresh</button></div><label class="sr-only" for="useful-search">Search task history</label><input id="useful-search" type="search" placeholder="Search task history"><label><input id="useful-attention" type="checkbox"> Needs attention</label><div id="useful-tasks"></div><pre id="useful-preview" class="hidden"></pre></section>
+      </div>
+      <div class="section-heading"><p class="kicker">Repeat what works</p><h2>Recipe library</h2><p>Ten built-in starting points plus workflows you save for yourself.</p></div>
+      <div class="cards" id="recipe-cards"></div><p id="recipe-message" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="useful-workspace hidden" data-panel="automations" aria-labelledby="automation-heading">
+      <div class="section-heading"><p class="kicker">Background work</p><h1 id="automation-heading">Automations</h1><p>Run a useful workflow manually, on an interval, from a webhook, or when a file changes.</p></div>
+      <div class="useful-layout"><form class="useful-form" id="automation-form"><label>Name<input id="automation-name" required></label><label>Workflow<select id="automation-workflow" required></select></label><label>Workspace<input id="automation-root" required placeholder="/home/you/Documents"></label><label>Instructions<textarea id="automation-prompt" required></textarea></label><label>Trigger<select id="automation-trigger"><option value="manual">Manual / webhook</option><option value="interval">Interval</option><option value="file_changed">File changed</option></select></label><label>Interval seconds<input id="automation-seconds" type="number" min="60" value="3600"></label><label>Watched file<input id="automation-path" placeholder="/home/you/Documents/data.csv"></label><label>Run mode<select id="automation-mode"><option>single</option><option>restart</option><option>queued</option><option>parallel</option></select></label><button class="primary" type="submit">Save automation</button><p id="automation-message" role="status"></p></form><section class="useful-history"><div class="tool-section-head"><h2>Saved automations</h2><button class="quiet" id="automation-refresh" type="button">Refresh</button></div><div id="automation-list"></div></section></div>
+    </section>
+
     <section class="peer-workspace hidden" data-panel="peers" aria-labelledby="peer-heading">
       <div class="section-heading"><p class="kicker">Explicit trust, measured locally</p><h1 id="peer-heading">Device fabric</h1><p>Only devices you paired appear here. Probe signed model capabilities, inspect measured latency and privacy scope, or revoke trust immediately.</p></div>
       <div class="peer-toolbar"><div><strong id="peer-count">0 trusted devices</strong><span>Discovery never enrolls a machine.</span></div><button class="quiet" id="peer-refresh" type="button">Refresh devices</button></div>
@@ -155,6 +180,9 @@
     <section class="catalog hidden" data-panel="integrations">
       <div class="section-heading"><p class="kicker">Explicit application reach</p><h1>Application fabric</h1><p>See which privacy-sensitive fallbacks are disabled, observation-only, or allowed to request a confirmed action.</p></div>
       <div class="cards" id="integration-cards"></div>
+      <div class="section-heading"><p class="kicker">Connect useful tools</p><h2>Integration Center</h2><p>Configure qualified local and MCP connectors, then test whether their runtime is ready.</p></div>
+      <div class="cards" id="integration-center-cards"></div>
+      <p id="integration-center-message" role="status" aria-live="polite"></p>
     </section>
 
     <section class="catalog hidden" data-panel="machine">
@@ -264,6 +292,9 @@
   <script src="/conversation.js"></script>
   <script src="/workspace.js"></script>
   <script src="/natural_engineering.js"></script>
+  <script src="/useful_tasks.js"></script>
+  <script src="/integration_center.js"></script>
+  <script src="/productivity.js"></script>
   <script src="/app.js"></script>
 </body>
 </html>

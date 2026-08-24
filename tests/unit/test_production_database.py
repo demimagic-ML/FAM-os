@@ -64,6 +64,12 @@ EXPECTED_TABLES = {
     "integration_environments", "integration_environment_events",
     "engineering_secrets", "engineering_secret_audit",
     "integration_environment_start_intents",
+    "useful_tasks", "useful_artifacts",
+    "useful_task_steps",
+    "useful_integrations",
+    "useful_automations",
+    "useful_recipes",
+    "useful_automation_runs", "useful_notifications",
 }
 
 
@@ -109,7 +115,7 @@ class ProductionDatabaseTests(unittest.TestCase):
             initial.close()
             reopened = ProductionDatabase(StorageSettings(path, os.geteuid()))
             reopened.open()
-            self.assertEqual(32, reopened.execute("SELECT count(*) FROM schema_migrations").fetchone()[0])
+            self.assertEqual(39, reopened.execute("SELECT count(*) FROM schema_migrations").fetchone()[0])
             reopened.close()
 
     def test_changed_or_future_migration_is_rejected(self) -> None:

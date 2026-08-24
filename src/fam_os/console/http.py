@@ -40,6 +40,12 @@ from fam_os.console.engineering_loop_routes import (
 from fam_os.console.natural_engineering_routes import (
     handle_natural_engineering_get, handle_natural_engineering_post,
 )
+from fam_os.console.useful_task_routes import handle_useful_get, handle_useful_post
+from fam_os.console.integration_center_routes import (
+    handle_integration_center_get, handle_integration_center_post,
+)
+from fam_os.console.automation_routes import handle_automation_get, handle_automation_post
+from fam_os.console.recipe_routes import handle_recipe_get, handle_recipe_post
 from fam_os.console.tasks import task_document
 from fam_os.console.workspaces import ConsoleWorkspaceApi
 
@@ -57,6 +63,10 @@ class ConsoleHttpServer(ThreadingHTTPServer):
         factory_api=None, workspace_api=None, engineering_authority_api=None,
         integration_environment_api=None, engineering_secret_api=None,
         engineering_loop_api=None, natural_engineering_api=None,
+        useful_task_api=None,
+        integration_center=None,
+        automation_service=None,
+        recipe_library=None,
     ):
         if not ipaddress.ip_address(address[0]).is_loopback:
             raise ValueError("FAM Console must bind only to loopback")
@@ -72,6 +82,10 @@ class ConsoleHttpServer(ThreadingHTTPServer):
         self.engineering_secret_api = engineering_secret_api
         self.engineering_loop_api = engineering_loop_api
         self.natural_engineering_api = natural_engineering_api
+        self.useful_task_api = useful_task_api
+        self.integration_center = integration_center
+        self.automation_service = automation_service
+        self.recipe_library = recipe_library
         self.workspace_api = workspace_api or ConsoleWorkspaceApi(Path.home())
         super().__init__(address, ConsoleRequestHandler)
 
@@ -110,6 +124,18 @@ class ConsoleRequestHandler(BaseHTTPRequestHandler):
                 return
             if not handle_integration_environment_get(self, path):
                 handle_engineering_authority_get(self, path)
+        elif path.startswith("/api/v1/useful/"):
+            if not handle_useful_get(self, path):
+                self.send_error(404)
+        elif path.startswith("/api/v1/integration-center"):
+            if not handle_integration_center_get(self, path):
+                self.send_error(404)
+        elif path.startswith("/api/v1/automations") or path == "/api/v1/notifications":
+            if not handle_automation_get(self, path):
+                self.send_error(404)
+        elif path.startswith("/api/v1/recipes"):
+            if not handle_recipe_get(self, path):
+                self.send_error(404)
         elif path.endswith("/reversal") and path.startswith("/api/v1/tasks/"):
             self._task_reversal(_task_id(path, "reversal"))
         elif path.endswith("/verification") and path.startswith("/api/v1/tasks/"):
@@ -152,6 +178,12 @@ class ConsoleRequestHandler(BaseHTTPRequestHandler):
             self._static("workspace.js", "text/javascript; charset=utf-8")
         elif path == "/natural_engineering.js":
             self._static("natural_engineering.js", "text/javascript; charset=utf-8")
+        elif path == "/useful_tasks.js":
+            self._static("useful_tasks.js", "text/javascript; charset=utf-8")
+        elif path == "/integration_center.js":
+            self._static("integration_center.js", "text/javascript; charset=utf-8")
+        elif path == "/productivity.js":
+            self._static("productivity.js", "text/javascript; charset=utf-8")
         elif path.startswith("/fonts/"):
             self._font(path.removeprefix("/fonts/"))
         else:
@@ -174,6 +206,14 @@ class ConsoleRequestHandler(BaseHTTPRequestHandler):
             if handle_peer_post(self, path, document):
                 return
             if handle_factory_post(self, path, document):
+                return
+            if handle_useful_post(self, path, document):
+                return
+            if handle_integration_center_post(self, path, document):
+                return
+            if handle_automation_post(self, path, document):
+                return
+            if handle_recipe_post(self, path, document):
                 return
             if handle_natural_engineering_post(
                 self, path, document, session.session_id,

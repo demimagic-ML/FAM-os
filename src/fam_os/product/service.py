@@ -151,6 +151,12 @@ from fam_os.product.storage.factory_dataset_blob_store import FactoryDatasetBlob
 from fam_os.expert_factory import DatasetSplitPolicy
 from fam_os.fabric import PersistentDeviceIdentityStore
 from fam_os.product.user_isolation import PrivateUserRuntime, UserRuntimeIdentity
+from fam_os.product.useful_tasks import UsefulTaskApi, UsefulTaskRepository
+from fam_os.product.tool_loop import ToolLoopRepository
+from fam_os.product.integration_center import IntegrationCenter
+from fam_os.product.automations import AutomationService
+from fam_os.product.recipes import RecipeLibrary
+from fam_os.adapters.media.local_speech import FasterWhisperRecognizer
 from fam_os.memory import ProductionSessionMemory
 from fam_os.supervisor import ResourceLimits
 from fam_os.scheduler import AcceleratorVisibility, ValidationProfileDocument
@@ -282,6 +288,10 @@ class LocalProductService:
         self.engineering_loop_api = None
         self.natural_engineering_api = None
         self.integration_environment: IntegrationEnvironmentUnit | None = None
+        self.useful_task_api: UsefulTaskApi | None = None
+        self.integration_center: IntegrationCenter | None = None
+        self.automation_service: AutomationService | None = None
+        self.recipe_library: RecipeLibrary | None = None
 
     def start(self) -> None:
         self._initialize_roots()
@@ -362,6 +372,26 @@ class LocalProductService:
             if self._storage_unit is None or self._storage_unit.core is None
             else self._storage_unit.core.repositories()
         )
+        database = storage.database
+        if database is not None:
+            delegate = None
+            if self.natural_engineering_api is not None:
+                owner_id = local_owner_id(os.geteuid())
+                natural_engineering = self.natural_engineering_api
+
+                def delegate(prompt, root):
+                    return natural_engineering.propose(owner_id, prompt, root)
+            self.useful_task_api = UsefulTaskApi(
+                UsefulTaskRepository(database),
+                recognizer=FasterWhisperRecognizer(
+                    download_root=self.settings.state_root / "models/whisper",
+                ),
+                engineering_delegate=delegate,
+                tool_loop_repository=ToolLoopRepository(database),
+            )
+            self.integration_center = IntegrationCenter(database)
+            self.automation_service = AutomationService(database, self.useful_task_api)
+            self.recipe_library = RecipeLibrary(database, self.useful_task_api)
         self.console_server = ConsoleHttpServer(
             ("127.0.0.1", self.settings.console_port),
             ProductConsoleProvider(
@@ -391,6 +421,10 @@ class LocalProductService:
             engineering_secret_api=self.engineering_secret_api,
             engineering_loop_api=self.engineering_loop_api,
             natural_engineering_api=self.natural_engineering_api,
+            useful_task_api=self.useful_task_api,
+            integration_center=self.integration_center,
+            automation_service=self.automation_service,
+            recipe_library=self.recipe_library,
         )
         self.shell_server.open()
         self.application_fabric.open()
@@ -404,6 +438,8 @@ class LocalProductService:
         self._shell_thread.start()
         self._console_thread.start()
         self._application_thread.start()
+        if self.automation_service is not None:
+            self.automation_service.start()
         if self.settings.ready_file is not None:
             self.settings.ready_file.write_text("ready\n")
 
@@ -412,6 +448,9 @@ class LocalProductService:
 
     def stop(self) -> None:
         self._stop.set()
+        if self.automation_service is not None:
+            self.automation_service.stop()
+            self.automation_service = None
         if self.peer_service is not None:
             self.peer_service.stop()
             self.peer_service = None

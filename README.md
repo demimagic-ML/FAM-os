@@ -168,6 +168,26 @@ The combination below is the project's core bet:
 
 FAM_OS is a working prototype, not a packaged product.
 
+### Useful workflows
+
+The authenticated Console now includes a user-facing **Workflows** surface in
+addition to the lower-level Shell and machine controls. An owner-selected
+workspace can run five complete workflow families:
+
+- summarize PDFs into a Markdown artifact;
+- analyze CSV data into a Markdown report and SVG chart;
+- transcribe local audio with the Faster-Whisper expert;
+- create a cited brief from supplied web sources; and
+- enter the governed issue-to-change engineering lifecycle.
+
+Every run is persisted with its artifacts and tool-step timeline. Runs can be
+searched, retried, forked, grouped by project, and reused through ten built-in
+or owner-created recipes. The Console also exposes an Integration Center and
+persistent manual, interval, webhook, and file-change automations.
+
+See [`docs/operations/USEFUL_WORKFLOWS.md`](docs/operations/USEFUL_WORKFLOWS.md)
+for the operator and API guide.
+
 - **Phases 1–15 are complete.** This includes the FAM Shell terminal UI, the Application Fabric, MCP client/server adapters, Linux accessibility and discovery bridges, deterministic tool adapters, action safety, a real cross-application acceptance demo, the Expert Fabric manifest schema, the Hardware Scheduler with cgroup-aware resource observation and GPU/VRAM/NPU/SSD budgeting, the Verification Fabric with verifier manifests and hardened sandboxing, the multi-task Expert Fabric, permissioned memory and retrieval, local adaptation, trusted multi-device fabric, expert factory, and full productization with install/update/diagnose/repair/remove support.
 - **Installed operational acceptance passed.** A fresh isolated installation starts `fam-service`, answers a real `qwen3:1.7b` request through Ollama, serves the authenticated Console, repairs damage, and removes every installed artifact cleanly.
 
