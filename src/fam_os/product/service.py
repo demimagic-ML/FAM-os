@@ -816,6 +816,10 @@ class LocalProductService:
                     engineering_inference.model_ref,
                     storage.database,
                     self.engineering_loop_api,
+                    application_provider=lambda: (
+                        None if self.application_services is None
+                        else self.application_services.provider
+                    ),
                 ),
             ),
             publication_remote_name=self.settings.git_publication_remote_name,

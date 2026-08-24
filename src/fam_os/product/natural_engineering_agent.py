@@ -17,6 +17,7 @@ from fam_os.core.agent import (
 )
 from fam_os.core.engineering import EngineeringAuthority
 from fam_os.product.agent_command_tools import WorkspaceCommandTools
+from fam_os.product.agent_application_tools import ApplicationAgentTools
 from fam_os.product.agent_host_command_tools import HostCommandTools
 from fam_os.product.agent_turn_store import SQLiteAgentTurnStore
 from fam_os.product.agent_workspace_tools import WorkspaceAgentTools
@@ -41,12 +42,14 @@ class NaturalEngineeringAgentResult:
 class NaturalEngineeringAgentService:
     def __init__(
         self, runtime, model_ref: str, database, loop, *, maximum_steps: int = 64,
+        application_provider=lambda: None,
     ) -> None:
         self._runtime = runtime
         self._model_ref = model_ref
         self._database = database
         self._loop = loop
         self._maximum_steps = maximum_steps
+        self._application_provider = application_provider
 
     def execute(
         self, owner_id: str, definition, preparation, *,
@@ -75,6 +78,9 @@ class NaturalEngineeringAgentService:
             ),
         )
         candidate_tools.register(registry)
+        ApplicationAgentTools(
+            self._application_provider, owner_id,
+        ).register(registry)
         thread_id = _thread_id(
             owner_id, session_id, preparation.candidate.owner_workspace,
         )
@@ -123,6 +129,9 @@ class NaturalEngineeringAgentService:
         workspace = preparation.candidate.owner_workspace
         registry = AgentToolRegistry()
         WorkspaceAgentTools(Path(workspace)).register(registry)
+        ApplicationAgentTools(
+            self._application_provider, owner_id,
+        ).register(registry)
         thread_id = _thread_id(owner_id, session_id, workspace)
         agent = IterativeModelAgent(
             self._runtime,
