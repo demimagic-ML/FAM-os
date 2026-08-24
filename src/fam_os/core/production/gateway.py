@@ -121,8 +121,12 @@ class ProductionTaskGateway:
         # can convert the request into a withheld local result.
         if command.remote_authority is not None:
             intent = self._classifier.classify(command.prompt, ())
+            declaration = (
+                exact_text_declaration(command.request_id, command.prompt)
+                if command.verification_required else None
+            )
             return self._start_inference(
-                command, intent, "local-owner", session_id, None,
+                command, intent, "local-owner", session_id, declaration,
             )
         routed = self._action_ingress.route(command, session_id)
         if routed.terminal_result is not None:
