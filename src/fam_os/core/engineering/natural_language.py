@@ -150,25 +150,21 @@ class NaturalLanguageEngineeringPlanner:
             operations = (EngineeringOperation.READ,)
             high_risk = ()
         elif authority_profile is AgentAuthorityProfile.FULL_OS:
-            authorities = tuple(dict.fromkeys((
-                *authorities, EngineeringAuthority.RAW_SHELL,
-                EngineeringAuthority.HOST_ADMIN,
-            )))
+            full_os_authorities = set((
+                *authorities, EngineeringAuthority.NETWORK,
+                EngineeringAuthority.RAW_SHELL, EngineeringAuthority.HOST_ADMIN,
+            ))
+            authorities = tuple(
+                item for item in EngineeringAuthority
+                if item in full_os_authorities
+            )
             high_risk = tuple(
                 item for item in high_risk
                 if item not in {
                     EngineeringAuthority.RAW_SHELL,
                     EngineeringAuthority.HOST_ADMIN,
+                    EngineeringAuthority.NETWORK,
                 }
-            )
-        if (
-            EngineeringAuthority.EXECUTE in authorities
-            and not toolchains
-            and _DATABASE.search(normalized) is None
-            and not natural_integration_environment_requested(normalized)
-        ):
-            raise ValueError(
-                "executable engineering intent requires repository-derived toolchains"
             )
         expires = now + timedelta(hours=2)
         impact = EngineeringResourceImpact(7_200, 64, 128, 512, 64 * 1024**2, 0)

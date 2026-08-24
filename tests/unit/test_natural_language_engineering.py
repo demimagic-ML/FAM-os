@@ -34,7 +34,8 @@ class NaturalLanguageEngineeringPlannerTests(unittest.TestCase):
 
     def test_ask_profile_remains_read_only_even_for_mutating_words(self):
         proposal = NaturalLanguageEngineeringPlanner().propose(
-            prompt="Fix app.py and run the tests.", workspace_root="/workspace/project",
+            prompt="Fix app.py, download dependencies, and run the tests.",
+            workspace_root="/workspace/project",
             owner_id="owner-1", principal_id="owner-1", task_id="task-ask",
             grant_id="grant-ask", toolchains=("python3",), now=NOW,
             authority_profile=AgentAuthorityProfile.ASK,
@@ -59,6 +60,7 @@ class NaturalLanguageEngineeringPlannerTests(unittest.TestCase):
 
         self.assertIn(EngineeringAuthority.RAW_SHELL, proposal.grant.authorities)
         self.assertIn(EngineeringAuthority.HOST_ADMIN, proposal.grant.authorities)
+        self.assertIn(EngineeringAuthority.NETWORK, proposal.grant.authorities)
         self.assertEqual((), proposal.separately_confirmed_authorities)
 
     def test_code_request_becomes_exact_non_activated_workspace_proposal(self):
@@ -109,14 +111,25 @@ class NaturalLanguageEngineeringPlannerTests(unittest.TestCase):
             proposal.separately_confirmed_authorities,
         )
 
-    def test_execution_requires_repository_derived_toolchain(self):
-        with self.assertRaisesRegex(ValueError, "repository-derived toolchains"):
-            NaturalLanguageEngineeringPlanner().propose(
-                prompt="Implement the feature and test it.",
-                workspace_root="/workspace/project", owner_id="owner-1",
-                principal_id="principal-1", task_id="task-3", grant_id="grant-3",
-                toolchains=(), now=NOW,
-            )
+    def test_filesystem_mutation_does_not_require_repository_toolchain(self):
+        proposal = NaturalLanguageEngineeringPlanner().propose(
+            prompt="Create a new folder named reports.",
+            workspace_root="/workspace/project", owner_id="owner-1",
+            principal_id="principal-1", task_id="task-3", grant_id="grant-3",
+            toolchains=(), now=NOW, git_available=False,
+        )
+
+        self.assertIn(EngineeringAuthority.MODIFY, proposal.grant.authorities)
+        self.assertIn(EngineeringAuthority.EXECUTE, proposal.grant.authorities)
+        self.assertIn(
+            EngineeringOperation.CREATE,
+            proposal.definition.task.permitted_operations,
+        )
+        self.assertEqual((), proposal.definition.task.toolchains)
+        self.assertNotIn(
+            EngineeringOperation.GIT_WRITE,
+            proposal.definition.task.permitted_operations,
+        )
 
     def test_replace_and_change_are_mutation_language(self):
         for index, verb in enumerate(("Replace", "Change", "Transform"), 1):

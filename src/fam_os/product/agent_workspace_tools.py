@@ -29,6 +29,10 @@ class WorkspaceAgentTools:
         self.maximum_read_bytes = maximum_read_bytes
         self.maximum_result_bytes = maximum_result_bytes
 
+    @property
+    def git_available(self) -> bool:
+        return self._git_available()
+
     def register(self, registry: AgentToolRegistry) -> None:
         registry.register(_descriptor(
             "list_directory", "List one relative workspace directory; globs are not accepted.",

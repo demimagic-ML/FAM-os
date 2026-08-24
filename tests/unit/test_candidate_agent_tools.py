@@ -76,6 +76,19 @@ class CandidateAgentToolsTests(unittest.TestCase):
             )
             tools.register(registry)
 
+            self.assertNotIn(
+                "git_status", {item.tool_id for item in registry.descriptors()},
+            )
+            schemas = {
+                item.tool_id: item.input_schema for item in registry.descriptors()
+            }
+            self.assertEqual(
+                ["path"], schemas["create_directory"]["required"],
+            )
+            self.assertEqual(
+                ["command"], schemas["verify_command"]["required"],
+            )
+
             written = _invoke(registry, "write_file", {
                 "path": "src/app.py", "content": "value = 2\n",
             })

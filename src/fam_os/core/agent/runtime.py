@@ -98,7 +98,9 @@ class AgentToolRegistry:
             )
         if not isinstance(output, str):
             raise TypeError("agent tool implementation must return text")
-        return AgentToolResult(call.call_id, call.tool_id, True, output)
+        return AgentToolResult(
+            call.call_id, call.tool_id, True, _bounded_tool_output(output),
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -408,6 +410,15 @@ def _repeat_intervention() -> InferenceMessage:
         "or approach. Missing optional tooling is not a reason to install it unless "
         "installation is itself part of the objective.",
     )
+
+
+def _bounded_tool_output(output: str, maximum_bytes: int = 262_144) -> str:
+    encoded = output.encode("utf-8")
+    if len(encoded) <= maximum_bytes:
+        return output
+    marker = b"\n[tool output truncated by FAM_OS]"
+    retained = encoded[:maximum_bytes - len(marker)]
+    return retained.decode("utf-8", "ignore") + marker.decode("ascii")
 
 
 def _profile_allows(

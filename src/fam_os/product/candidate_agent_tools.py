@@ -66,35 +66,36 @@ class AuthorizedCandidateAgentTools:
                       "path": {"type": "string"},
                       "offset_bytes": {"type": "integer"},
                       "maximum_bytes": {"type": "integer"},
-                  })
+                  }, required=("path",))
         _register(registry, "search_text", "Search candidate files for literal text.",
                   AgentToolEffect.OBSERVE, self._workspace.search_text, {
                       "query": {"type": "string"}, "path": {"type": "string"},
-                  })
-        _register(registry, "git_status", (
-            "Show Git status for the owner repository. The editable candidate is "
-            "a staged worktree snapshot and intentionally has no .git directory."
-        ), AgentToolEffect.OBSERVE, self._repository.git_status, {})
-        _register(registry, "git_diff", (
-            "Show the owner repository Git diff. Candidate edits are recorded "
-            "separately and are not visible here until approved and applied."
-        ), AgentToolEffect.OBSERVE, self._repository.git_diff,
-                  {"staged": {"type": "boolean"}})
+                  }, required=("query",))
+        if self._repository.git_available:
+            _register(registry, "git_status", (
+                "Show Git status for the owner repository. The editable candidate is "
+                "a staged worktree snapshot and intentionally has no .git directory."
+            ), AgentToolEffect.OBSERVE, self._repository.git_status, {})
+            _register(registry, "git_diff", (
+                "Show the owner repository Git diff. Candidate edits are recorded "
+                "separately and are not visible here until approved and applied."
+            ), AgentToolEffect.OBSERVE, self._repository.git_diff,
+                      {"staged": {"type": "boolean"}})
         _register(registry, "write_file", "Create or replace a candidate UTF-8 file.",
                   AgentToolEffect.WORKSPACE_WRITE, self.write_file, {
                       "path": {"type": "string"}, "content": {"type": "string"},
-                  })
+                  }, required=("path", "content"))
         _register(registry, "create_directory", "Create a candidate directory.",
                   AgentToolEffect.WORKSPACE_WRITE, self.create_directory,
-                  {"path": {"type": "string"}})
+                  {"path": {"type": "string"}}, required=("path",))
         _register(registry, "delete_path", "Delete a candidate file or empty directory.",
                   AgentToolEffect.WORKSPACE_WRITE, self.delete_path,
-                  {"path": {"type": "string"}})
+                  {"path": {"type": "string"}}, required=("path",))
         _register(registry, "move_path", "Move a candidate path.",
                   AgentToolEffect.WORKSPACE_WRITE, self.move_path, {
                       "source": {"type": "string"},
                       "destination": {"type": "string"},
-                  })
+                  }, required=("source", "destination"))
         _register(registry, "run_command", (
             "Run a direct argv command (not a shell expression) from the candidate. "
             "Its isolation and OS reach follow the approved authority profile. "
@@ -104,7 +105,7 @@ class AuthorizedCandidateAgentTools:
         ), self._command_effect, self.run_command, {
             "command": {"type": "array", "items": {"type": "string"}},
             "timeout_seconds": {"type": "number"},
-        })
+        }, required=("command",))
         _register(registry, "verify_command", (
             "Run a direct argv check whose zero exit status demonstrates that the "
             "requested implementation works. Use this for tests, builds, diagnostics, "
@@ -112,7 +113,7 @@ class AuthorizedCandidateAgentTools:
         ), self._command_effect, self.verify_command, {
             "command": {"type": "array", "items": {"type": "string"}},
             "timeout_seconds": {"type": "number"},
-        })
+        }, required=("command",))
 
     def write_file(self, arguments: dict[str, object]) -> str:
         path = _text(arguments, "path")
@@ -207,10 +208,16 @@ class AuthorizedCandidateAgentTools:
         )
 
 
-def _register(registry, tool_id, description, effect, implementation, properties):
+def _register(
+    registry, tool_id, description, effect, implementation, properties, *,
+    required=(),
+):
     registry.register(AgentToolDescriptor(
         tool_id, description, effect,
-        {"type": "object", "properties": properties},
+        {
+            "type": "object", "properties": properties,
+            "required": list(required), "additionalProperties": False,
+        },
     ), implementation)
 
 

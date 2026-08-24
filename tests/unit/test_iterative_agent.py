@@ -6,6 +6,7 @@ from pathlib import Path
 
 from fam_os.core.agent import (
     AgentAuthorityProfile,
+    AgentToolCall,
     AgentToolDescriptor,
     AgentToolEffect,
     AgentToolRegistry,
@@ -46,6 +47,22 @@ class _NativeRuntime:
 
 
 class IterativeAgentTests(unittest.TestCase):
+    def test_large_successful_tool_output_is_truncated_not_rejected(self):
+        tools = AgentToolRegistry()
+        tools.register(
+            _tool("large_output", AgentToolEffect.OBSERVE),
+            lambda _: "x" * 300_000,
+        )
+
+        result = tools.invoke(
+            AgentToolCall("call-large", "large_output", {}, "test"),
+            AgentAuthorityProfile.ASK,
+        )
+
+        self.assertTrue(result.succeeded)
+        self.assertLessEqual(len(result.output.encode("utf-8")), 262_144)
+        self.assertTrue(result.output.endswith("[tool output truncated by FAM_OS]"))
+
     def test_native_tool_protocol_uses_runtime_tools_and_tool_role_results(self):
         metrics = InferenceMetrics("model", 0, 0, 1, 1)
         runtime = _NativeRuntime([
