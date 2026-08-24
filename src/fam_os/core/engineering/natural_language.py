@@ -128,6 +128,7 @@ class NaturalLanguageEngineeringPlanner:
         toolchains: tuple[str, ...], now: datetime,
         task_intent: str | None = None,
         authority_profile: AgentAuthorityProfile = AgentAuthorityProfile.WORKSPACE,
+        git_available: bool = True,
     ) -> NaturalLanguageEngineeringProposal:
         normalized = " ".join(prompt.casefold().split())
         if not normalized or len(prompt.encode("utf-8")) > 16_384:
@@ -139,7 +140,9 @@ class NaturalLanguageEngineeringPlanner:
             authority for authority, pattern in _HIGH_RISK
             if pattern.search(normalized)
         )
-        authorities, operations = _ordinary_scope(normalized)
+        authorities, operations = _ordinary_scope(
+            normalized, git_available=git_available,
+        )
         if authority_profile is AgentAuthorityProfile.ASK:
             authorities = (
                 EngineeringAuthority.OBSERVE, EngineeringAuthority.PROPOSE,
@@ -222,7 +225,7 @@ class NaturalLanguageEngineeringPlanner:
 
 
 def _ordinary_scope(
-    normalized: str,
+    normalized: str, *, git_available: bool,
 ) -> tuple[tuple[EngineeringAuthority, ...], tuple[EngineeringOperation, ...]]:
     mutation = _MUTATION.search(normalized) is not None
     execution = mutation or _EXECUTION.search(normalized) is not None
@@ -239,9 +242,11 @@ def _ordinary_scope(
             operations.append(EngineeringOperation.MANAGE_DEPENDENCY)
         if _DESIGN.search(normalized):
             operations.append(EngineeringOperation.MANAGE_DESIGN)
-        # An approved local commit is the terminal reversible delivery step for
-        # every mutation. Remote publication remains a separate authority.
-        operations.append(EngineeringOperation.GIT_WRITE)
+        if git_available:
+            # A valid repository receives reversible local Git delivery. Plain
+            # folders retain the candidate preview, approval, apply and rollback
+            # workflow without pretending that Git exists.
+            operations.append(EngineeringOperation.GIT_WRITE)
     if execution:
         authorities.append(EngineeringAuthority.EXECUTE)
         operations.append(EngineeringOperation.RUN_TOOL)

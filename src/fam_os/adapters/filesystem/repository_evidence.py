@@ -20,7 +20,8 @@ from fam_os.core.engineering.repository import (
 
 _EXCLUDED = frozenset({
     ".git", ".hg", ".svn", ".venv", "venv", "node_modules", "target",
-    "build", "dist", "__pycache__", ".next", ".cache", "coverage",
+    "build", "dist", "__pycache__", ".next", ".cache", ".terraform",
+    ".gradle", ".turbo", ".parcel-cache", "coverage",
 })
 _CONTEXT_NAMES = {"AGENTS.md", "README.md", "MASTER_PLAN.md", "MASTER_PLANv2.md"}
 _MANIFESTS = {"pyproject.toml", "package.json", "Cargo.toml", "go.mod", "pom.xml", "build.gradle"}
@@ -45,11 +46,21 @@ class BoundedFilesystemRepositoryObserver:
         if str(selected) != workspace_root or selected.is_symlink():
             raise PermissionError("repository root must be exact and canonical")
         resolver = getattr(self._git, "repository_root", None)
-        root = selected if resolver is None else resolver(selected)
+        try:
+            root = selected if resolver is None else resolver(selected)
+            git_observation = self._git.observe(task_id, root)
+        except (RuntimeError, ValueError):
+            # A workspace is useful even when it is not version-controlled. Git
+            # capability is discovered, not inferred from a .git-shaped path.
+            root = selected
+            git_observation = None
         reject_tree_symlinks(root, _EXCLUDED)
         files, contexts, manifests, total, truncated = self._scan(root)
-        git = self._git.observe(task_id, root)
-        revision = _revision(files, git.head_object_id, git.diff_sha256)
+        revision = _revision(
+            files,
+            None if git_observation is None else git_observation.head_object_id,
+            None if git_observation is None else git_observation.diff_sha256,
+        )
         rules = tuple(
             RepositoryArchitectureRule(
                 f"rule-{item.record_id}", item.path,
@@ -61,12 +72,7 @@ class BoundedFilesystemRepositoryObserver:
         return RepositoryEvidenceBundle(
             f"repository-bundle-{uuid4().hex}", task_id, self._clock(), str(root),
             revision, tuple(files), tuple(contexts), (), (), (), tuple(manifests),
-            (), RepositoryGitState(
-                git.head_ref, git.head_object_id or "unborn",
-                git.remote_names,
-                tuple(_status_path(item) for item in git.status_porcelain),
-                False,
-            ), rules,
+            (), _git_state(git_observation), rules,
             RepositoryObservationBounds(
                 self._maximum_files, self._maximum_context_records, 1, 1, 1,
                 self._maximum_context_bytes,
@@ -156,3 +162,14 @@ def _revision(files, head, diff):
 def _status_path(value):
     path = value[3:] if len(value) > 3 else value
     return path.rsplit(" -> ", 1)[-1]
+
+
+def _git_state(observation):
+    if observation is None:
+        return RepositoryGitState("unversioned", "unversioned", (), (), False)
+    return RepositoryGitState(
+        observation.head_ref, observation.head_object_id or "unborn",
+        observation.remote_names,
+        tuple(_status_path(item) for item in observation.status_porcelain),
+        False,
+    )

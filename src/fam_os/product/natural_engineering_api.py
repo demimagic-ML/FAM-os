@@ -103,6 +103,10 @@ class ProductNaturalEngineeringApi:
             toolchains=_toolchains(evidence), now=self._clock(),
             task_intent=task_intent,
             authority_profile=authority_profile,
+            git_available=(
+                getattr(getattr(evidence, "git_state", None), "head_revision", None)
+                != "unversioned"
+            ),
         )
         self._proposals.put(proposal)
         return self._view(proposal)

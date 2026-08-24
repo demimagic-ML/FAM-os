@@ -29,6 +29,20 @@ NOW = datetime(2026, 7, 19, 23, 30, tzinfo=timezone.utc)
 
 
 class EngineeringPreparationOrchestratorTests(unittest.TestCase):
+    def test_plain_folder_and_empty_git_directory_are_observed_without_git(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            (root / ".git").mkdir()
+            (root / "README.md").write_text("plain workspace\n")
+
+            evidence = BoundedFilesystemRepositoryObserver(clock=lambda: NOW).observe(
+                "task-plain", str(root),
+            )
+
+            self.assertEqual(str(root), evidence.workspace_root)
+            self.assertEqual("unversioned", evidence.git_state.head_revision)
+            self.assertEqual(("README.md",), tuple(item.path for item in evidence.files))
+
     def test_nested_workspace_is_normalized_to_repository_top_level(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary).resolve()

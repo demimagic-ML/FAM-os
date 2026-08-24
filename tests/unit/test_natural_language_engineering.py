@@ -14,6 +14,24 @@ NOW = datetime(2026, 7, 19, 9, 0, tzinfo=timezone.utc)
 
 
 class NaturalLanguageEngineeringPlannerTests(unittest.TestCase):
+    def test_plain_folder_mutation_does_not_require_git_delivery(self):
+        proposal = NaturalLanguageEngineeringPlanner().propose(
+            prompt="Create the assistant and run its tests.",
+            workspace_root="/workspace/folder", owner_id="owner-1",
+            principal_id="owner-1", task_id="task-plain",
+            grant_id="grant-plain", toolchains=("python3",), now=NOW,
+            git_available=False,
+        )
+
+        self.assertIn(
+            EngineeringOperation.REPLACE,
+            proposal.definition.task.permitted_operations,
+        )
+        self.assertNotIn(
+            EngineeringOperation.GIT_WRITE,
+            proposal.definition.task.permitted_operations,
+        )
+
     def test_ask_profile_remains_read_only_even_for_mutating_words(self):
         proposal = NaturalLanguageEngineeringPlanner().propose(
             prompt="Fix app.py and run the tests.", workspace_root="/workspace/project",
