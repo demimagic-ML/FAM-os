@@ -31,6 +31,21 @@ class DeterministicObservationTests(unittest.TestCase):
             (observation,),
         ))
 
+    def test_current_workspace_question_uses_observed_path_and_entries(self):
+        observation = SimpleNamespace(payload={
+            "path": "/home/owner/Soccer_Oracle",
+            "entries": [
+                {"name": "GOALIE", "kind": "directory", "size_bytes": None},
+                {"name": "AGENTS.md", "kind": "file", "size_bytes": 866},
+            ],
+        })
+
+        result = exact_directory_listing("What's your current workspace?", (observation,))
+
+        self.assertIn('selected workspace is "/home/owner/Soccer_Oracle"', result)
+        self.assertIn('- "GOALIE"', result)
+        self.assertIn('- "AGENTS.md"', result)
+
 
 if __name__ == "__main__":
     unittest.main()

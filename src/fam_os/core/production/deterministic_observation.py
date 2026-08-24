@@ -17,6 +17,10 @@ _LISTING_PHRASES = (
     "list ", "what is in", "what's in", "whats in", "show files",
     "folder contents", "directory contents", "top-level files",
 )
+_WORKSPACE_PHRASES = (
+    "current workspace", "selected workspace", "which workspace",
+    "what workspace", "what's your workspace", "whats your workspace",
+)
 
 
 def seed_exact_observation_candidate(repositories, application, inference):
@@ -46,9 +50,9 @@ def exact_directory_listing(prompt: str, observations) -> str | None:
     """Render an observed directory listing without rewriting its names."""
 
     normalized = " ".join(prompt.casefold().split())
-    if (
-        any(word in normalized for word in _SYNTHESIS_WORDS)
-        or not any(phrase in normalized for phrase in _LISTING_PHRASES)
+    workspace_question = any(phrase in normalized for phrase in _WORKSPACE_PHRASES)
+    if any(word in normalized for word in _SYNTHESIS_WORDS) or not (
+        workspace_question or any(phrase in normalized for phrase in _LISTING_PHRASES)
     ):
         return None
     listing = next(
@@ -66,10 +70,13 @@ def exact_directory_listing(prompt: str, observations) -> str | None:
         return None
     exact = tuple(item for item in entries if item is not None)
     path = listing.get("path")
-    heading = (
-        f"Observed top-level contents of {_quoted(path)}:"
-        if isinstance(path, str) else "Observed top-level contents:"
-    )
+    if workspace_question and isinstance(path, str):
+        heading = f"The selected workspace is {_quoted(path)}. Its observed top-level contents are:"
+    else:
+        heading = (
+            f"Observed top-level contents of {_quoted(path)}:"
+            if isinstance(path, str) else "Observed top-level contents:"
+        )
     lines = [heading]
     for kind, label in (("directory", "Directories"), ("file", "Files")):
         names = tuple(name for name, entry_kind in exact if entry_kind == kind)
