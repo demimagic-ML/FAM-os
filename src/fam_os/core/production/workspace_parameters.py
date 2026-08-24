@@ -31,8 +31,8 @@ def bind_workspace_patch_parameters(
     ):
         raise ValueError("workspace patch plan must contain one to twelve text steps")
     changes = parameters["changes"]
-    if not isinstance(changes, list) or not 1 <= len(changes) <= 4:
-        raise ValueError("workspace patch must contain one to four changes")
+    if not isinstance(changes, list) or not 1 <= len(changes) <= 64:
+        raise ValueError("workspace patch must contain one to sixty-four changes")
     observed = _observed_documents(observations)
     bound = []
     for change in changes:
@@ -73,7 +73,7 @@ def workspace_parameter_feedback(
         f"{marker}\n"
         "Core rejected the previous workspace action object. "
         f"Exact structural error: {str(error)[:500]}\n"
-        "Return only strict JSON. Use exactly one to four of these observed paths:\n"
+        "Return only strict JSON. Use only the observed paths needed for the result:\n"
         f"{allowed}\n"
         "Each change requires exactly path and content; content is the complete new "
         "UTF-8 file. If the request needs a new or deleted file, commands, or cannot "
@@ -94,12 +94,12 @@ def workspace_candidate_instruction(capability_ids: tuple[str, ...]) -> str:
         '{"plan":["specific step derived from the current request"],"changes":['
         '{"path":"exact/observed/relative/path","content":"complete UTF-8 file"}]}. '
         "Never copy schema placeholders literally. Use one to twelve concise plan "
-        "steps and one to four changes. Paths must be "
+        "steps and up to sixty-four changes. Paths must be "
         "copied exactly from retrieved workspace documents. Content must be the complete "
         "new file content, not a diff. Modify only existing observed files. Do not include "
         "hashes, Markdown fences, commands, commentary, or claims that work already ran. "
-        "If the request requires creating or deleting files, running commands, modifying "
-        "more than four files, or lacks enough detail to produce complete content, return "
+        "If the request requires creating or deleting files, running commands, or lacks "
+        "enough detail to produce complete content, return "
         'exactly {"unavailable_reason":"brief factual reason"}.'
     )
 

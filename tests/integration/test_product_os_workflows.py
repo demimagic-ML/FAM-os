@@ -121,7 +121,7 @@ class ProductOsWorkflowTests(unittest.TestCase):
                 result = _terminal(client, accepted.session_id)
 
                 self.assertIn("No action was executed", result.result.reason)
-                self.assertIn("one to four existing files", result.result.reason)
+                self.assertIn("iterative workspace agent", result.result.reason)
                 repositories = service._storage_unit.core.repositories()
                 plan = repositories.plans.get(accepted.session_id)
                 core_result = FinalResultPolicy(

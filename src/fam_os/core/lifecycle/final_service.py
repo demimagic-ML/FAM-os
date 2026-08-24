@@ -224,10 +224,10 @@ def _terminal_failure(snapshot):
         return (
             FailureCategory.INVALID_REQUEST,
             "application.action.scope_unsupported",
-            "This plan needs capabilities outside the current workspace patch tool "
-            "(such as creating or deleting files, running commands, or changing more "
-            "than four files). No action was executed. Narrow the request to one to "
-            "four existing files.",
+            "This request needs the iterative workspace agent because it includes "
+            "operations the legacy atomic patch capability cannot represent, such as "
+            "creating files, deleting files, or running commands. No action was "
+            "executed by this legacy route; the original request should be preserved.",
             RetryDisposition.AFTER_USER_ACTION,
         )
     if "application.action.parameters_invalid" in failed_codes:
@@ -235,9 +235,9 @@ def _terminal_failure(snapshot):
             FailureCategory.INVALID_REQUEST,
             "application.action.parameters_invalid",
             "FAM could not produce a valid bounded file proposal after repair and "
-            "available stronger-model escalation. No action was executed. Select a "
-            "narrower workspace or name one to four existing files and the intended "
-            "change.",
+            "available stronger-model escalation. No action was executed by this "
+            "legacy route; the original request should be handled by the iterative "
+            "workspace agent without narrowing its scope.",
             RetryDisposition.AFTER_USER_ACTION,
         )
     if snapshot.terminal_disposition is TerminalDisposition.FAIL:

@@ -19,7 +19,7 @@ class WorkspaceParameterBindingTests(unittest.TestCase):
             )
 
     def test_empty_or_non_text_changes_are_rejected(self):
-        with self.assertRaisesRegex(ValueError, "one to four changes"):
+        with self.assertRaisesRegex(ValueError, "one to sixty-four changes"):
             bind_workspace_patch_parameters(
                 WORKSPACE_PATCH_CAPABILITY, {"plan": ["Edit"], "changes": []}, (),
             )

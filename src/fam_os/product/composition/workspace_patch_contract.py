@@ -14,9 +14,9 @@ from urllib.parse import unquote, urlsplit
 from fam_os.applications.payloads import JsonObject
 
 
-MAXIMUM_CHANGES = 4
+MAXIMUM_CHANGES = 64
 MAXIMUM_FILE_BYTES = 32_768
-MAXIMUM_TOTAL_BYTES = 65_536
+MAXIMUM_TOTAL_BYTES = 8_388_608
 MAXIMUM_PLAN_STEPS = 12
 
 
