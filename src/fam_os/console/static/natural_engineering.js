@@ -207,6 +207,19 @@ const FamNaturalEngineering = (() => {
       );
       await refreshLive().catch(() => {});
       renderOutcome(result.engineering_task);
+    } catch (error) {
+      current.phase = null;
+      renderSteps([
+        ["succeeded", "Authorize the selected agent profile", "owner grant"],
+        ["failed", "Prepare the workspace and start the model", "activation failed"],
+        ["not-taken", "Verify the requested outcome", "not reached"],
+        ["not-taken", "Present exact changes for approval", "not reached"],
+      ]);
+      renderText(
+        `The approved task could not start: ${error.message || "local activation failed"}`,
+        "Agent activation failed", "No model response or workspace change was produced",
+      );
+      throw error;
     } finally {
       clearInterval(liveTimer);
       liveTimer = null;

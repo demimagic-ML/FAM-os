@@ -121,7 +121,10 @@ class CandidateWorkspaceTests(unittest.TestCase):
     def test_candidate_scan_ignores_verifier_generated_cache_directories(self) -> None:
         candidate = self.adapter.create("task-verifier-cache", now=NOW)
         candidate_root = Path(candidate.candidate_workspace)
-        for directory in ("__pycache__", ".pytest_cache", ".mypy_cache"):
+        for directory in (
+            "__pycache__", ".pytest_cache", ".mypy_cache", ".terraform",
+            ".gradle", ".turbo", ".parcel-cache",
+        ):
             cache = candidate_root / directory
             cache.mkdir()
             (cache / "generated.bin").write_bytes(b"verifier output")
@@ -129,6 +132,20 @@ class CandidateWorkspaceTests(unittest.TestCase):
         entries = self.adapter.current_entries(candidate)
 
         self.assertEqual(candidate.entries, entries)
+
+    def test_candidate_creation_ignores_large_terraform_provider_cache(self) -> None:
+        terraform = self.owner / "infrastructure" / ".terraform" / "providers"
+        terraform.mkdir(parents=True)
+        provider = terraform / "terraform-provider-example"
+        with provider.open("wb") as stream:
+            stream.truncate(self.adapter.maximum_bytes + 1)
+
+        candidate = self.adapter.create("task-terraform-cache", now=NOW)
+
+        self.assertFalse(any(
+            entry.path.startswith("infrastructure/.terraform")
+            for entry in candidate.entries
+        ))
 
     def test_squashed_content_patch_discloses_and_applies_mode_change(self) -> None:
         candidate = self.adapter.create("task-mode", now=NOW)

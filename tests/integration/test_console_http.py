@@ -433,6 +433,7 @@ class ConsoleHttpTests(unittest.TestCase):
                 ).read()
                 self.assertIn(b"changeset-decision", natural)
                 self.assertIn(b"workspace_root", natural)
+                self.assertIn(b"The approved task could not start", natural)
                 workspace_style = urllib.request.urlopen(base + "/workspace.css")
                 self.assertEqual("text/css", workspace_style.headers.get_content_type())
                 memory_ui = urllib.request.urlopen(base + "/memory.js").read()

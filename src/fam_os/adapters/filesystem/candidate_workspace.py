@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import json
 import os
-import shutil
 import stat
 from datetime import datetime, timezone
 from pathlib import Path
@@ -27,6 +26,7 @@ from fam_os.core.engineering.transactions import (
 _NON_AUTHORITATIVE_DIRECTORIES = frozenset({
     ".git", ".fam", ".hg", ".svn", ".venv", "venv", "node_modules",
     "target", "build", "dist", "__pycache__", ".next", ".cache",
+    ".terraform", ".gradle", ".turbo", ".parcel-cache",
     ".mypy_cache", ".nox", ".pytest_cache", ".ruff_cache", ".tox",
     "coverage",
 })
