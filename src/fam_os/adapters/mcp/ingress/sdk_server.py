@@ -1,12 +1,11 @@
 """Official MCP SDK low-level server over an authenticated ingress engine."""
 
-from fam_os.adapters.mcp.ingress.engine import AuthenticatedMcpIngress
-from fam_os.adapters.mcp.ingress.types import McpIngressOutcome
+from fam_os.adapters.mcp.ingress.types import McpIngressOutcome, McpIngressSession
 from fam_os.adapters.mcp.types import mutable_json
 
 
 class OfficialMcpIngressServer:
-    def __init__(self, ingress: AuthenticatedMcpIngress):
+    def __init__(self, ingress: McpIngressSession):
         try:
             from mcp import types
             from mcp.server.lowlevel import Server

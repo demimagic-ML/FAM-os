@@ -23,10 +23,7 @@ def build_chat_payload(request: InferenceRequest) -> JsonObject:
         "model": request.model_ref,
         "stream": False,
         "keep_alive": request.keep_alive,
-        "messages": [
-            {"role": message.role.value, "content": message.content}
-            for message in request.messages
-        ],
+        "messages": [_message_payload(message) for message in request.messages],
         "think": False,
         "options": options,
     }
@@ -35,10 +32,25 @@ def build_chat_payload(request: InferenceRequest) -> JsonObject:
     return payload
 
 
+def _message_payload(message) -> JsonObject:
+    import base64
+
+    value: JsonObject = {"role": message.role.value, "content": message.content}
+    if message.images:
+        value["images"] = [base64.b64encode(item).decode("ascii") for item in message.images]
+    return value
+
+
 def build_unload_payload(model_ref: str) -> JsonObject:
     if not model_ref.strip():
         raise ValueError("model_ref must not be empty")
     return {"model": model_ref, "keep_alive": 0}
+
+
+def build_prewarm_payload(model_ref: str, keep_alive: str) -> JsonObject:
+    if not model_ref.strip() or not keep_alive.strip():
+        raise ValueError("prewarm model and keep_alive must not be empty")
+    return {"model": model_ref, "stream": False, "keep_alive": keep_alive}
 
 
 def build_embedding_payload(request: EmbeddingRequest) -> JsonObject:

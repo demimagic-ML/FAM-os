@@ -7,6 +7,12 @@ constrains, observes, grants access to, audits, recovers, and terminates only
 declared FAM-owned services. It is not a kernel, root daemon, general process
 manager, model runtime, or application automation engine.
 
+ADR 0197 adds one optional exception outside the ordinary user-session
+Supervisor process: a separately installed, deterministic root network broker
+may host only `ENFORCE_ALLOWLISTED_NETWORK`. It is not a general root
+Supervisor. Its executable and Python runtime must be root-owned and
+non-owner-writable; normal FAM_OS installation does not enable it.
+
 The Phase 3 claim assumes an authenticated local caller has already been mapped
 to a `SupervisorCallContext` and explicit capabilities by trusted composition.
 The external authentication transport is not implemented and is therefore not
@@ -68,6 +74,11 @@ protection claim. They can inspect or modify user-owned processes and files.
 | Audit path replacement | no-follow file open; regular/current-owner/0600 file; secure nonsymlink parent | audit path security tests |
 | Recovery ambiguity | failed-only recovery; provider-neutral reset-failed; inactive/no-PID requirement; `UNKNOWN` rejected | recovery unit and live tests |
 | Intelligence-boundary creep | explicit non-goals and architecture test forbidding Core/routing/expert/memory/application imports | security import test |
+| Owner-writable root execution | fixed root-owned libexec path; no owner PYTHONPATH; host-admin provisioning required | system-unit contract and operator procedure |
+| Same-UID broker impersonation | Unix peer UID plus exact unified-cgroup-v2 comparison; held `/proc/PID` directory descriptor | real peer roundtrip and wrong-cgroup denial tests |
+| Egress proxy bypass | namespace output drop; Docker internal IPv6 network; host input/forward nftables rules; CONNECT-only proxy | source policy tests; installed physical qualification still required |
+| Mixed-backend quota multiplication | one signed request, one broker lease, and one thread-safe quota shared by every attachment | mixed and multi-attachment tests |
+| DNS rebinding/private resolution | canonical host-and-port allowlist; per-CONNECT resolution; domain results restricted to global addresses | proxy resolution denial tests |
 
 ## Fail-closed behavior
 
@@ -93,8 +104,16 @@ protection claim. They can inspect or modify user-owned processes and files.
   Supervisor constrains execution but does not independently understand command
   semantics; production package manifests and install policy must bind approved
   definitions to digests.
-- The dedicated FAM AppArmor profile is not packaged yet. Live tests use an
-  already installed local profile where the host requires it.
+- The dedicated FAM AppArmor profile is signed and packaged. Loading it remains
+  a separate host-administrator action; a missing profile makes verifier
+  isolation unavailable and blocks installed qualification.
+- The optional root network broker has source tests only. Until a signed,
+  root-owned installed runtime proves real namespace, nftables, Docker, bypass,
+  quota, expiry, restart, and residue behavior, allowlisted egress is not an
+  installed security claim.
+- Docker daemon access is itself highly privileged. The broker may reach it only
+  through the fixed deterministic adapter; compromise of the trusted broker or
+  Docker daemon remains a host-boundary compromise.
 - Advisory audit locks do not constrain writers that deliberately ignore them.
 - Denial of service within declared limits, disk exhaustion, thermal stress,
   long-running crash loops, and multi-user isolation require later phase tests.

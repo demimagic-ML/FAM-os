@@ -1,0 +1,78 @@
+{
+  "$defs": {
+    "RuntimeModelEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "estimated_resident_bytes": {
+          "type": "integer"
+        },
+        "intents": {
+          "items": {
+            "enum": [
+              "conversation",
+              "grounded_question",
+              "read_only_task",
+              "application_mutation",
+              "code",
+              "math",
+              "retrieval",
+              "media",
+              "administration"
+            ],
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "manifest_sha256": {
+          "type": "string"
+        },
+        "max_context_tokens": {
+          "type": "integer"
+        },
+        "model_ref": {
+          "type": "string"
+        },
+        "tier": {
+          "type": "string"
+        },
+        "verifier_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "model_ref",
+        "tier",
+        "intents",
+        "estimated_resident_bytes",
+        "max_context_tokens",
+        "manifest_sha256",
+        "verifier_ids"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.runtime-model/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.inference-execution/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/RuntimeModelEntry"
+    },
+    "schema_id": {
+      "const": "fam.core.runtime-model/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Installed runtime model evidence",
+  "type": "object"
+}

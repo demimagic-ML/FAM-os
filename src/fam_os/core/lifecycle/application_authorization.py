@@ -55,8 +55,8 @@ def grant_allows(grant, routed, entry, authority, resource_uri, now) -> bool:
     )
     if any(values and target not in values for values, target in checks):
         return False
-    if entry.resource_scopes:
-        if resource_uri is None or not any(
+    if entry.resource_scopes and resource_uri is not None:
+        if not any(
             _resource_scope_allows(value, resource_uri)
             for value in entry.resource_scopes
         ):

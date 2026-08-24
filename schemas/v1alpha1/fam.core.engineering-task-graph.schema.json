@@ -1,0 +1,131 @@
+{
+  "$defs": {
+    "EngineeringTaskBudget": {
+      "additionalProperties": false,
+      "properties": {
+        "maximum_model_tokens": {
+          "type": "integer"
+        },
+        "maximum_observation_bytes": {
+          "type": "integer"
+        },
+        "maximum_steps": {
+          "type": "integer"
+        },
+        "maximum_wall_seconds": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "maximum_steps",
+        "maximum_wall_seconds",
+        "maximum_observation_bytes",
+        "maximum_model_tokens"
+      ],
+      "type": "object"
+    },
+    "EngineeringTaskGraph": {
+      "additionalProperties": false,
+      "properties": {
+        "budget": {
+          "$ref": "#/$defs/EngineeringTaskBudget"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "created_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "graph_id": {
+          "type": "string"
+        },
+        "steps": {
+          "items": {
+            "$ref": "#/$defs/EngineeringTaskGraphStep"
+          },
+          "type": "array"
+        },
+        "task_id": {
+          "type": "string"
+        },
+        "termination_conditions": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "graph_id",
+        "task_id",
+        "created_at",
+        "steps",
+        "budget",
+        "termination_conditions",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "EngineeringTaskGraphStep": {
+      "additionalProperties": false,
+      "properties": {
+        "checkpoint_after": {
+          "type": "boolean"
+        },
+        "depends_on": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "description": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "observe_repository",
+            "analyze_repository",
+            "trace_implementation",
+            "synthesize_architecture",
+            "checkpoint",
+            "terminal"
+          ],
+          "type": "string"
+        },
+        "step_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "step_id",
+        "kind",
+        "description",
+        "depends_on",
+        "checkpoint_after"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.engineering-task-graph/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/EngineeringTaskGraph"
+    },
+    "schema_id": {
+      "const": "fam.core.engineering-task-graph/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Bounded engineering task graph",
+  "type": "object"
+}

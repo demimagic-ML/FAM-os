@@ -1,0 +1,114 @@
+{
+  "$defs": {
+    "LiveAdaptationSnapshot": {
+      "additionalProperties": false,
+      "properties": {
+        "advisory_only": {
+          "type": "boolean"
+        },
+        "contract_version": {
+          "const": "fam.adaptation.live-prediction/v1alpha1"
+        },
+        "created_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "escalation_probability": {
+          "type": "number"
+        },
+        "frequency_model_refs": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "local_only": {
+          "type": "boolean"
+        },
+        "observation_count": {
+          "type": "integer"
+        },
+        "predicted_context_tokens": {
+          "type": "integer"
+        },
+        "prewarm_escalation": {
+          "type": "boolean"
+        },
+        "snapshot_id": {
+          "type": "string"
+        },
+        "source_evidence_sha256": {
+          "type": "string"
+        },
+        "source_learning_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "transition_confidence": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "transition_model_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "workflow_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "snapshot_id",
+        "workflow_id",
+        "created_at",
+        "observation_count",
+        "predicted_context_tokens",
+        "escalation_probability",
+        "prewarm_escalation",
+        "frequency_model_refs",
+        "transition_model_ref",
+        "transition_confidence",
+        "source_learning_ids",
+        "source_evidence_sha256",
+        "local_only",
+        "advisory_only",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.adaptation.live-snapshot/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.adaptation.live-prediction/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/LiveAdaptationSnapshot"
+    },
+    "schema_id": {
+      "const": "fam.adaptation.live-snapshot/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Content-free live adaptation snapshot",
+  "type": "object"
+}

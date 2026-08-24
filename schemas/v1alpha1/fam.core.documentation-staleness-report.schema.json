@@ -1,0 +1,76 @@
+{
+  "$defs": {
+    "DocumentationStalenessReport": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "missing_source_paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "observed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "output_modified": {
+          "type": "boolean"
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "report_id": {
+          "type": "string"
+        },
+        "stale": {
+          "type": "boolean"
+        },
+        "stale_source_paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "task_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "report_id",
+        "receipt_id",
+        "task_id",
+        "observed_at",
+        "stale_source_paths",
+        "missing_source_paths",
+        "output_modified",
+        "stale",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.documentation-staleness-report/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/DocumentationStalenessReport"
+    },
+    "schema_id": {
+      "const": "fam.core.documentation-staleness-report/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Deterministic generated-output staleness report",
+  "type": "object"
+}

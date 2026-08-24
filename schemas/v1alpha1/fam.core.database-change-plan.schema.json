@@ -1,0 +1,296 @@
+{
+  "$defs": {
+    "DatabaseChangePlan": {
+      "additionalProperties": false,
+      "properties": {
+        "approved_changeset_id": {
+          "type": "string"
+        },
+        "backup_required": {
+          "type": "boolean"
+        },
+        "baseline_data_sha256": {
+          "type": "string"
+        },
+        "baseline_schema_sha256": {
+          "type": "string"
+        },
+        "candidate_id": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "created_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "execution_resource_impact": {
+          "$ref": "#/$defs/EngineeringResourceImpact"
+        },
+        "fixture_set": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DatabaseFixtureSet"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "migration_steps": {
+          "items": {
+            "$ref": "#/$defs/DatabaseMigrationStep"
+          },
+          "type": "array"
+        },
+        "plan_id": {
+          "type": "string"
+        },
+        "postcondition_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "required_authorities": {
+          "items": {
+            "enum": [
+              "observe",
+              "propose",
+              "modify",
+              "execute",
+              "network",
+              "publish",
+              "raw_shell",
+              "host_admin",
+              "secret_use",
+              "global_install",
+              "production_mutate",
+              "policy_change",
+              "protected_ref_write",
+              "self_update"
+            ],
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "rollback_required": {
+          "type": "boolean"
+        },
+        "target": {
+          "$ref": "#/$defs/DatabaseTarget"
+        },
+        "task_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "plan_id",
+        "task_id",
+        "candidate_id",
+        "target",
+        "baseline_schema_sha256",
+        "baseline_data_sha256",
+        "migration_steps",
+        "fixture_set",
+        "backup_required",
+        "rollback_required",
+        "postcondition_ids",
+        "required_authorities",
+        "execution_resource_impact",
+        "approved_changeset_id",
+        "created_at",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "DatabaseFixtureSet": {
+      "additionalProperties": false,
+      "properties": {
+        "contains_secret_content": {
+          "type": "boolean"
+        },
+        "fixture_id": {
+          "type": "string"
+        },
+        "manifest_path": {
+          "type": "string"
+        },
+        "manifest_sha256": {
+          "type": "string"
+        },
+        "row_count": {
+          "type": "integer"
+        },
+        "synthetic_only": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "fixture_id",
+        "manifest_path",
+        "manifest_sha256",
+        "row_count",
+        "synthetic_only",
+        "contains_secret_content"
+      ],
+      "type": "object"
+    },
+    "DatabaseMigrationStep": {
+      "additionalProperties": false,
+      "properties": {
+        "destructive": {
+          "type": "boolean"
+        },
+        "expected_schema_sha256": {
+          "type": "string"
+        },
+        "forward_path": {
+          "type": "string"
+        },
+        "forward_sha256": {
+          "type": "string"
+        },
+        "order": {
+          "type": "integer"
+        },
+        "rollback_path": {
+          "type": "string"
+        },
+        "rollback_sha256": {
+          "type": "string"
+        },
+        "step_id": {
+          "type": "string"
+        },
+        "transaction_safe": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "step_id",
+        "order",
+        "forward_path",
+        "forward_sha256",
+        "rollback_path",
+        "rollback_sha256",
+        "destructive",
+        "transaction_safe",
+        "expected_schema_sha256"
+      ],
+      "type": "object"
+    },
+    "DatabaseTarget": {
+      "additionalProperties": false,
+      "properties": {
+        "connection_secret_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "database_name": {
+          "type": "string"
+        },
+        "engine": {
+          "enum": [
+            "sqlite",
+            "postgresql",
+            "mysql"
+          ],
+          "type": "string"
+        },
+        "environment": {
+          "enum": [
+            "candidate",
+            "integration",
+            "staging",
+            "production"
+          ],
+          "type": "string"
+        },
+        "exact_host_id": {
+          "type": "string"
+        },
+        "production": {
+          "type": "boolean"
+        },
+        "target_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "target_id",
+        "engine",
+        "environment",
+        "database_name",
+        "connection_secret_ref",
+        "exact_host_id",
+        "production",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "EngineeringResourceImpact": {
+      "additionalProperties": false,
+      "properties": {
+        "max_changed_bytes": {
+          "type": "integer"
+        },
+        "max_changed_files": {
+          "type": "integer"
+        },
+        "max_network_bytes": {
+          "type": "integer"
+        },
+        "max_processes": {
+          "type": "integer"
+        },
+        "max_tool_runs": {
+          "type": "integer"
+        },
+        "max_wall_seconds": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "max_wall_seconds",
+        "max_tool_runs",
+        "max_processes",
+        "max_changed_files",
+        "max_changed_bytes",
+        "max_network_bytes"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.database-change-plan/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/DatabaseChangePlan"
+    },
+    "schema_id": {
+      "const": "fam.core.database-change-plan/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Migration fixture backup and rollback plan",
+  "type": "object"
+}

@@ -10,6 +10,7 @@ from math import isfinite
 class SandboxStatus(StrEnum):
     COMPLETED = "completed"
     TIMED_OUT = "timed_out"
+    OUTPUT_LIMIT = "output_limit"
     UNAVAILABLE = "unavailable"
 
 
@@ -28,6 +29,7 @@ class SandboxLimits:
     open_files: int = 32
     processes: int = 16
     output_bytes: int = 8_192
+    unbounded_virtual_address_space: bool = False
 
     def __post_init__(self) -> None:
         integer_limits = (
@@ -42,6 +44,8 @@ class SandboxLimits:
             raise ValueError("wall_seconds must be positive and finite")
         if any(value <= 0 for value in integer_limits):
             raise ValueError("sandbox integer limits must be positive")
+        if not isinstance(self.unbounded_virtual_address_space, bool):
+            raise ValueError("virtual address-space policy must be boolean")
 
 
 @dataclass(frozen=True, slots=True)

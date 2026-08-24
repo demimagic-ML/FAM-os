@@ -1,12 +1,47 @@
-"""Explicit allowlist and effect policy for one local MCP server."""
+"""Explicit allowlist, argument, and effect policy for one local MCP server."""
 
 from dataclasses import dataclass
+from enum import StrEnum
 
 from fam_os.applications import (
     ApplicationAuthority, ApplicationIdentity, CapabilityKind,
     ConfirmationPolicy, Reversibility,
 )
 from fam_os.applications.identifiers import require_identifier
+from fam_os.applications.payloads import freeze_payload
+
+
+class McpArgumentSource(StrEnum):
+    PROMPT = "prompt"
+    RESOURCE_URI = "resource_uri"
+    LITERAL = "literal"
+
+
+@dataclass(frozen=True, slots=True)
+class McpArgumentBinding:
+    """Owner-approved source for one parameter of an observation tool."""
+
+    parameter: str
+    source: McpArgumentSource
+    literal_value: object = None
+
+    def __post_init__(self) -> None:
+        if not self.parameter.strip():
+            raise ValueError("MCP argument binding requires a parameter")
+        if self.source is McpArgumentSource.LITERAL:
+            frozen = freeze_payload({"value": self.literal_value})["value"]
+            object.__setattr__(self, "literal_value", frozen)
+        elif self.literal_value is not None:
+            raise ValueError("non-literal MCP argument binding cannot contain a value")
+
+    def resolve(self, prompt: str, resource_uri: str | None):
+        if self.source is McpArgumentSource.PROMPT:
+            return prompt
+        if self.source is McpArgumentSource.RESOURCE_URI:
+            if resource_uri is None:
+                raise ValueError("MCP resource URI argument requires a selected resource")
+            return resource_uri
+        return _mutable(self.literal_value)
 
 
 @dataclass(frozen=True, slots=True)
@@ -18,13 +53,27 @@ class McpToolPolicy:
     confirmation: ConfirmationPolicy = ConfirmationPolicy.NOT_REQUIRED
     postcondition_ids: tuple[str, ...] = ()
     resource_scopes: tuple[str, ...] = ()
+    argument_bindings: tuple[McpArgumentBinding, ...] = ()
 
     def __post_init__(self) -> None:
         if not self.tool_name.strip():
             raise ValueError("MCP tool policy requires a tool name")
         if len(set(self.resource_scopes)) != len(self.resource_scopes):
             raise ValueError("MCP tool resource scopes must be unique")
+        parameters = tuple(item.parameter for item in self.argument_bindings)
+        if len(set(parameters)) != len(parameters):
+            raise ValueError("MCP argument binding parameters must be unique")
         _validate_effect(self)
+
+    def observation_arguments(
+        self, prompt: str, resource_uri: str | None,
+    ) -> dict[str, object]:
+        if self.kind is not CapabilityKind.OBSERVATION:
+            raise PermissionError("MCP action arguments come from approved action parameters")
+        return {
+            item.parameter: item.resolve(prompt, resource_uri)
+            for item in self.argument_bindings
+        }
 
 
 @dataclass(frozen=True, slots=True)
@@ -80,6 +129,8 @@ def _validate_effect(policy: McpToolPolicy) -> None:
         if policy.postcondition_ids:
             raise ValueError("MCP observation tool cannot declare postconditions")
         return
+    if policy.argument_bindings:
+        raise ValueError("MCP action tools cannot declare observation argument bindings")
     if policy.required_authority is ApplicationAuthority.OBSERVE:
         raise ValueError("MCP action tool requires action authority")
     if policy.reversibility is Reversibility.NOT_APPLICABLE:
@@ -96,3 +147,11 @@ def _validate_effect(policy: McpToolPolicy) -> None:
 def _unique(values: tuple[str, ...], name: str) -> None:
     if len(set(values)) != len(values) or any(not item.strip() for item in values):
         raise ValueError(f"MCP {name} must contain unique non-empty values")
+
+
+def _mutable(value):
+    if hasattr(value, "items"):
+        return {key: _mutable(item) for key, item in value.items()}
+    if isinstance(value, tuple):
+        return [_mutable(item) for item in value]
+    return value

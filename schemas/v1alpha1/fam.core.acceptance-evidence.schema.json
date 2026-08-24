@@ -1,0 +1,52 @@
+{
+  "$defs": {
+    "AcceptanceEvidenceRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "acceptance_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "candidate_id": {
+          "type": "string"
+        },
+        "evidence_id": {
+          "type": "string"
+        },
+        "passed": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "evidence_id",
+        "candidate_id",
+        "acceptance_ids",
+        "passed"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.acceptance-evidence/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/AcceptanceEvidenceRecord"
+    },
+    "schema_id": {
+      "const": "fam.core.acceptance-evidence/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Acceptance result evidence",
+  "type": "object"
+}

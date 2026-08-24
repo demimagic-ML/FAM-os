@@ -1,0 +1,106 @@
+{
+  "$defs": {
+    "VerifiedLearningOutcome": {
+      "additionalProperties": false,
+      "properties": {
+        "acceptance_evidence_id": {
+          "type": "string"
+        },
+        "application_payload_retained": {
+          "type": "boolean"
+        },
+        "candidate_content_retained": {
+          "type": "boolean"
+        },
+        "candidate_evidence_id": {
+          "type": "string"
+        },
+        "context_token_bucket": {
+          "type": "integer"
+        },
+        "contract_version": {
+          "const": "fam.adaptation.verified-learning/v1alpha1"
+        },
+        "escalation_used": {
+          "type": "boolean"
+        },
+        "evidence_sha256": {
+          "type": "string"
+        },
+        "expert_id": {
+          "type": "string"
+        },
+        "expert_tier": {
+          "type": "string"
+        },
+        "intent": {
+          "type": "string"
+        },
+        "learning_id": {
+          "type": "string"
+        },
+        "local_only": {
+          "type": "boolean"
+        },
+        "observed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "prompt_retained": {
+          "type": "boolean"
+        },
+        "source_content_retained": {
+          "type": "boolean"
+        },
+        "verified": {
+          "type": "boolean"
+        },
+        "workflow_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "learning_id",
+        "workflow_id",
+        "intent",
+        "expert_id",
+        "expert_tier",
+        "observed_at",
+        "context_token_bucket",
+        "escalation_used",
+        "acceptance_evidence_id",
+        "candidate_evidence_id",
+        "evidence_sha256",
+        "verified",
+        "local_only",
+        "prompt_retained",
+        "candidate_content_retained",
+        "source_content_retained",
+        "application_payload_retained",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.adaptation.verified-learning/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.adaptation.verified-learning/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/VerifiedLearningOutcome"
+    },
+    "schema_id": {
+      "const": "fam.adaptation.verified-learning/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Content-free verified production learning outcome",
+  "type": "object"
+}

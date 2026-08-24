@@ -1,0 +1,285 @@
+{
+  "$defs": {
+    "ExactTextVerification": {
+      "additionalProperties": false,
+      "properties": {
+        "expected_text": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "exact_text",
+            "python_tests",
+            "retrieval_citations",
+            "math_equivalence",
+            "media_artifact_text"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "expected_text",
+        "kind"
+      ],
+      "type": "object"
+    },
+    "MathEquivalenceVerification": {
+      "additionalProperties": false,
+      "properties": {
+        "absolute_tolerance": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "exact_text",
+            "python_tests",
+            "retrieval_citations",
+            "math_equivalence",
+            "media_artifact_text"
+          ],
+          "type": "string"
+        },
+        "precision_digits": {
+          "type": "integer"
+        },
+        "reference_expression": {
+          "type": "string"
+        },
+        "sample_points": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "variable": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "reference_expression",
+        "variable",
+        "sample_points",
+        "absolute_tolerance",
+        "precision_digits",
+        "kind"
+      ],
+      "type": "object"
+    },
+    "MediaArtifactTextVerification": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_path": {
+          "type": "string"
+        },
+        "artifact_sha256": {
+          "type": "string"
+        },
+        "expected_text": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "exact_text",
+            "python_tests",
+            "retrieval_citations",
+            "math_equivalence",
+            "media_artifact_text"
+          ],
+          "type": "string"
+        },
+        "maximum_artifact_bytes": {
+          "type": "integer"
+        },
+        "modality": {
+          "enum": [
+            "image_ocr"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "artifact_path",
+        "artifact_sha256",
+        "expected_text",
+        "maximum_artifact_bytes",
+        "modality",
+        "kind"
+      ],
+      "type": "object"
+    },
+    "PythonTestsVerification": {
+      "additionalProperties": false,
+      "properties": {
+        "bundle_id": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "exact_text",
+            "python_tests",
+            "retrieval_citations",
+            "math_equivalence",
+            "media_artifact_text"
+          ],
+          "type": "string"
+        },
+        "test_source": {
+          "type": "string"
+        },
+        "test_source_sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "bundle_id",
+        "test_source",
+        "test_source_sha256",
+        "kind"
+      ],
+      "type": "object"
+    },
+    "RetrievalCitationsVerification": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "exact_text",
+            "python_tests",
+            "retrieval_citations",
+            "math_equivalence",
+            "media_artifact_text"
+          ],
+          "type": "string"
+        },
+        "sources": {
+          "items": {
+            "$ref": "#/$defs/RetrievedSource"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "sources",
+        "kind"
+      ],
+      "type": "object"
+    },
+    "RetrievedSource": {
+      "additionalProperties": false,
+      "properties": {
+        "content": {
+          "type": "string"
+        },
+        "content_sha256": {
+          "type": "string"
+        },
+        "locator": {
+          "type": "string"
+        },
+        "provenance_id": {
+          "type": "string"
+        },
+        "source_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_id",
+        "locator",
+        "content",
+        "content_sha256",
+        "provenance_id"
+      ],
+      "type": "object"
+    },
+    "VerificationDeclaration": {
+      "additionalProperties": false,
+      "properties": {
+        "contract": {
+          "$ref": "#/$defs/VerifierContractReference"
+        },
+        "contract_version": {
+          "const": "fam.verifier.declaration/v1alpha1"
+        },
+        "declaration_id": {
+          "type": "string"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "specification": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExactTextVerification"
+            },
+            {
+              "$ref": "#/$defs/PythonTestsVerification"
+            },
+            {
+              "$ref": "#/$defs/RetrievalCitationsVerification"
+            },
+            {
+              "$ref": "#/$defs/MathEquivalenceVerification"
+            },
+            {
+              "$ref": "#/$defs/MediaArtifactTextVerification"
+            }
+          ]
+        }
+      },
+      "required": [
+        "declaration_id",
+        "request_id",
+        "contract",
+        "specification",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "VerifierContractReference": {
+      "additionalProperties": false,
+      "properties": {
+        "acceptance_id": {
+          "type": "string"
+        },
+        "candidate_schema_id": {
+          "type": "string"
+        },
+        "evidence_schema_id": {
+          "type": "string"
+        },
+        "verifier_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "verifier_id",
+        "acceptance_id",
+        "candidate_schema_id",
+        "evidence_schema_id"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.verifier.declaration/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.verifier.declaration/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/VerificationDeclaration"
+    },
+    "schema_id": {
+      "const": "fam.verifier.declaration/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Legacy verifier acceptance declaration",
+  "type": "object"
+}

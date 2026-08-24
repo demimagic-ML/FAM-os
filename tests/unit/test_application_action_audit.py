@@ -52,6 +52,8 @@ class ApplicationActionAuditTests(unittest.TestCase):
     def test_duplicate_or_tampered_event_is_rejected(self):
         sink = ApplicationJsonlAuditSink(self.path)
         sink.append(intent("event-1"))
+        self.assertTrue(sink.contains_event("event-1"))
+        self.assertFalse(sink.contains_event("event-missing"))
         with self.assertRaises(ApplicationAuditIntegrityError):
             sink.append(intent("event-1"))
         encoded = self.path.read_bytes().replace(b'"request_id":"request-1"', b'"request_id":"request-2"')
@@ -59,6 +61,8 @@ class ApplicationActionAuditTests(unittest.TestCase):
         verification = sink.verify()
         self.assertFalse(verification.passed)
         self.assertEqual("digest_mismatch", verification.reason_code)
+        with self.assertRaises(ApplicationAuditIntegrityError):
+            sink.contains_event("event-1")
 
     def test_contract_excludes_raw_intent_content_resource_and_reversal_token(self):
         names = {item.name for item in fields(ApplicationActionAuditIntent)}

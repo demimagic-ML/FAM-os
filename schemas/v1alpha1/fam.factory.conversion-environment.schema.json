@@ -1,0 +1,84 @@
+{
+  "$defs": {
+    "FactoryConversionEnvironment": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.factory.conversion/v1alpha1"
+        },
+        "convert_hf_script_sha256": {
+          "type": "string"
+        },
+        "convert_lora_script_sha256": {
+          "type": "string"
+        },
+        "environment_id": {
+          "type": "string"
+        },
+        "llama_cpp_revision": {
+          "type": "string"
+        },
+        "manifest_sha256": {
+          "type": "string"
+        },
+        "observed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "ollama_version": {
+          "type": "string"
+        },
+        "package_versions": {
+          "items": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "type": "array"
+        },
+        "python_executable_sha256": {
+          "type": "string"
+        },
+        "wheelhouse_manifest_sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "environment_id",
+        "llama_cpp_revision",
+        "convert_hf_script_sha256",
+        "convert_lora_script_sha256",
+        "wheelhouse_manifest_sha256",
+        "python_executable_sha256",
+        "package_versions",
+        "ollama_version",
+        "manifest_sha256",
+        "observed_at",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.factory.conversion-environment/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.factory.conversion/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/FactoryConversionEnvironment"
+    },
+    "schema_id": {
+      "const": "fam.factory.conversion-environment/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Pinned llama.cpp conversion environment",
+  "type": "object"
+}

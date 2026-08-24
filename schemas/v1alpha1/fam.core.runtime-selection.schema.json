@@ -1,0 +1,83 @@
+{
+  "$defs": {
+    "RuntimeModelSelection": {
+      "additionalProperties": false,
+      "properties": {
+        "available_host_bytes": {
+          "type": "integer"
+        },
+        "available_vram_bytes": {
+          "type": "integer"
+        },
+        "estimated_resident_bytes": {
+          "type": "integer"
+        },
+        "intent": {
+          "enum": [
+            "conversation",
+            "grounded_question",
+            "read_only_task",
+            "application_mutation",
+            "code",
+            "math",
+            "retrieval",
+            "media",
+            "administration"
+          ],
+          "type": "string"
+        },
+        "model_ref": {
+          "type": "string"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "selection_id": {
+          "type": "string"
+        },
+        "tier": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "selection_id",
+        "request_id",
+        "intent",
+        "model_ref",
+        "tier",
+        "estimated_resident_bytes",
+        "available_host_bytes",
+        "available_vram_bytes",
+        "reason_codes"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.runtime-selection/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.inference-execution/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/RuntimeModelSelection"
+    },
+    "schema_id": {
+      "const": "fam.core.runtime-selection/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Resource-aware runtime selection",
+  "type": "object"
+}

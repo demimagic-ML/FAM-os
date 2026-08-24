@@ -25,6 +25,26 @@ class ServiceState(StrEnum):
     FAILED = "failed"
 
 
+class ServiceRestartMode(StrEnum):
+    NEVER = "no"
+    ON_FAILURE = "on-failure"
+
+
+@dataclass(frozen=True, slots=True)
+class ServiceRestartPolicy:
+    mode: ServiceRestartMode = ServiceRestartMode.NEVER
+    delay_seconds: float = 1.0
+    maximum_attempts: int = 5
+    window_seconds: float = 60.0
+
+    def __post_init__(self) -> None:
+        timings = (self.delay_seconds, self.window_seconds)
+        if any(not isfinite(value) or value <= 0 for value in timings):
+            raise ValueError("restart timings must be finite and positive")
+        if self.maximum_attempts <= 0 or self.maximum_attempts > 100:
+            raise ValueError("maximum_attempts must be between 1 and 100")
+
+
 class PressureScope(StrEnum):
     SOME = "some"
     FULL = "full"
@@ -37,9 +57,10 @@ class ResourceLimits:
     cpu_quota_percent: float | None = None
     tasks_max: int | None = None
     block_io_bandwidth: tuple["BlockIoBandwidthLimit", ...] = ()
+    memory_high_bytes: int | None = None
 
     def __post_init__(self) -> None:
-        byte_limits = (self.memory_max_bytes, self.swap_max_bytes)
+        byte_limits = (self.memory_max_bytes, self.swap_max_bytes, self.memory_high_bytes)
         if any(value is not None and value < 0 for value in byte_limits):
             raise ValueError("memory and swap limits cannot be negative")
         if self.cpu_quota_percent is not None and (
@@ -48,6 +69,12 @@ class ResourceLimits:
             raise ValueError("cpu_quota_percent must be positive")
         if self.tasks_max is not None and self.tasks_max <= 0:
             raise ValueError("tasks_max must be positive")
+        if (
+            self.memory_high_bytes is not None
+            and self.memory_max_bytes is not None
+            and self.memory_high_bytes > self.memory_max_bytes
+        ):
+            raise ValueError("memory_high_bytes cannot exceed memory_max_bytes")
         devices = tuple((item.device_major, item.device_minor) for item in self.block_io_bandwidth)
         if len(set(devices)) != len(devices):
             raise ValueError("block I/O limit devices must be unique")
@@ -79,6 +106,7 @@ class ServiceDefinition:
     command: tuple[str, ...]
     environment: tuple[tuple[str, str], ...] = ()
     limits: ResourceLimits = ResourceLimits()
+    restart_policy: ServiceRestartPolicy = ServiceRestartPolicy()
 
     def __post_init__(self) -> None:
         _validate_service_id(self.service_id)

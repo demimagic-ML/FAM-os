@@ -10,6 +10,8 @@ from fam_os.core.routing import RoutedTaskRequest
 
 
 class AttemptKind(StrEnum):
+    REMOTE = "remote"
+    LOCAL_RECOVERY = "local_recovery"
     REPAIR = "repair"
     ESCALATION = "escalation"
 

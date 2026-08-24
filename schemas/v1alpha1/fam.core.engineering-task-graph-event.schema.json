@@ -1,0 +1,114 @@
+{
+  "$defs": {
+    "EngineeringTaskGraphEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "checkpoint_required": {
+          "type": "boolean"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "event_id": {
+          "type": "string"
+        },
+        "evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "graph_id": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "started",
+            "step_completed",
+            "checkpoint_reached",
+            "terminated"
+          ],
+          "type": "string"
+        },
+        "occurred_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "reason_code": {
+          "type": "string"
+        },
+        "remaining_model_tokens": {
+          "type": "integer"
+        },
+        "remaining_observation_bytes": {
+          "type": "integer"
+        },
+        "remaining_wall_seconds": {
+          "type": "integer"
+        },
+        "sequence": {
+          "type": "integer"
+        },
+        "step_id": {
+          "type": "string"
+        },
+        "step_state": {
+          "enum": [
+            "pending",
+            "active",
+            "succeeded",
+            "failed",
+            "cancelled"
+          ],
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        },
+        "terminal": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "event_id",
+        "graph_id",
+        "task_id",
+        "sequence",
+        "occurred_at",
+        "kind",
+        "step_id",
+        "step_state",
+        "remaining_wall_seconds",
+        "remaining_observation_bytes",
+        "remaining_model_tokens",
+        "evidence_ids",
+        "reason_code",
+        "checkpoint_required",
+        "terminal",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.engineering-task-graph-event/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/EngineeringTaskGraphEvent"
+    },
+    "schema_id": {
+      "const": "fam.core.engineering-task-graph-event/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Append-only engineering task graph event",
+  "type": "object"
+}

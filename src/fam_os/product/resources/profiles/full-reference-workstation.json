@@ -1,0 +1,43 @@
+{
+  "contract_version": "fam.validation-profile/v1alpha1",
+  "payload": {
+    "configuration": {
+      "configuration_id": "config.full-reference-workstation.v1",
+      "contract_version": "fam.configuration/v1alpha1",
+      "policy": {
+        "accelerator_allowed": true,
+        "accelerator_memory_fraction": 0.875,
+        "accelerator_reserved_memory_bytes": 1073741824,
+        "cpu_quota_fraction": 1.0,
+        "max_accelerator_memory_bytes": null,
+        "max_cpu_cores": null,
+        "max_memory_bytes": null,
+        "max_storage_cache_bytes": 536870912000,
+        "max_swap_bytes": 0,
+        "memory_headroom_bytes": 12884901888,
+        "memory_limit_fraction": 1.0,
+        "reserved_logical_cpu_count": 2,
+        "storage_cache_fraction": 0.5,
+        "storage_read_limit_bytes_per_second": null,
+        "storage_reserved_free_bytes": 107374182400,
+        "storage_write_limit_bytes_per_second": null
+      },
+      "profile": {
+        "profile_id": "full-reference-workstation",
+        "purpose": "full_host_capability"
+      }
+    },
+    "contract_version": "fam.validation-profile/v1alpha1",
+    "description": "Quality-first validation exposing discovered CPU, RAM, accelerator VRAM, and NVMe with explicit operating-system reserves.",
+    "display_name": "Full reference workstation",
+    "document_id": "profile.full-reference-workstation.v1",
+    "service": {
+      "accelerator_visibility": "discovered",
+      "cpu_quota_cores": null,
+      "memory_max_bytes": null,
+      "swap_max_bytes": 0
+    },
+    "workload_mode": "full_host"
+  },
+  "schema_id": "fam.configuration.validation-profile-document/v1alpha1"
+}

@@ -19,6 +19,11 @@ class ApplicationEvidenceProvider(Protocol):
 
     def observe(self, request: ObservationRequest) -> ObservationResult: ...
 
+    def observation_parameters(
+        self, instance_id: str, capability_id: str, prompt: str,
+        resource_uri: str | None,
+    ) -> dict[str, object]: ...
+
     def prepare_action(self, request: ActionPreparationRequest) -> ActionProposal: ...
 
 

@@ -1,0 +1,216 @@
+{
+  "$defs": {
+    "EngineeringAuthorizationRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "action_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "authority": {
+          "enum": [
+            "observe",
+            "propose",
+            "modify",
+            "execute",
+            "network",
+            "publish",
+            "raw_shell",
+            "host_admin",
+            "secret_use",
+            "global_install",
+            "production_mutate",
+            "policy_change",
+            "protected_ref_write",
+            "self_update"
+          ],
+          "type": "string"
+        },
+        "change_set_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "git_branch": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "git_remote": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "grant_id": {
+          "type": "string"
+        },
+        "network_host": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "package_registry": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "principal_id": {
+          "type": "string"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "resource_impact": {
+          "$ref": "#/$defs/EngineeringResourceImpact"
+        },
+        "secret_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "session_id": {
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        },
+        "toolchain": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "workspace_root": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "grant_id",
+        "principal_id",
+        "authority",
+        "task_id",
+        "session_id",
+        "action_id",
+        "change_set_id",
+        "workspace_root",
+        "path",
+        "toolchain",
+        "network_host",
+        "package_registry",
+        "git_remote",
+        "git_branch",
+        "secret_ref",
+        "resource_impact",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "EngineeringResourceImpact": {
+      "additionalProperties": false,
+      "properties": {
+        "max_changed_bytes": {
+          "type": "integer"
+        },
+        "max_changed_files": {
+          "type": "integer"
+        },
+        "max_network_bytes": {
+          "type": "integer"
+        },
+        "max_processes": {
+          "type": "integer"
+        },
+        "max_tool_runs": {
+          "type": "integer"
+        },
+        "max_wall_seconds": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "max_wall_seconds",
+        "max_tool_runs",
+        "max_processes",
+        "max_changed_files",
+        "max_changed_bytes",
+        "max_network_bytes"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.engineering-authorization-request/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/EngineeringAuthorizationRequest"
+    },
+    "schema_id": {
+      "const": "fam.core.engineering-authorization-request/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Engineering effect authorization request",
+  "type": "object"
+}

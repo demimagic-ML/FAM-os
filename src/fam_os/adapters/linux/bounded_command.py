@@ -4,6 +4,7 @@ import os
 import selectors
 import signal
 import subprocess
+import tempfile
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -14,11 +15,12 @@ class BoundedCommandPolicy:
     timeout_seconds: float = 10.0
     maximum_stdout_bytes: int = 1_048_576
     maximum_stderr_bytes: int = 65_536
+    maximum_stdin_bytes: int = 65_536
 
     def __post_init__(self) -> None:
         if min(
             self.timeout_seconds, self.maximum_stdout_bytes,
-            self.maximum_stderr_bytes,
+            self.maximum_stderr_bytes, self.maximum_stdin_bytes,
         ) <= 0:
             raise ValueError("bounded command policy values must be positive")
 
@@ -40,21 +42,26 @@ class BoundedSubprocessRunner:
     def __init__(self, policy=BoundedCommandPolicy()):
         self._policy = policy
 
-    def run(self, command: tuple[str, ...], cwd=None, environment=None):
+    def run(
+        self, command: tuple[str, ...], cwd=None, environment=None,
+        input_bytes: bytes | None = None,
+    ):
         _validate_command(command, cwd, environment)
-        process = subprocess.Popen(
-            command, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE, shell=False, cwd=cwd,
-            env=dict(environment or {}), start_new_session=True, close_fds=True,
-        )
-        try:
-            return self._communicate(process)
-        except BaseException:
-            _terminate(process)
-            raise
-        finally:
-            process.stdout.close()
-            process.stderr.close()
+        _validate_input(input_bytes, self._policy.maximum_stdin_bytes)
+        with _input_stream(input_bytes, cwd) as input_stream:
+            process = subprocess.Popen(
+                command, stdin=input_stream, stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE, shell=False, cwd=cwd,
+                env=dict(environment or {}), start_new_session=True, close_fds=True,
+            )
+            try:
+                return self._communicate(process)
+            except BaseException:
+                _terminate(process)
+                raise
+            finally:
+                process.stdout.close()
+                process.stderr.close()
 
     def _communicate(self, process):
         selector = selectors.DefaultSelector()
@@ -124,6 +131,22 @@ def _validate_command(command, cwd, environment):
         for key, value in environment.items()
     ):
         raise ValueError("bounded command environment is invalid")
+
+
+def _validate_input(value, maximum_bytes):
+    if value is not None and (
+        not isinstance(value, bytes) or len(value) > maximum_bytes
+    ):
+        raise ValueError("bounded command input is invalid")
+
+
+def _input_stream(value, cwd):
+    if value is None:
+        return open(os.devnull, "rb")
+    stream = tempfile.TemporaryFile(dir=cwd)
+    stream.write(value)
+    stream.seek(0)
+    return stream
 
 
 def _decode(value):

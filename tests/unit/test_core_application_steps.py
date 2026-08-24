@@ -146,6 +146,37 @@ class CoreApplicationStepTests(unittest.TestCase):
                 self.assertEqual(ApplicationStepRejection.PERMISSION_DENIED, result.rejection)
                 self.assertEqual([], provider.observation_requests)
 
+    def test_active_observation_resolves_resource_inside_registered_scope(self):
+        runtime, application, provider = setup(
+            OBSERVE, ApplicationAuthority.OBSERVE, grant_resource=None,
+        )
+
+        result = application.acquire_observation(
+            observation_command(runtime, resource_uri=None),
+        )
+
+        self.assertEqual(TerminalDisposition.RELEASE, result.snapshot.terminal_disposition)
+        self.assertEqual(RESOURCE, result.evidence.resource_uri)
+        self.assertIsNone(provider.observation_requests[0].resource_uri)
+
+    def test_active_observation_rejects_provider_resource_outside_registered_scope(self):
+        def outside(request):
+            return ObservationResult(
+                request.request_id, ObservationStatus.OBSERVED, NOW,
+                {"language_id": "python"}, "file:///outside/app.py", "7",
+            )
+
+        runtime, application, _ = setup(
+            OBSERVE, ApplicationAuthority.OBSERVE,
+            evidence=outside, grant_resource=None,
+        )
+
+        result = application.acquire_observation(
+            observation_command(runtime, resource_uri=None),
+        )
+
+        self.assertEqual(ApplicationStepRejection.INVALID_EVIDENCE, result.rejection)
+
     def test_wrong_step_and_route_context_never_reach_provider(self):
         runtime, application, provider = setup(OBSERVE, ApplicationAuthority.OBSERVE)
         wrong_command = action_command(runtime, routed_override=routed(ACTION))
@@ -306,7 +337,7 @@ def permission_grant(authority, capability_id, expired, subject, resource):
         "grant-1", subject, (authority,),
         PermissionScope(
             instance_ids=("vscode-1",), capability_ids=(capability_id,),
-            resource_uris=(resource,),
+            resource_uris=() if resource is None else (resource,),
         ),
         NOW - timedelta(hours=1), expires_at=expires,
     )
@@ -322,10 +353,10 @@ def lifecycle_service():
     )
 
 
-def observation_command(runtime, expected_revision=0):
+def observation_command(runtime, expected_revision=0, resource_uri=RESOURCE):
     return ObservationAcquisition(
         "instance-1", expected_revision, routed(OBSERVE), "vscode-1", "grant-1",
-        {"include": ["selection"]}, RESOURCE,
+        {"include": ["selection"]}, resource_uri,
     )
 
 

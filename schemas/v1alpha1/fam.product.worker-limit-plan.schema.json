@@ -1,0 +1,167 @@
+{
+  "$defs": {
+    "BlockIoBandwidthLimit": {
+      "additionalProperties": false,
+      "properties": {
+        "device_major": {
+          "type": "integer"
+        },
+        "device_minor": {
+          "type": "integer"
+        },
+        "device_path": {
+          "type": "string"
+        },
+        "read_bytes_per_second": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "write_bytes_per_second": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "device_path",
+        "device_major",
+        "device_minor",
+        "read_bytes_per_second",
+        "write_bytes_per_second"
+      ],
+      "type": "object"
+    },
+    "ResourceLimits": {
+      "additionalProperties": false,
+      "properties": {
+        "block_io_bandwidth": {
+          "items": {
+            "$ref": "#/$defs/BlockIoBandwidthLimit"
+          },
+          "type": "array"
+        },
+        "cpu_quota_percent": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "memory_high_bytes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "memory_max_bytes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "swap_max_bytes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "tasks_max": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "memory_max_bytes",
+        "swap_max_bytes",
+        "cpu_quota_percent",
+        "tasks_max",
+        "block_io_bandwidth",
+        "memory_high_bytes"
+      ],
+      "type": "object"
+    },
+    "WorkerLimitPlan": {
+      "additionalProperties": false,
+      "properties": {
+        "budget_id": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.product.worker-budget/v1alpha1"
+        },
+        "limits": {
+          "$ref": "#/$defs/ResourceLimits"
+        },
+        "worker_kind": {
+          "enum": [
+            "model",
+            "verifier",
+            "connector",
+            "training"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "budget_id",
+        "worker_kind",
+        "limits",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.product.worker-limit-plan/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.product.worker-budget/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/WorkerLimitPlan"
+    },
+    "schema_id": {
+      "const": "fam.product.worker-limit-plan/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Derived production worker limits",
+  "type": "object"
+}

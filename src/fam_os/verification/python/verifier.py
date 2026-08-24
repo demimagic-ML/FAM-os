@@ -89,6 +89,8 @@ def _verdict(outcome: SandboxResult) -> tuple[VerificationStatus, str, str]:
         return VerificationStatus.ERROR, "execution", outcome.reason
     if outcome.status is SandboxStatus.TIMED_OUT:
         return VerificationStatus.FAILED, "execution", outcome.reason
+    if outcome.status is SandboxStatus.OUTPUT_LIMIT:
+        return VerificationStatus.FAILED, "execution", outcome.reason
     passed = outcome.exit_code == 0 and PASS_SENTINEL in outcome.stdout
     if passed:
         return VerificationStatus.PASSED, "passed", "all deterministic tests passed"

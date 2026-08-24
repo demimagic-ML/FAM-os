@@ -1,6 +1,14 @@
+import hashlib
 import unittest
 
-from fam_os.core.contracts import CORE_CONTRACT_VERSION, ResultStatus, TaskRequest, TaskResult
+from fam_os.core.contracts import (
+    CORE_CONTRACT_VERSION,
+    ResultCitation,
+    ResultKind,
+    ResultStatus,
+    TaskRequest,
+    TaskResult,
+)
 
 
 class TaskRequestTests(unittest.TestCase):
@@ -15,6 +23,27 @@ class TaskRequestTests(unittest.TestCase):
 
 
 class TaskResultTests(unittest.TestCase):
+    def test_verified_result_accepts_digest_bound_exact_citation(self) -> None:
+        quote = "exact source bytes"
+        citation = ResultCitation(
+            "citation-1", "claim-1", "Grounded claim.", "source-1",
+            "file:///approved.md", "a" * 64, "index-1", 4, 22, quote,
+            hashlib.sha256(quote.encode("utf-8")).hexdigest(),
+        )
+        result = TaskResult(
+            "request-1", ResultStatus.VERIFIED, "Grounded claim.",
+            verified=True, evidence_ids=("verification-1",), citations=(citation,),
+        )
+        self.assertEqual((citation,), result.citations)
+
+    def test_citation_rejects_tampered_quote_digest(self) -> None:
+        with self.assertRaisesRegex(ValueError, "quote digest"):
+            ResultCitation(
+                "citation-1", "claim-1", "Grounded claim.", "source-1",
+                "file:///approved.md", "a" * 64, "index-1", 0, 5,
+                "bytes", "b" * 64,
+            )
+
     def test_accepts_verified_content(self) -> None:
         result = TaskResult(
             "request-1",
@@ -28,6 +57,13 @@ class TaskResultTests(unittest.TestCase):
     def test_verified_result_requires_evidence(self) -> None:
         with self.assertRaisesRegex(ValueError, "evidence"):
             TaskResult("request-1", ResultStatus.VERIFIED, "answer", verified=True)
+
+    def test_unverified_inference_cannot_be_an_action_receipt(self) -> None:
+        with self.assertRaisesRegex(ValueError, "action receipts"):
+            TaskResult(
+                "request-1", ResultStatus.COMPLETED, "I created it.",
+                result_kind=ResultKind.ACTION_RECEIPT,
+            )
 
     def test_withheld_result_cannot_leak_candidate(self) -> None:
         with self.assertRaisesRegex(ValueError, "cannot expose"):

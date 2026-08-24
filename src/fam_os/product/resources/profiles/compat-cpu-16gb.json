@@ -1,0 +1,43 @@
+{
+  "contract_version": "fam.validation-profile/v1alpha1",
+  "payload": {
+    "configuration": {
+      "configuration_id": "config.compat-cpu-16gb.v1",
+      "contract_version": "fam.configuration/v1alpha1",
+      "policy": {
+        "accelerator_allowed": false,
+        "accelerator_memory_fraction": 0.0,
+        "accelerator_reserved_memory_bytes": 0,
+        "cpu_quota_fraction": 1.0,
+        "max_accelerator_memory_bytes": 0,
+        "max_cpu_cores": null,
+        "max_memory_bytes": 15032385536,
+        "max_storage_cache_bytes": 107374182400,
+        "max_swap_bytes": 0,
+        "memory_headroom_bytes": 2147483648,
+        "memory_limit_fraction": 1.0,
+        "reserved_logical_cpu_count": 1,
+        "storage_cache_fraction": 0.25,
+        "storage_read_limit_bytes_per_second": null,
+        "storage_reserved_free_bytes": 21474836480,
+        "storage_write_limit_bytes_per_second": null
+      },
+      "profile": {
+        "profile_id": "compat-cpu-16gb",
+        "purpose": "minimum_compatibility"
+      }
+    },
+    "contract_version": "fam.validation-profile/v1alpha1",
+    "description": "Minimum-machine CPU-only validation with a 16 GiB service ceiling and zero service swap.",
+    "display_name": "16 GiB CPU compatibility",
+    "document_id": "profile.compat-cpu-16gb.v1",
+    "service": {
+      "accelerator_visibility": "deny_all",
+      "cpu_quota_cores": null,
+      "memory_max_bytes": 17179869184,
+      "swap_max_bytes": 0
+    },
+    "workload_mode": "cpu_compatibility"
+  },
+  "schema_id": "fam.configuration.validation-profile-document/v1alpha1"
+}

@@ -13,6 +13,9 @@ from fam_os.adapters.ollama.runtime import OllamaRuntime
 from fam_os.adapters.ollama.settings import OllamaSettings
 from fam_os.adapters.systemd.lifecycle import SystemdUserServiceLifecycle
 from fam_os.scheduler import AcceleratorVisibility
+from fam_os.product.composition.validation_profiles import (
+    validation_profile_accelerator_environment,
+)
 from fam_os.supervisor.contracts import ResourceLimits, ResourceSnapshot, ServiceDefinition
 from fam_os.supervisor.errors import ServiceLifecycleError
 from tools.parity.composition import BenchmarkComposition
@@ -92,7 +95,7 @@ class ProfiledOllamaService:
             ("OLLAMA_MODELS", settings.models_path),
         ]
         if profile.service.accelerator_visibility is AcceleratorVisibility.DENY_ALL:
-            environment.extend(_cpu_only_environment())
+            environment.extend(validation_profile_accelerator_environment(profile))
         cpu_cores = (
             profile.service.cpu_quota_cores
             if profile.service.cpu_quota_cores is not None
@@ -108,12 +111,3 @@ class ProfiledOllamaService:
                 cpu_quota_percent=cpu_cores * 100 if cpu_cores is not None else None,
             ),
         )
-
-
-def _cpu_only_environment() -> tuple[tuple[str, str], ...]:
-    return (
-        ("CUDA_VISIBLE_DEVICES", "-1"),
-        ("GGML_VK_VISIBLE_DEVICES", "-1"),
-        ("OLLAMA_VULKAN", "0"),
-        ("OLLAMA_LLM_LIBRARY", "cpu_avx2"),
-    )

@@ -1,0 +1,108 @@
+{
+  "$defs": {
+    "EngineeringExecutionRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "assurance": {
+          "enum": [
+            "verified",
+            "executed_unverified",
+            "verification_waived"
+          ],
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "effect_applied": {
+          "type": "boolean"
+        },
+        "effect_id": {
+          "type": "string"
+        },
+        "evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "grant_id": {
+          "type": "string"
+        },
+        "record_id": {
+          "type": "string"
+        },
+        "recorded_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "result_kind": {
+          "enum": [
+            "changeset_proposal",
+            "verified_changeset_receipt",
+            "publication_proposal",
+            "publication_receipt",
+            "capability_unavailable",
+            "engineering_execution"
+          ],
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        },
+        "verifier_run_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "waiver_decision_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "record_id",
+        "task_id",
+        "grant_id",
+        "effect_id",
+        "recorded_at",
+        "effect_applied",
+        "assurance",
+        "verifier_run_ids",
+        "evidence_ids",
+        "waiver_decision_id",
+        "result_kind",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.engineering-execution/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/EngineeringExecutionRecord"
+    },
+    "schema_id": {
+      "const": "fam.core.engineering-execution/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Truthfully labelled engineering execution record",
+  "type": "object"
+}

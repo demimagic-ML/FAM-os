@@ -68,6 +68,12 @@ from fam_os.applications.screen_input import (
     RelativeScreenPoint, ScreenFrame, ScreenInputEvidence, ScreenInputInstruction,
     ScreenInputKind, ScreenInputProposal, ScreenObservation, ScreenTarget,
 )
+from fam_os.applications.workspace_capabilities import (
+    WORKSPACE_MAP_CAPABILITY,
+    WORKSPACE_PATCH_CAPABILITY,
+    WORKSPACE_RESTORE_CAPABILITY,
+    WORKSPACE_RETRIEVE_CAPABILITY,
+)
 
 __all__ = [
     "APPLICATION_CONTRACT_VERSION",
@@ -137,4 +143,8 @@ __all__ = [
     "ScreenInputProposal",
     "ScreenObservation",
     "ScreenTarget",
+    "WORKSPACE_MAP_CAPABILITY",
+    "WORKSPACE_PATCH_CAPABILITY",
+    "WORKSPACE_RESTORE_CAPABILITY",
+    "WORKSPACE_RETRIEVE_CAPABILITY",
 ]

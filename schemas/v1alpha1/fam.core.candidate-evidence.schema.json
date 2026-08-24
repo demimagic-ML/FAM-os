@@ -1,0 +1,49 @@
+{
+  "$defs": {
+    "CandidateEvidenceRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "candidate_id": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "plan_id": {
+          "type": "string"
+        },
+        "request_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "candidate_id",
+        "request_id",
+        "plan_id",
+        "content"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.candidate-evidence/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/CandidateEvidenceRecord"
+    },
+    "schema_id": {
+      "const": "fam.core.candidate-evidence/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Candidate result evidence",
+  "type": "object"
+}

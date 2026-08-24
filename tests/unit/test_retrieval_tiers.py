@@ -4,7 +4,7 @@ import unittest
 from fam_os.adapters.ollama.retrieval_synthesizer import OllamaRetrievalSynthesizer
 from fam_os.core.ports.embedding import EmbeddingResponse
 from fam_os.core.ports.inference import InferenceResponse
-from fam_os.experts.retrieval_tiers import VerifiedRetrievalPipeline
+from fam_os.experts.retrieval_tiers import RankedRetrievalSource, VerifiedRetrievalPipeline
 from fam_os.telemetry import InferenceMetrics
 from fam_os.verification.retrieval import RetrievedSource
 
@@ -22,7 +22,7 @@ class Runtime:
         return EmbeddingResponse(request.model_ref, vectors, 9, 0.1)
 
     def chat(self, request):
-        content = ('{"answer":"FAM is local.","claims":[{"text":"FAM is local",'
+        content = ('{"answer":"FAM runs locally","claims":[{"text":"FAM runs locally",'
                    '"source_id":"a","quote":"FAM runs locally"}]}')
         return InferenceResponse(content, InferenceMetrics(request.model_ref, 0.2, 0, 0, 0))
 
@@ -58,7 +58,7 @@ class RetrievalTierTests(unittest.TestCase):
     def test_synthesizer_rejects_non_source_quote(self):
         class BadRuntime(Runtime):
             def chat(self, request):
-                content = ('{"answer":"x","claims":[{"text":"x",'
+                content = ('{"answer":"invented","claims":[{"text":"invented",'
                            '"source_id":"a","quote":"invented"}]}')
                 return InferenceResponse(content, InferenceMetrics("chat", 0.1, 0, 0, 0))
 
@@ -69,6 +69,43 @@ class RetrievalTierTests(unittest.TestCase):
             ranked_pipeline.run(
                 "query", (source("a", "trusted content"), source("b", "other")),
             )
+
+    def test_query_bound_extractive_fallback_survives_weak_model_output(self):
+        class WeakRuntime(Runtime):
+            def __init__(self):
+                self.requests = []
+
+            def chat(self, request):
+                self.requests.append(request)
+                content = (
+                    '{"answer":"# Installed matrix workspace","claims":['
+                    '{"text":"# Installed matrix workspace","source_id":"a",'
+                    '"quote":"# Installed matrix workspace"}]}'
+                )
+                return InferenceResponse(
+                    content, InferenceMetrics(request.model_ref, 0.1, 0, 0, 0),
+                )
+
+        runtime = WeakRuntime()
+        evidence = source(
+            "a",
+            "# Installed matrix workspace\n"
+            "PHASE23_WORKSPACE_FACT: the resident fabric uses verified local evidence.\n",
+        )
+        synthesizer = OllamaRetrievalSynthesizer(runtime, "qwen3:1.7b")
+
+        result = synthesizer.synthesize(
+            "What exact PHASE23_WORKSPACE_FACT statement is in this workspace?",
+            (RankedRetrievalSource(evidence, 1.0, 1.0, 1.0, 1),),
+        )
+
+        self.assertEqual(
+            "PHASE23_WORKSPACE_FACT: the resident fabric uses verified local evidence.",
+            result.answer,
+        )
+        self.assertEqual(2, len(runtime.requests))
+        self.assertIn(result.answer, runtime.requests[0].messages[1].content)
+        self.assertEqual(1, len(result.citations))
 
 
 if __name__ == "__main__":

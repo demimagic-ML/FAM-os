@@ -1,0 +1,93 @@
+{
+  "$defs": {
+    "PeerManagementReceipt": {
+      "additionalProperties": false,
+      "properties": {
+        "applied": {
+          "type": "boolean"
+        },
+        "before_revision": {
+          "type": "integer"
+        },
+        "contract_version": {
+          "const": "fam.fabric.peer-state/v1alpha1"
+        },
+        "enrollment_id": {
+          "type": "string"
+        },
+        "local_only": {
+          "type": "boolean"
+        },
+        "operation": {
+          "enum": [
+            "revoke",
+            "set_privacy"
+          ],
+          "type": "string"
+        },
+        "owner_id": {
+          "type": "string"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "recorded_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "request_sha256": {
+          "type": "string"
+        },
+        "resulting_revision": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "receipt_id",
+        "request_id",
+        "owner_id",
+        "operation",
+        "enrollment_id",
+        "request_sha256",
+        "before_revision",
+        "resulting_revision",
+        "applied",
+        "reason_codes",
+        "recorded_at",
+        "local_only",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.fabric.peer-management-receipt/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.fabric.peer-state/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/PeerManagementReceipt"
+    },
+    "schema_id": {
+      "const": "fam.fabric.peer-management-receipt/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Durable local peer control receipt",
+  "type": "object"
+}

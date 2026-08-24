@@ -1,0 +1,314 @@
+{
+  "$defs": {
+    "LanguageToolQualification": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "ecosystem": {
+          "enum": [
+            "python",
+            "javascript",
+            "typescript",
+            "rust",
+            "go",
+            "java",
+            "kotlin",
+            "c",
+            "cpp",
+            "shell",
+            "html",
+            "css"
+          ],
+          "type": "string"
+        },
+        "installed_release_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "negative_receipt_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "positive_receipt_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "qualification_id": {
+          "type": "string"
+        },
+        "qualified_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "passed",
+            "failed",
+            "unavailable"
+          ],
+          "type": "string"
+        },
+        "tool_name": {
+          "type": "string"
+        },
+        "tool_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "qualification_id",
+        "ecosystem",
+        "tool_name",
+        "tool_version",
+        "positive_receipt_id",
+        "negative_receipt_id",
+        "status",
+        "qualified_at",
+        "installed_release_id",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "PolyglotRecipeMatrix": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "matrix_id": {
+          "type": "string"
+        },
+        "package_integrity_recipe_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "project_acceptance_recipe_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "qualifications": {
+          "items": {
+            "$ref": "#/$defs/LanguageToolQualification"
+          },
+          "type": "array"
+        },
+        "recipes": {
+          "items": {
+            "$ref": "#/$defs/SignedToolRecipe"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "matrix_id",
+        "recipes",
+        "qualifications",
+        "project_acceptance_recipe_ids",
+        "package_integrity_recipe_ids",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "SignedToolRecipe": {
+      "additionalProperties": false,
+      "properties": {
+        "allowed_environment_keys": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "argv_template": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "ecosystem": {
+          "enum": [
+            "python",
+            "javascript",
+            "typescript",
+            "rust",
+            "go",
+            "java",
+            "kotlin",
+            "c",
+            "cpp",
+            "shell",
+            "html",
+            "css"
+          ],
+          "type": "string"
+        },
+        "executable_path": {
+          "type": "string"
+        },
+        "expected_exit_codes": {
+          "items": {
+            "type": "integer"
+          },
+          "type": "array"
+        },
+        "network_mode": {
+          "enum": [
+            "denied",
+            "allowlist_proxy"
+          ],
+          "type": "string"
+        },
+        "payload_sha256": {
+          "type": "string"
+        },
+        "purpose": {
+          "enum": [
+            "build",
+            "test",
+            "lint",
+            "format_check",
+            "type_check",
+            "static_analysis",
+            "coverage",
+            "package",
+            "language_diagnostics",
+            "acceptance",
+            "stack_trace",
+            "crash_dump",
+            "trace",
+            "cpu_profile",
+            "memory_profile",
+            "race_detection",
+            "leak_detection",
+            "performance_regression"
+          ],
+          "type": "string"
+        },
+        "recipe_id": {
+          "type": "string"
+        },
+        "recipe_version": {
+          "type": "string"
+        },
+        "signature_base64": {
+          "type": "string"
+        },
+        "signer_key_id": {
+          "type": "string"
+        },
+        "toolchain_mounts": {
+          "items": {
+            "$ref": "#/$defs/ToolchainMount"
+          },
+          "type": "array"
+        },
+        "verifier_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "recipe_id",
+        "recipe_version",
+        "ecosystem",
+        "purpose",
+        "executable_path",
+        "argv_template",
+        "allowed_environment_keys",
+        "expected_exit_codes",
+        "verifier_ids",
+        "signer_key_id",
+        "payload_sha256",
+        "signature_base64",
+        "toolchain_mounts",
+        "network_mode",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "ToolchainMount": {
+      "additionalProperties": false,
+      "properties": {
+        "sandbox_path": {
+          "type": "string"
+        },
+        "source_kind": {
+          "enum": [
+            "host_absolute",
+            "installed_release"
+          ],
+          "type": "string"
+        },
+        "source_path": {
+          "type": "string"
+        },
+        "tree_sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_path",
+        "sandbox_path",
+        "tree_sha256",
+        "source_kind"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.polyglot-recipe-matrix/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/PolyglotRecipeMatrix"
+    },
+    "schema_id": {
+      "const": "fam.core.polyglot-recipe-matrix/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Complete signed polyglot recipe matrix",
+  "type": "object"
+}

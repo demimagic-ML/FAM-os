@@ -1,0 +1,207 @@
+{
+  "$defs": {
+    "FactoryEvaluationApproval": {
+      "additionalProperties": false,
+      "properties": {
+        "active": {
+          "type": "boolean"
+        },
+        "adapter_config_sha256": {
+          "type": "string"
+        },
+        "adapter_sha256": {
+          "type": "string"
+        },
+        "approval_id": {
+          "type": "string"
+        },
+        "approval_sha256": {
+          "type": "string"
+        },
+        "capability_id": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.factory.evaluation/v1alpha1"
+        },
+        "evaluator_environment_sha256": {
+          "type": "string"
+        },
+        "evaluator_script_sha256": {
+          "type": "string"
+        },
+        "expires_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "held_out_blob_id": {
+          "type": "string"
+        },
+        "held_out_blob_sha256": {
+          "type": "string"
+        },
+        "incumbent_artifact_sha256": {
+          "type": "string"
+        },
+        "incumbent_expert_id": {
+          "type": "string"
+        },
+        "issued_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "one_use_evaluation_id": {
+          "type": "string"
+        },
+        "policy": {
+          "$ref": "#/$defs/FactoryEvaluationPolicy"
+        },
+        "proposal_id": {
+          "type": "string"
+        },
+        "revision": {
+          "type": "integer"
+        },
+        "sealed_dataset_id": {
+          "type": "string"
+        },
+        "sealed_dataset_sha256": {
+          "type": "string"
+        },
+        "suite_sha256": {
+          "type": "string"
+        },
+        "training_receipt_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "approval_id",
+        "proposal_id",
+        "capability_id",
+        "training_receipt_id",
+        "adapter_sha256",
+        "adapter_config_sha256",
+        "sealed_dataset_id",
+        "sealed_dataset_sha256",
+        "held_out_blob_id",
+        "held_out_blob_sha256",
+        "incumbent_expert_id",
+        "incumbent_artifact_sha256",
+        "suite_sha256",
+        "evaluator_environment_sha256",
+        "evaluator_script_sha256",
+        "policy",
+        "one_use_evaluation_id",
+        "issued_at",
+        "expires_at",
+        "revision",
+        "active",
+        "approval_sha256",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "FactoryEvaluationPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "capability_id": {
+          "type": "string"
+        },
+        "confidence_z_ppm": {
+          "type": "integer"
+        },
+        "contract_version": {
+          "const": "fam.factory.evaluation/v1alpha1"
+        },
+        "maximum_adapter_bytes": {
+          "type": "integer"
+        },
+        "maximum_cold_start_microseconds": {
+          "type": "integer"
+        },
+        "maximum_energy_joules": {
+          "type": "integer"
+        },
+        "maximum_latency_regression_ppm": {
+          "type": "integer"
+        },
+        "maximum_p95_latency_microseconds": {
+          "type": "integer"
+        },
+        "maximum_peak_ram_bytes": {
+          "type": "integer"
+        },
+        "maximum_peak_vram_bytes": {
+          "type": "integer"
+        },
+        "maximum_resource_regression_ppm": {
+          "type": "integer"
+        },
+        "maximum_unrelated_regression_ppm": {
+          "type": "integer"
+        },
+        "minimum_improvement_ppm": {
+          "type": "integer"
+        },
+        "minimum_quality_cases": {
+          "type": "integer"
+        },
+        "minimum_quality_ppm": {
+          "type": "integer"
+        },
+        "policy_id": {
+          "type": "string"
+        },
+        "policy_sha256": {
+          "type": "string"
+        },
+        "require_scheduler_compatibility": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "policy_id",
+        "capability_id",
+        "minimum_quality_cases",
+        "minimum_quality_ppm",
+        "minimum_improvement_ppm",
+        "confidence_z_ppm",
+        "maximum_unrelated_regression_ppm",
+        "maximum_p95_latency_microseconds",
+        "maximum_latency_regression_ppm",
+        "maximum_peak_ram_bytes",
+        "maximum_peak_vram_bytes",
+        "maximum_energy_joules",
+        "maximum_resource_regression_ppm",
+        "maximum_adapter_bytes",
+        "maximum_cold_start_microseconds",
+        "require_scheduler_compatibility",
+        "policy_sha256",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.factory.evaluation-approval/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.factory.evaluation/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/FactoryEvaluationApproval"
+    },
+    "schema_id": {
+      "const": "fam.factory.evaluation-approval/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Confirmed one-use held-out evaluation authority",
+  "type": "object"
+}

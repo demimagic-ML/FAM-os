@@ -1,0 +1,18 @@
+[Unit]
+Description=FAM_OS managed Ollama runtime
+PartOf=fam-os.service
+
+[Service]
+Type=simple
+NoNewPrivileges=true
+PrivateTmp=true
+Environment=OLLAMA_HOST=127.0.0.1:11435
+Environment=OLLAMA_MODELS=%h/.local/share/fam-os/models
+Environment=OLLAMA_KEEP_ALIVE=5m
+ExecStart=/usr/local/bin/ollama serve
+KillMode=control-group
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=default.target

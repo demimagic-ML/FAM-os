@@ -16,6 +16,7 @@ class MemoryExpiryState(StrEnum):
 class MemoryDeletionReason(StrEnum):
     USER_REQUEST = "user_request"
     EXPIRY = "expiry"
+    CAPACITY = "capacity"
     SCOPE_REVOKED = "scope_revoked"
     SOURCE_REMOVED = "source_removed"
 

@@ -1,0 +1,123 @@
+{
+  "$defs": {
+    "FactoryCanaryApproval": {
+      "additionalProperties": false,
+      "properties": {
+        "active": {
+          "type": "boolean"
+        },
+        "approval_id": {
+          "type": "string"
+        },
+        "approval_sha256": {
+          "type": "string"
+        },
+        "capability_id": {
+          "type": "string"
+        },
+        "case_count": {
+          "type": "integer"
+        },
+        "contract_version": {
+          "const": "fam.factory.canary/v1alpha1"
+        },
+        "expert_id": {
+          "type": "string"
+        },
+        "expires_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "issued_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "maximum_output_tokens": {
+          "type": "integer"
+        },
+        "maximum_ram_bytes": {
+          "type": "integer"
+        },
+        "maximum_vram_bytes": {
+          "type": "integer"
+        },
+        "maximum_wall_seconds": {
+          "type": "integer"
+        },
+        "one_use_canary_id": {
+          "type": "string"
+        },
+        "package_id": {
+          "type": "string"
+        },
+        "package_receipt_sha256": {
+          "type": "string"
+        },
+        "package_version": {
+          "type": "string"
+        },
+        "release_id": {
+          "type": "string"
+        },
+        "revision": {
+          "type": "integer"
+        },
+        "runtime_model_ref": {
+          "type": "string"
+        },
+        "suite_sha256": {
+          "type": "string"
+        },
+        "verifier_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "approval_id",
+        "release_id",
+        "package_receipt_sha256",
+        "package_id",
+        "package_version",
+        "expert_id",
+        "runtime_model_ref",
+        "capability_id",
+        "verifier_id",
+        "suite_sha256",
+        "case_count",
+        "maximum_output_tokens",
+        "maximum_wall_seconds",
+        "maximum_ram_bytes",
+        "maximum_vram_bytes",
+        "one_use_canary_id",
+        "issued_at",
+        "expires_at",
+        "revision",
+        "active",
+        "approval_sha256",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.factory.canary-approval/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.factory.canary/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/FactoryCanaryApproval"
+    },
+    "schema_id": {
+      "const": "fam.factory.canary-approval/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "One-use specialist canary authority",
+  "type": "object"
+}

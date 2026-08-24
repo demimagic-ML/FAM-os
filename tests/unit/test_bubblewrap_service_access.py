@@ -13,6 +13,8 @@ from fam_os.supervisor import (
     ResourceLimits,
     ServiceAccessGrant,
     ServiceDefinition,
+    ServiceRestartMode,
+    ServiceRestartPolicy,
     SupervisorAuthorizationError,
 )
 
@@ -85,8 +87,10 @@ class BubblewrapServiceAccessTests(unittest.TestCase):
             resource("device.gpu-0", AccessResourceKind.DEVICE, AccessMode.READ_WRITE),
         )
         limits = ResourceLimits(memory_max_bytes=64 * 1024 * 1024)
+        restart = ServiceRestartPolicy(ServiceRestartMode.ON_FAILURE)
         definition = ServiceDefinition(
-            "fam-a", ("/usr/bin/model", "serve"), (("MODE", "test"),), limits
+            "fam-a", ("/usr/bin/model", "serve"), (("MODE", "test"),),
+            limits, restart,
         )
 
         projected = self.adapter.project(definition)
@@ -94,6 +98,7 @@ class BubblewrapServiceAccessTests(unittest.TestCase):
         self.assertEqual(definition.service_id, projected.service_id)
         self.assertEqual(definition.environment, projected.environment)
         self.assertEqual(definition.limits, projected.limits)
+        self.assertEqual(definition.restart_policy, projected.restart_policy)
         self.assertBinding(
             projected.command, "--ro-bind", "/host/models", "/access/models"
         )

@@ -40,3 +40,9 @@ class EmbeddingResponse:
 
 class EmbeddingRuntime(Protocol):
     def embed(self, request: EmbeddingRequest) -> EmbeddingResponse: ...
+
+    def prewarm_embedding(
+        self, model_ref: str, keep_alive: str = "10m",
+    ) -> None:
+        """Load an embedding model through its provider-native embedding path."""
+        ...

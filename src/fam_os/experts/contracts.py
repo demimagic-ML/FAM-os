@@ -11,6 +11,7 @@ from fam_os.experts.capabilities import require_expert_capabilities
 class ExpertTier(StrEnum):
     MICRO = "micro"
     ECONOMICAL = "economical"
+    SPECIALIST = "specialist"
     ESCALATION = "escalation"
     REMOTE = "remote"
 

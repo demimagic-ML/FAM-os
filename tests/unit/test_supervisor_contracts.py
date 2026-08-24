@@ -6,6 +6,8 @@ from fam_os.supervisor import (
     ResourceLimits,
     ResourceSnapshot,
     ServiceDefinition,
+    ServiceRestartMode,
+    ServiceRestartPolicy,
 )
 
 
@@ -25,6 +27,16 @@ class SupervisorContractTests(unittest.TestCase):
             ResourceLimits(cpu_quota_percent=0)
         with self.assertRaisesRegex(ValueError, "tasks_max"):
             ResourceLimits(tasks_max=-1)
+
+    def test_validates_restart_policy_bounds(self) -> None:
+        with self.assertRaisesRegex(ValueError, "restart timings"):
+            ServiceRestartPolicy(
+                ServiceRestartMode.ON_FAILURE, delay_seconds=0,
+            )
+        with self.assertRaisesRegex(ValueError, "maximum_attempts"):
+            ServiceRestartPolicy(
+                ServiceRestartMode.ON_FAILURE, maximum_attempts=101,
+            )
 
     def test_distinguishes_unbounded_from_unavailable_ceiling(self) -> None:
         snapshot = ResourceSnapshot("fam-test", memory_limit=ResourceCeiling(None))

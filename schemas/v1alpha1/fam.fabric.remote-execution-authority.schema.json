@@ -1,0 +1,74 @@
+{
+  "$defs": {
+    "RemoteExecutionAuthority": {
+      "additionalProperties": false,
+      "properties": {
+        "confirmed": {
+          "type": "boolean"
+        },
+        "contract_version": {
+          "const": "fam.fabric.remote-execution/v1alpha1"
+        },
+        "enrollment_id": {
+          "type": "string"
+        },
+        "expected_privacy_revision": {
+          "type": "integer"
+        },
+        "maximum_context_bytes": {
+          "type": "integer"
+        },
+        "maximum_output_bytes": {
+          "type": "integer"
+        },
+        "purpose_id": {
+          "type": "string"
+        },
+        "sensitivity": {
+          "enum": [
+            "public",
+            "private",
+            "restricted"
+          ],
+          "type": "string"
+        },
+        "workspace_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "enrollment_id",
+        "expected_privacy_revision",
+        "purpose_id",
+        "workspace_id",
+        "sensitivity",
+        "maximum_context_bytes",
+        "maximum_output_bytes",
+        "confirmed",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.fabric.remote-execution-authority/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.fabric.remote-execution/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/RemoteExecutionAuthority"
+    },
+    "schema_id": {
+      "const": "fam.fabric.remote-execution-authority/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Explicit confirmed remote execution authority",
+  "type": "object"
+}

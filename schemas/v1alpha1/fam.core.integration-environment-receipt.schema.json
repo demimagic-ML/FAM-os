@@ -1,0 +1,241 @@
+{
+  "$defs": {
+    "IntegrationAllocatedPort": {
+      "additionalProperties": false,
+      "properties": {
+        "host_port": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "host_port"
+      ],
+      "type": "object"
+    },
+    "IntegrationEnvironmentReceipt": {
+      "additionalProperties": false,
+      "properties": {
+        "cleanup_evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "completed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "diagnostic": {
+          "type": "string"
+        },
+        "environment_id": {
+          "type": "string"
+        },
+        "network_usage": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/IntegrationNetworkUsage"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "permit_id": {
+          "type": "string"
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "retained_artifacts": {
+          "items": {
+            "$ref": "#/$defs/IntegrationRetainedArtifact"
+          },
+          "type": "array"
+        },
+        "services": {
+          "items": {
+            "$ref": "#/$defs/IntegrationServiceReceipt"
+          },
+          "type": "array"
+        },
+        "started_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "ready",
+            "failed",
+            "cleaned"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "receipt_id",
+        "environment_id",
+        "permit_id",
+        "status",
+        "started_at",
+        "completed_at",
+        "services",
+        "retained_artifacts",
+        "cleanup_evidence_ids",
+        "network_usage",
+        "diagnostic",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "IntegrationNetworkUsage": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "destinations": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "enforcement_id": {
+          "type": "string"
+        },
+        "environment_id": {
+          "type": "string"
+        },
+        "evidence_sha256": {
+          "type": "string"
+        },
+        "finalized": {
+          "type": "boolean"
+        },
+        "maximum_network_bytes": {
+          "type": "integer"
+        },
+        "observed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "quota_exceeded": {
+          "type": "boolean"
+        },
+        "received_bytes": {
+          "type": "integer"
+        },
+        "transmitted_bytes": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "enforcement_id",
+        "environment_id",
+        "destinations",
+        "transmitted_bytes",
+        "received_bytes",
+        "maximum_network_bytes",
+        "quota_exceeded",
+        "finalized",
+        "observed_at",
+        "evidence_sha256",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "IntegrationRetainedArtifact": {
+      "additionalProperties": false,
+      "properties": {
+        "relative_path": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "relative_path",
+        "sha256"
+      ],
+      "type": "object"
+    },
+    "IntegrationServiceReceipt": {
+      "additionalProperties": false,
+      "properties": {
+        "allocated_ports": {
+          "items": {
+            "$ref": "#/$defs/IntegrationAllocatedPort"
+          },
+          "type": "array"
+        },
+        "exit_code": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "health_evidence_id": {
+          "type": "string"
+        },
+        "image_sha256": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "runtime_id": {
+          "type": "string"
+        },
+        "service_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "service_id",
+        "runtime_id",
+        "image_sha256",
+        "allocated_ports",
+        "health_evidence_id",
+        "exit_code"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.integration-environment-receipt/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/IntegrationEnvironmentReceipt"
+    },
+    "schema_id": {
+      "const": "fam.core.integration-environment-receipt/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Health and cleanup bound integration environment evidence",
+  "type": "object"
+}

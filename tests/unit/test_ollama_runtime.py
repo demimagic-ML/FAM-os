@@ -92,6 +92,52 @@ class OllamaRuntimeTests(unittest.TestCase):
         self.assertEqual(sleeps, [0.05])
         self.assertEqual(len(transport.requests), 3)
 
+    def test_prewarms_without_prompt_content_and_proves_residency(self) -> None:
+        loaded = json.loads((FIXTURES / "ps-response.json").read_text())
+        transport = FakeTransport([{}, loaded])
+        runtime = OllamaRuntime(OllamaSettings("http://localhost:11434", 15), transport)
+
+        runtime.prewarm("fam-test-model:latest", "10m")
+
+        self.assertEqual(
+            {
+                "model": "fam-test-model:latest",
+                "stream": False,
+                "keep_alive": "10m",
+            },
+            transport.requests[0][2],
+        )
+        self.assertNotIn("prompt", transport.requests[0][2])
+        self.assertEqual("GET", transport.requests[1][0])
+
+    def test_prewarms_embedding_model_through_embedding_endpoint(self) -> None:
+        loaded = {
+            "models": [{
+                "name": "embed-model:latest", "size": 1024,
+                "size_vram": 1024, "details": {},
+            }],
+        }
+        transport = FakeTransport([{
+            "embeddings": [[0.25, 0.75]], "prompt_eval_count": 5,
+        }, loaded])
+        times = iter((1.0, 1.1, 1.2))
+        runtime = OllamaRuntime(
+            OllamaSettings("http://localhost:11434", 15), transport,
+            clock=lambda: next(times),
+        )
+
+        runtime.prewarm_embedding("embed-model:latest", "10m")
+
+        method, url, payload, _ = transport.requests[0]
+        self.assertEqual("POST", method)
+        self.assertEqual("http://localhost:11434/api/embed", url)
+        self.assertEqual("embed-model:latest", payload["model"])
+        self.assertEqual("10m", payload["keep_alive"])
+        self.assertEqual(
+            ["FAM_OS embedding residency probe"], payload["input"],
+        )
+        self.assertEqual("GET", transport.requests[1][0])
+
     def test_reports_unconfirmed_unload(self) -> None:
         loaded = json.loads((FIXTURES / "ps-response.json").read_text())
         transport = FakeTransport([{}, loaded])

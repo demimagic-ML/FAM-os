@@ -1,0 +1,195 @@
+{
+  "$defs": {
+    "ExpertEvaluationReport": {
+      "additionalProperties": false,
+      "properties": {
+        "approval_id": {
+          "type": "string"
+        },
+        "baseline_energy_joules": {
+          "type": "integer"
+        },
+        "baseline_p95_latency_microseconds": {
+          "type": "integer"
+        },
+        "baseline_peak_ram_bytes": {
+          "type": "integer"
+        },
+        "baseline_peak_vram_bytes": {
+          "type": "integer"
+        },
+        "baseline_policy_failures": {
+          "type": "integer"
+        },
+        "baseline_quality_lower_ppm": {
+          "type": "integer"
+        },
+        "baseline_quality_passes": {
+          "type": "integer"
+        },
+        "baseline_quality_ppm": {
+          "type": "integer"
+        },
+        "baseline_quality_upper_ppm": {
+          "type": "integer"
+        },
+        "baseline_safety_failures": {
+          "type": "integer"
+        },
+        "baseline_unrelated_quality_ppm": {
+          "type": "integer"
+        },
+        "candidate_adapter_bytes": {
+          "type": "integer"
+        },
+        "candidate_cold_start_microseconds": {
+          "type": "integer"
+        },
+        "candidate_energy_joules": {
+          "type": "integer"
+        },
+        "candidate_p95_latency_microseconds": {
+          "type": "integer"
+        },
+        "candidate_peak_ram_bytes": {
+          "type": "integer"
+        },
+        "candidate_peak_vram_bytes": {
+          "type": "integer"
+        },
+        "candidate_policy_failures": {
+          "type": "integer"
+        },
+        "candidate_quality_lower_ppm": {
+          "type": "integer"
+        },
+        "candidate_quality_passes": {
+          "type": "integer"
+        },
+        "candidate_quality_ppm": {
+          "type": "integer"
+        },
+        "candidate_quality_upper_ppm": {
+          "type": "integer"
+        },
+        "candidate_safety_failures": {
+          "type": "integer"
+        },
+        "candidate_unrelated_quality_ppm": {
+          "type": "integer"
+        },
+        "case_count": {
+          "type": "integer"
+        },
+        "contract_version": {
+          "const": "fam.factory.evaluation/v1alpha1"
+        },
+        "evaluation_id": {
+          "type": "string"
+        },
+        "evaluator_environment_sha256": {
+          "type": "string"
+        },
+        "evaluator_script_sha256": {
+          "type": "string"
+        },
+        "finished_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "held_out_access_receipt_sha256": {
+          "type": "string"
+        },
+        "measurement_manifest_sha256": {
+          "type": "string"
+        },
+        "network_denied": {
+          "type": "boolean"
+        },
+        "policy_sha256": {
+          "type": "string"
+        },
+        "quality_case_count": {
+          "type": "integer"
+        },
+        "report_id": {
+          "type": "string"
+        },
+        "report_sha256": {
+          "type": "string"
+        },
+        "scheduler_compatible": {
+          "type": "boolean"
+        },
+        "started_at": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "report_id",
+        "approval_id",
+        "evaluation_id",
+        "policy_sha256",
+        "evaluator_environment_sha256",
+        "evaluator_script_sha256",
+        "held_out_access_receipt_sha256",
+        "network_denied",
+        "measurement_manifest_sha256",
+        "case_count",
+        "quality_case_count",
+        "baseline_quality_passes",
+        "candidate_quality_passes",
+        "baseline_quality_ppm",
+        "candidate_quality_ppm",
+        "baseline_quality_lower_ppm",
+        "baseline_quality_upper_ppm",
+        "candidate_quality_lower_ppm",
+        "candidate_quality_upper_ppm",
+        "baseline_safety_failures",
+        "candidate_safety_failures",
+        "baseline_policy_failures",
+        "candidate_policy_failures",
+        "baseline_unrelated_quality_ppm",
+        "candidate_unrelated_quality_ppm",
+        "baseline_p95_latency_microseconds",
+        "candidate_p95_latency_microseconds",
+        "baseline_peak_ram_bytes",
+        "candidate_peak_ram_bytes",
+        "baseline_peak_vram_bytes",
+        "candidate_peak_vram_bytes",
+        "baseline_energy_joules",
+        "candidate_energy_joules",
+        "candidate_adapter_bytes",
+        "candidate_cold_start_microseconds",
+        "scheduler_compatible",
+        "started_at",
+        "finished_at",
+        "report_sha256",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.factory.expert-evaluation-report/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.factory.evaluation/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/ExpertEvaluationReport"
+    },
+    "schema_id": {
+      "const": "fam.factory.expert-evaluation-report/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Immutable held-out and hardware comparison report",
+  "type": "object"
+}

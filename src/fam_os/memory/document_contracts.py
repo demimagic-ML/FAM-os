@@ -19,6 +19,8 @@ class DocumentIndexApproval:
     embedding_model_ref: str
     embedding_artifact_sha256: str
     contract_version: str = DOCUMENT_INDEX_CONTRACT_VERSION
+    grant_id: str | None = None
+    expires_at: datetime | None = None
 
     def __post_init__(self) -> None:
         if not all(value.strip() for value in (
@@ -30,6 +32,15 @@ class DocumentIndexApproval:
         _digest(self.embedding_artifact_sha256)
         if self.approved_at.tzinfo is None:
             raise ValueError("document approval time must be timezone-aware")
+        if (self.grant_id is None) != (self.expires_at is None):
+            raise ValueError("persistent document approval requires grant and expiry together")
+        if self.grant_id is not None and not self.grant_id.strip():
+            raise ValueError("document approval grant identity must not be empty")
+        if self.expires_at is not None:
+            if self.expires_at.tzinfo is None or self.expires_at.utcoffset() is None:
+                raise ValueError("document approval expiry must be timezone-aware")
+            if self.expires_at <= self.approved_at:
+                raise ValueError("document approval expiry must follow approval")
 
 
 @dataclass(frozen=True, slots=True)

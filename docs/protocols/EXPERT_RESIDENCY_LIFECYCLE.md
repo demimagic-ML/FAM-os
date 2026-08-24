@@ -35,6 +35,13 @@ backward transition time fail closed.
 Expired leases do not grant permanent residency after a crashed request. Explicit
 expiration is revision-bound and durable.
 
+Installed leases are owned by the current product process. On service restart,
+no worker from the previous process can still be using the provider, so startup
+durably releases every surviving process lease before provider reconciliation.
+This is recorded separately from ordinary time expiry. It prevents an unexpired
+ten-minute lease from blocking the restarted service while retaining a precise
+recovery transition.
+
 ## Reconciliation
 
 Provider-loaded observations move cold to warm and refresh loaded RAM, accelerator
@@ -45,6 +52,37 @@ request failure as a clean cold transition.
 
 Unknown provider models are ignored; this catalog owns only explicitly bound FAM
 expert/artifact identities. Duplicate provider identities fail.
+
+The first catalog is constructed from one authoritative provider observation.
+Known models already present in that observation begin `warm`; a known model
+begins `cold` only when that same observation proves it absent. Production never
+persists a provisional all-cold catalog and fixes it afterward.
+
+## Installed runtime composition
+
+`ProductionModelResidency` is the single serialized Ollama facade for the
+installed product. The task worker holds a request-identified durable lease
+across the complete chat call. Document embeddings use an encoder-activation
+context estimate and a lease across the complete embed call. Remote execution,
+synthetic teachers, factory canaries, predictive prewarming, and provider
+observations all use the same critical section.
+
+Temporary factory canary models are deliberately outside the signed active
+catalog and therefore cannot become eviction candidates. Their calls are still
+serialized so a production load or eviction cannot overlap their inference.
+Predictive prewarming retains zero eviction authority; it may only load within
+its separately approved resource and operating-state policy.
+
+Managed Ollama grants explicit eviction authority. External Ollama does not:
+FAM observes its residency and leases catalog inference but will reject any
+admission that would require unloading another model. Reclaimable bytes count
+only provider-confirmed `warm` catalog records. `active`, `cold`, temporary, and
+unknown models are never offered to deterministic eviction.
+
+The serialized boundary intentionally favors correctness over concurrent local
+model calls. Parallel task workers may prepare independently, but provider
+inference, embedding, loading, and FAM-owned eviction are ordered until a future
+provider-specific concurrency proof can preserve the same lease invariant.
 
 ## Eviction barrier
 

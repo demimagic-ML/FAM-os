@@ -1,0 +1,77 @@
+{
+  "$defs": {
+    "GitPublicationLocalState": {
+      "additionalProperties": false,
+      "properties": {
+        "commit_object_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "complete_diff_sha256": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "observed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "proposed_new_object_id": {
+          "type": "string"
+        },
+        "remote_name": {
+          "type": "string"
+        },
+        "remote_url_sha256": {
+          "type": "string"
+        },
+        "repository_root": {
+          "type": "string"
+        },
+        "source_ref": {
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "task_id",
+        "repository_root",
+        "remote_name",
+        "remote_url_sha256",
+        "source_ref",
+        "proposed_new_object_id",
+        "commit_object_ids",
+        "complete_diff_sha256",
+        "observed_at",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.git-publication-local-state/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/GitPublicationLocalState"
+    },
+    "schema_id": {
+      "const": "fam.core.git-publication-local-state/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Secret-free exact local state for publication",
+  "type": "object"
+}

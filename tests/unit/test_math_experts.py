@@ -1,5 +1,10 @@
 import unittest
 
+try:
+    import sympy  # noqa: F401
+except ImportError:
+    sympy = None
+
 from fam_os.experts.math_experts import (
     DeterministicMathSolver, MathReasoningAdvice, MathSolverKind, MathSolverRequest,
 )
@@ -13,6 +18,7 @@ class MathExpertTests(unittest.TestCase):
         self.assertEqual("787/2", result.exact_result)
         self.assertTrue(result.verified)
 
+    @unittest.skipIf(sympy is None, "mathematics profile is not installed")
     def test_symbolic_equation_solves_through_safe_ast(self):
         result = DeterministicMathSolver().solve(MathSolverRequest(
             "equation", MathSolverKind.SYMBOLIC_EQUATION, "2*x + 3 = 11", "x",

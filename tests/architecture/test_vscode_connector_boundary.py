@@ -14,6 +14,7 @@ class VsCodeConnectorBoundaryTests(unittest.TestCase):
     def test_modules_are_small_and_vscode_sdk_is_confined_to_editor_adapter(self):
         allowed_vscode = {
             "extension.ts", "provider.ts", "observations.ts", "workspace-actions.ts",
+            "save-action.ts",
         }
         violations = []
         for path in SOURCE.rglob("*.ts"):
@@ -37,7 +38,7 @@ class VsCodeConnectorBoundaryTests(unittest.TestCase):
         for capability in (
             "vscode.editor.active", "vscode.editor.selection",
             "vscode.diagnostics.active", "vscode.workspace_edit.apply",
-            "vscode.workspace_edit.undo",
+            "vscode.workspace_edit.undo", "vscode.document.save",
         ):
             self.assertIn(capability, registration)
         for forbidden in ("terminal", "install_extension", "source_control", "network"):
@@ -48,7 +49,7 @@ class VsCodeConnectorBoundaryTests(unittest.TestCase):
 
     def test_connector_owned_schemas_are_valid_and_closed(self):
         paths = tuple((CONNECTOR / "schemas").glob("*.schema.json"))
-        self.assertEqual(8, len(paths))
+        self.assertEqual(10, len(paths))
         for path in paths:
             schema = json.loads(path.read_text())
             Draft202012Validator.check_schema(schema)

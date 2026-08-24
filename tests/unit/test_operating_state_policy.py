@@ -25,6 +25,14 @@ class OperatingStatePolicyTests(unittest.TestCase):
         self.assertTrue(decision.background_adaptation_allowed)
         self.assertTrue(decision.speculative_prefetch_allowed)
 
+    def test_unknown_thermal_state_blocks_speculation_and_background_work(self):
+        decision = OperatingStatePolicy().decide(
+            OperatingState(None, None, None, .1, 600),
+        )
+        self.assertFalse(decision.speculative_prefetch_allowed)
+        self.assertFalse(decision.background_adaptation_allowed)
+        self.assertIn("thermal.unknown", decision.reason_codes)
+
 
 if __name__ == "__main__":
     unittest.main()

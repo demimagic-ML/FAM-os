@@ -1,0 +1,109 @@
+{
+  "$defs": {
+    "LiveAdaptationControlState": {
+      "additionalProperties": false,
+      "properties": {
+        "active_selections": {
+          "items": {
+            "$ref": "#/$defs/WorkflowAdaptationSelection"
+          },
+          "type": "array"
+        },
+        "contract_version": {
+          "const": "fam.adaptation.live-control/v1alpha1"
+        },
+        "drifted_snapshot_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "known_good_selections": {
+          "items": {
+            "$ref": "#/$defs/WorkflowAdaptationSelection"
+          },
+          "type": "array"
+        },
+        "last_operation": {
+          "anyOf": [
+            {
+              "enum": [
+                "enable",
+                "disable",
+                "reset",
+                "evaluate",
+                "rollback"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "local_only": {
+          "type": "boolean"
+        },
+        "revision": {
+          "type": "integer"
+        },
+        "updated_at": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "revision",
+        "enabled",
+        "active_selections",
+        "known_good_selections",
+        "drifted_snapshot_ids",
+        "updated_at",
+        "last_operation",
+        "local_only",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "WorkflowAdaptationSelection": {
+      "additionalProperties": false,
+      "properties": {
+        "snapshot_id": {
+          "type": "string"
+        },
+        "workflow_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "workflow_id",
+        "snapshot_id"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.adaptation.control-state/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.adaptation.live-control/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/LiveAdaptationControlState"
+    },
+    "schema_id": {
+      "const": "fam.adaptation.control-state/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Owner-visible live adaptation state",
+  "type": "object"
+}

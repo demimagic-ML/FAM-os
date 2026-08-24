@@ -1,0 +1,284 @@
+{
+  "$defs": {
+    "EngineeringLoopBudget": {
+      "additionalProperties": false,
+      "properties": {
+        "maximum_commands": {
+          "type": "integer"
+        },
+        "maximum_files": {
+          "type": "integer"
+        },
+        "maximum_network_bytes": {
+          "type": "integer"
+        },
+        "maximum_storage_bytes": {
+          "type": "integer"
+        },
+        "maximum_tokens": {
+          "type": "integer"
+        },
+        "maximum_wall_seconds": {
+          "type": "integer"
+        },
+        "used_commands": {
+          "type": "integer"
+        },
+        "used_files": {
+          "type": "integer"
+        },
+        "used_network_bytes": {
+          "type": "integer"
+        },
+        "used_storage_bytes": {
+          "type": "integer"
+        },
+        "used_tokens": {
+          "type": "integer"
+        },
+        "used_wall_seconds": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "maximum_tokens",
+        "maximum_wall_seconds",
+        "maximum_commands",
+        "maximum_network_bytes",
+        "maximum_files",
+        "maximum_storage_bytes",
+        "used_tokens",
+        "used_wall_seconds",
+        "used_commands",
+        "used_network_bytes",
+        "used_files",
+        "used_storage_bytes"
+      ],
+      "type": "object"
+    },
+    "EngineeringLoopState": {
+      "additionalProperties": false,
+      "properties": {
+        "apply_receipt_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "architecture_proposal_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "budget": {
+          "$ref": "#/$defs/EngineeringLoopBudget"
+        },
+        "candidate_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "checkpoint_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "database_postapply_receipt_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "database_receipt_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "dependency_receipt_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "design_receipt_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "git_receipt_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "grant_id": {
+          "type": "string"
+        },
+        "integration_environment_postapply_receipt_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "integration_environment_receipt_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "last_event_sha256": {
+          "type": "string"
+        },
+        "pending_changeset_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "pending_publication_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "publication_receipt_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "repository_evidence_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "revision": {
+          "type": "integer"
+        },
+        "rollback_receipt_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "runtime_diagnostic_receipt_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "stage": {
+          "enum": [
+            "requested",
+            "inspected",
+            "proposed",
+            "candidate_ready",
+            "verified",
+            "changeset_approval_required",
+            "applied",
+            "reverified",
+            "committed",
+            "publication_approval_required",
+            "published",
+            "completed",
+            "rolled_back",
+            "failed"
+          ],
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        },
+        "updated_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "verification_receipt_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "task_id",
+        "grant_id",
+        "stage",
+        "revision",
+        "budget",
+        "repository_evidence_id",
+        "architecture_proposal_id",
+        "candidate_id",
+        "checkpoint_ids",
+        "verification_receipt_ids",
+        "dependency_receipt_ids",
+        "design_receipt_ids",
+        "apply_receipt_ids",
+        "rollback_receipt_ids",
+        "git_receipt_ids",
+        "publication_receipt_ids",
+        "pending_changeset_id",
+        "pending_publication_id",
+        "last_event_sha256",
+        "updated_at",
+        "runtime_diagnostic_receipt_ids",
+        "database_receipt_ids",
+        "database_postapply_receipt_ids",
+        "integration_environment_receipt_ids",
+        "integration_environment_postapply_receipt_ids",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.engineering-loop-state/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/EngineeringLoopState"
+    },
+    "schema_id": {
+      "const": "fam.core.engineering-loop-state/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Persistent bounded master engineering lifecycle",
+  "type": "object"
+}

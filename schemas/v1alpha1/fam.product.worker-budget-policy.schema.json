@@ -1,0 +1,82 @@
+{
+  "$defs": {
+    "WorkerBudgetPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.product.worker-budget/v1alpha1"
+        },
+        "policy_id": {
+          "type": "string"
+        },
+        "shares": {
+          "items": {
+            "$ref": "#/$defs/WorkerBudgetShare"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "policy_id",
+        "shares",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "WorkerBudgetShare": {
+      "additionalProperties": false,
+      "properties": {
+        "cpu_fraction": {
+          "type": "number"
+        },
+        "memory_fraction": {
+          "type": "number"
+        },
+        "memory_high_fraction": {
+          "type": "number"
+        },
+        "tasks_max": {
+          "type": "integer"
+        },
+        "worker_kind": {
+          "enum": [
+            "model",
+            "verifier",
+            "connector",
+            "training"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "worker_kind",
+        "memory_fraction",
+        "memory_high_fraction",
+        "cpu_fraction",
+        "tasks_max"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.product.worker-budget-policy/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.product.worker-budget/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/WorkerBudgetPolicy"
+    },
+    "schema_id": {
+      "const": "fam.product.worker-budget-policy/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Production worker budget policy",
+  "type": "object"
+}

@@ -13,6 +13,7 @@
           "enum": [
             "user_request",
             "expiry",
+            "capacity",
             "scope_revoked",
             "source_removed"
           ],

@@ -8,9 +8,12 @@ from datetime import datetime
 from fam_os.core.ports.inference import LoadedModel
 from fam_os.scheduler.residency_contracts import (
     ExpertResidencyCatalog,
+    ExpertResidencyIdentity,
     ExpertResidencyState,
     ResidencyLease,
     ResidencyTransitionReason,
+    cold_record,
+    initial_cold_residency_catalog,
 )
 from fam_os.scheduler.residency_ports import (
     ExpertResidencyRepository,
@@ -19,9 +22,78 @@ from fam_os.scheduler.residency_ports import (
 )
 
 
+def initial_observed_residency_catalog(
+    catalog_id: str,
+    identities: tuple[ExpertResidencyIdentity, ...],
+    loaded_models: tuple[LoadedModel, ...],
+    observed_at: datetime,
+) -> ExpertResidencyCatalog:
+    """Build the first durable state from one authoritative provider snapshot."""
+
+    _require_time(observed_at)
+    loaded = _loaded_by_artifact(loaded_models)
+    initial = initial_cold_residency_catalog(catalog_id, identities, observed_at)
+    records = tuple(
+        record
+        if loaded.get(record.identity.runtime_artifact_id) is None
+        else replace(
+            record,
+            state=ExpertResidencyState.WARM,
+            resident_bytes=loaded[record.identity.runtime_artifact_id].resident_bytes,
+            accelerator_bytes=(
+                loaded[record.identity.runtime_artifact_id].accelerator_bytes
+            ),
+            context_tokens=loaded[record.identity.runtime_artifact_id].context_tokens,
+            transition_reason=ResidencyTransitionReason.PROVIDER_LOADED,
+        )
+        for record in initial.records
+    )
+    return replace(initial, records=records)
+
+
 @dataclass(frozen=True, slots=True)
 class ExpertResidencyService:
     repository: ExpertResidencyRepository
+
+    def synchronize(
+        self,
+        identities: tuple[ExpertResidencyIdentity, ...],
+        observed_at: datetime,
+        expected_revision: int,
+    ) -> ExpertResidencyCatalog:
+        """Add current identities and retire only safely cold stale identities."""
+
+        _require_time(observed_at)
+        if not identities:
+            raise ResidencyTransitionError("residency identities cannot be empty")
+        desired = {item.expert_id: item for item in identities}
+        if len(desired) != len(identities):
+            raise ResidencyTransitionError("residency expert identities must be unique")
+        if len({item.runtime_artifact_id for item in identities}) != len(identities):
+            raise ResidencyTransitionError("residency runtime identities must be unique")
+        current = self._current(expected_revision)
+        existing = {item.identity.expert_id: item for item in current.records}
+        records = []
+        for expert_id, identity in sorted(desired.items()):
+            record = existing.get(expert_id)
+            if record is None:
+                records.append(cold_record(identity, observed_at))
+            elif record.identity == identity:
+                records.append(record)
+            elif record.state is ExpertResidencyState.COLD:
+                records.append(cold_record(identity, observed_at))
+            else:
+                raise ResidencyTransitionError(
+                    "loaded expert identity cannot change before confirmed eviction"
+                )
+        records.extend(
+            record for expert_id, record in sorted(existing.items())
+            if expert_id not in desired and record.state is not ExpertResidencyState.COLD
+        )
+        ordered = tuple(sorted(records, key=lambda item: item.identity.expert_id))
+        if ordered == current.records:
+            return current
+        return self._store(current, ordered, observed_at)
 
     def reconcile(
         self,
@@ -88,6 +160,30 @@ class ExpertResidencyService:
         if records == current.records:
             return current
         return self._store(current, records, now)
+
+    def recover_process_leases(
+        self, recovered_at: datetime, expected_revision: int,
+    ) -> ExpertResidencyCatalog:
+        """Release leases whose in-process owners cannot survive a restart."""
+
+        _require_time(recovered_at)
+        current = self._current(expected_revision)
+        records = tuple(
+            _transition(
+                record,
+                ExpertResidencyState.WARM,
+                recovered_at,
+                ResidencyTransitionReason.PROCESS_LEASES_RECOVERED,
+                active_leases=(),
+                eviction_id=None,
+            )
+            if record.state is ExpertResidencyState.ACTIVE
+            else record
+            for record in current.records
+        )
+        if records == current.records:
+            return current
+        return self._store(current, records, recovered_at)
 
     def begin_eviction(
         self, expert_id: str, eviction_id: str, started_at: datetime,

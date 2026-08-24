@@ -24,6 +24,7 @@ class SupervisorCapability(StrEnum):
     EMIT_IMMUTABLE_AUDIT_EVENT = "emit_immutable_audit_event"
     RECOVER_FAILED_SERVICE = "recover_failed_service"
     SAFE_TERMINATE_OWNED_SERVICE = "safe_terminate_owned_service"
+    ENFORCE_ALLOWLISTED_NETWORK = "enforce_allowlisted_network"
 
 
 class SupervisorNonGoal(StrEnum):
@@ -85,7 +86,7 @@ def canonical_supervisor_boundary() -> SupervisorBoundary:
         SupervisorCapability.RECOVER_FAILED_SERVICE,
         SupervisorCapability.SAFE_TERMINATE_OWNED_SERVICE,
     )
-    planned = ()
+    planned = (SupervisorCapability.ENFORCE_ALLOWLISTED_NETWORK,)
     return SupervisorBoundary(
         "fam-supervisor.v1",
         SupervisorTrustScope.USER_SESSION,

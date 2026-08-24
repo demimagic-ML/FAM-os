@@ -1,0 +1,92 @@
+{
+  "$defs": {
+    "EngineeringPublicationReceipt": {
+      "additionalProperties": false,
+      "properties": {
+        "checkpoint_decision_id": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "external_reference": {
+          "type": "string"
+        },
+        "observed_remote_revision": {
+          "type": "string"
+        },
+        "publication_proposal_id": {
+          "type": "string"
+        },
+        "published_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "result_kind": {
+          "enum": [
+            "changeset_proposal",
+            "verified_changeset_receipt",
+            "publication_proposal",
+            "publication_receipt",
+            "capability_unavailable",
+            "engineering_execution"
+          ],
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        },
+        "verifier_run_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "receipt_id",
+        "task_id",
+        "publication_proposal_id",
+        "checkpoint_decision_id",
+        "published_at",
+        "external_reference",
+        "observed_remote_revision",
+        "evidence_ids",
+        "verifier_run_ids",
+        "result_kind",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.publication-receipt/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/EngineeringPublicationReceipt"
+    },
+    "schema_id": {
+      "const": "fam.core.publication-receipt/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Postcondition-verified publication receipt",
+  "type": "object"
+}

@@ -1,0 +1,128 @@
+{
+  "$defs": {
+    "EngineeringToolReceipt": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_digests": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "candidate_id": {
+          "type": "string"
+        },
+        "command_sha256": {
+          "type": "string"
+        },
+        "completed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "diagnostic": {
+          "type": "string"
+        },
+        "exit_code": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "isolation_evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "network_destinations": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "recipe_id": {
+          "type": "string"
+        },
+        "recipe_payload_sha256": {
+          "type": "string"
+        },
+        "sandbox_profile_id": {
+          "type": "string"
+        },
+        "started_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "passed",
+            "failed",
+            "unavailable"
+          ],
+          "type": "string"
+        },
+        "stderr_sha256": {
+          "type": "string"
+        },
+        "stdout_sha256": {
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "receipt_id",
+        "task_id",
+        "candidate_id",
+        "recipe_id",
+        "recipe_payload_sha256",
+        "sandbox_profile_id",
+        "command_sha256",
+        "started_at",
+        "completed_at",
+        "exit_code",
+        "stdout_sha256",
+        "stderr_sha256",
+        "artifact_digests",
+        "network_destinations",
+        "isolation_evidence_ids",
+        "status",
+        "diagnostic",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.engineering-tool-receipt/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/EngineeringToolReceipt"
+    },
+    "schema_id": {
+      "const": "fam.core.engineering-tool-receipt/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Complete sandboxed tool execution receipt",
+  "type": "object"
+}

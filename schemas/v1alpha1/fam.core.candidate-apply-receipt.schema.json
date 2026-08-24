@@ -1,0 +1,86 @@
+{
+  "$defs": {
+    "CandidateApplyReceipt": {
+      "additionalProperties": false,
+      "properties": {
+        "applied_paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "candidate_id": {
+          "type": "string"
+        },
+        "completed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "journal_sha256": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "preserved_owner_paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "rollback_complete": {
+          "type": "boolean"
+        },
+        "status": {
+          "enum": [
+            "applied",
+            "rolled_back",
+            "conflict",
+            "recovery_required"
+          ],
+          "type": "string"
+        },
+        "transaction_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "transaction_id",
+        "candidate_id",
+        "completed_at",
+        "status",
+        "applied_paths",
+        "preserved_owner_paths",
+        "journal_sha256",
+        "rollback_complete",
+        "message",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.candidate-apply-receipt/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/CandidateApplyReceipt"
+    },
+    "schema_id": {
+      "const": "fam.core.candidate-apply-receipt/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Journaled candidate reconciliation receipt",
+  "type": "object"
+}

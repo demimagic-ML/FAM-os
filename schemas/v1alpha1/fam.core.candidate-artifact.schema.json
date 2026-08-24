@@ -1,0 +1,95 @@
+{
+  "$defs": {
+    "CandidateArtifact": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "type": "string"
+        },
+        "content_kind": {
+          "enum": [
+            "text",
+            "binary"
+          ],
+          "type": "string"
+        },
+        "content_sha256": {
+          "type": "string"
+        },
+        "media_type": {
+          "type": "string"
+        },
+        "metadata": {
+          "items": {
+            "$ref": "#/$defs/CandidateArtifactMetadata"
+          },
+          "type": "array"
+        },
+        "provenance": {
+          "type": "string"
+        },
+        "size_bytes": {
+          "type": "integer"
+        },
+        "source_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "artifact_id",
+        "content_kind",
+        "media_type",
+        "content_sha256",
+        "size_bytes",
+        "provenance",
+        "source_name",
+        "metadata"
+      ],
+      "type": "object"
+    },
+    "CandidateArtifactMetadata": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.candidate-artifact/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/CandidateArtifact"
+    },
+    "schema_id": {
+      "const": "fam.core.candidate-artifact/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Digest-bound candidate workspace artifact",
+  "type": "object"
+}

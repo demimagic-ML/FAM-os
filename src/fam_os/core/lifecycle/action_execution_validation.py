@@ -23,7 +23,9 @@ class AuthorizedActionExecution:
     grant: PermissionGrant
 
 
-def authorize_action_execution(lifecycle, provider, permissions, command, now):
+def authorize_action_execution(
+    lifecycle, provider, permissions, command, now, recovery_authority=None,
+):
     snapshot = lifecycle.repository.get(command.plan_instance_id)
     rejection = snapshot_rejection(snapshot, command.expected_revision)
     if rejection is not None:
@@ -50,7 +52,7 @@ def authorize_action_execution(lifecycle, provider, permissions, command, now):
         item.condition_id for item in command.proposal.postconditions
     ):
         return None, ActionExecutionRejection.INVALID_EVIDENCE
-    if not _confirmation_matches(snapshot, command, now):
+    if not _confirmation_matches(snapshot, command, now, recovery_authority):
         return None, ActionExecutionRejection.INVALID_EVIDENCE
     return AuthorizedActionExecution(snapshot, entry, grant), None
 
@@ -86,7 +88,9 @@ def _proposal_matches(proposal: ActionProposal, entry) -> bool:
     )
 
 
-def _confirmation_matches(snapshot, command: ActionExecutionCommand, now) -> bool:
+def _confirmation_matches(
+    snapshot, command: ActionExecutionCommand, now, recovery_authority=None,
+) -> bool:
     proposal = command.proposal
     confirmation = command.confirmation
     if not isinstance(confirmation, ActionConfirmation):
@@ -107,8 +111,21 @@ def _confirmation_matches(snapshot, command: ActionExecutionCommand, now) -> boo
         snapshot, PlanEvidenceKind.ACTION_CONFIRMATION, confirmation.confirmation_id,
         proposal.request.capability_id, proposal.request.permission_grant_id,
     )
-    if proposal_event is None or confirmation_event is None:
+    if proposal_event is None:
         return False
+    if confirmation_event is None:
+        if (
+            recovery_authority is None
+            or not confirmation.confirmation_id.startswith("confirmation-recovery-")
+        ):
+            return False
+        try:
+            approved = recovery_authority.approved_confirmation(
+                proposal.proposal_id, confirmation.confirmation_id,
+            )
+        except Exception:
+            return False
+        return approved and proposal_event.occurred_at <= confirmation.decided_at <= now
     return (
         proposal_event.occurred_at <= confirmation.decided_at
         <= confirmation_event.occurred_at <= now

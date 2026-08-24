@@ -6,12 +6,20 @@ import time
 from collections.abc import Callable
 
 from fam_os.adapters.ollama.errors import OllamaTransportError
-from fam_os.adapters.ollama.payloads import build_chat_payload, build_embedding_payload, build_unload_payload
+from fam_os.adapters.ollama.payloads import (
+    build_chat_payload,
+    build_embedding_payload,
+    build_prewarm_payload,
+    build_unload_payload,
+)
 from fam_os.adapters.ollama.responses import parse_chat_response, parse_embedding_response, parse_loaded_models
 from fam_os.adapters.ollama.settings import OllamaSettings
 from fam_os.adapters.ollama.transport import JsonTransport, UrllibJsonTransport
 from fam_os.core.ports.inference import InferenceRequest, InferenceResponse, LoadedModel
 from fam_os.core.ports.embedding import EmbeddingRequest, EmbeddingResponse
+
+
+_EMBEDDING_RESIDENCY_PROBE = "FAM_OS embedding residency probe"
 
 
 class OllamaRuntime:
@@ -56,6 +64,25 @@ class OllamaRuntime:
         )
         self._wait_until_unloaded(model_ref)
 
+    def prewarm(self, model_ref: str, keep_alive: str = "10m") -> None:
+        """Load weights without supplying prompt content, then prove residency."""
+        self._transport.request(
+            "POST",
+            self._settings.endpoint("/api/generate"),
+            build_prewarm_payload(model_ref, keep_alive),
+            self._settings.timeout_seconds,
+        )
+        self._wait_until_loaded(model_ref)
+
+    def prewarm_embedding(
+        self, model_ref: str, keep_alive: str = "10m",
+    ) -> None:
+        """Load an embedding-only model through /api/embed and prove residency."""
+        self.embed(EmbeddingRequest(
+            model_ref, (_EMBEDDING_RESIDENCY_PROBE,), keep_alive,
+        ))
+        self._wait_until_loaded(model_ref)
+
     def loaded_models(self) -> tuple[LoadedModel, ...]:
         payload = self._transport.request(
             "GET",
@@ -71,5 +98,14 @@ class OllamaRuntime:
             if self._clock() >= deadline:
                 raise OllamaTransportError(
                     f"model remained loaded after unload request: {model_ref}"
+                )
+            self._sleep(self._settings.unload_poll_seconds)
+
+    def _wait_until_loaded(self, model_ref: str) -> None:
+        deadline = self._clock() + self._settings.unload_timeout_seconds
+        while not any(model.model_ref == model_ref for model in self.loaded_models()):
+            if self._clock() >= deadline:
+                raise OllamaTransportError(
+                    f"model did not become resident after prewarm: {model_ref}"
                 )
             self._sleep(self._settings.unload_poll_seconds)

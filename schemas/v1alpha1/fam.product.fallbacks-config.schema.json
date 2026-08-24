@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "fam.product.fallbacks-config.schema.json",
+  "title": "FAM product desktop fallback configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "accessibility", "screen_input"],
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+    },
+    "accessibility_target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["connector_id", "instance_id", "process_id"],
+      "properties": {
+        "connector_id": {"$ref": "#/$defs/identifier"},
+        "instance_id": {"$ref": "#/$defs/identifier"},
+        "process_id": {"type": "integer", "minimum": 1}
+      }
+    },
+    "screen_target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "connector_id", "instance_id", "application_id", "process_id", "window_id"
+      ],
+      "properties": {
+        "connector_id": {"$ref": "#/$defs/identifier"},
+        "instance_id": {"$ref": "#/$defs/identifier"},
+        "application_id": {"$ref": "#/$defs/identifier"},
+        "process_id": {"type": "integer", "minimum": 1},
+        "window_id": {"type": "string", "minLength": 1, "maxLength": 256}
+      }
+    }
+  },
+  "properties": {
+    "contract_version": {"const": "fam.product.fallbacks/v1alpha1"},
+    "accessibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "enabled", "privacy_acknowledged", "include_text", "actions_enabled",
+        "allowed_actions", "targets"
+      ],
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "privacy_acknowledged": {"type": "boolean"},
+        "include_text": {"type": "boolean"},
+        "actions_enabled": {"type": "boolean"},
+        "allowed_actions": {
+          "type": "array",
+          "maxItems": 32,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1, "maxLength": 128}
+        },
+        "targets": {
+          "type": "array",
+          "maxItems": 32,
+          "items": {"$ref": "#/$defs/accessibility_target"}
+        }
+      }
+    },
+    "screen_input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "enabled", "privacy_acknowledged", "actions_enabled", "allowed_kinds",
+        "allowed_keys", "targets"
+      ],
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "privacy_acknowledged": {"type": "boolean"},
+        "actions_enabled": {"type": "boolean"},
+        "allowed_kinds": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 2,
+          "uniqueItems": true,
+          "items": {"enum": ["pointer_click", "key_chord"]}
+        },
+        "allowed_keys": {
+          "type": "array",
+          "maxItems": 128,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1, "maxLength": 64}
+        },
+        "targets": {
+          "type": "array",
+          "maxItems": 32,
+          "items": {"$ref": "#/$defs/screen_target"}
+        }
+      }
+    }
+  }
+}

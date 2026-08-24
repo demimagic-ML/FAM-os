@@ -1,0 +1,129 @@
+{
+  "contract_version": "fam.product.model-catalog/v1alpha1",
+  "models": [
+    {
+      "intents": ["conversation", "grounded_question", "read_only_task", "administration", "math", "retrieval"],
+      "max_context_tokens": 32768,
+      "model_ref": "qwen3:1.7b",
+      "tier": "economical",
+      "verifier_ids": ["verifier.text.exact-v1", "retrieval.citations.v1", "math.sympy-equivalence.v1"],
+      "expert_scopes": [{
+        "expert_id": "expert.language.qwen3-1.7b",
+        "package_id": "fam.expert.language.qwen3-1.7b",
+        "package_version": "1.0.0",
+        "intents": ["conversation", "grounded_question", "read_only_task", "administration", "math", "retrieval"],
+        "verifier_ids": ["verifier.text.exact-v1", "retrieval.citations.v1", "math.sympy-equivalence.v1"]
+      }]
+    },
+    {
+      "intents": ["conversation", "grounded_question", "read_only_task", "math", "retrieval"],
+      "max_context_tokens": 131072,
+      "model_ref": "llama3.2:3b",
+      "tier": "economical",
+      "verifier_ids": ["verifier.text.exact-v1", "retrieval.citations.v1", "math.sympy-equivalence.v1"],
+      "expert_scopes": [
+        {
+          "expert_id": "expert.language.llama3.2-3b",
+          "package_id": "fam.expert.language.llama3.2-3b",
+          "package_version": "1.0.0",
+          "intents": ["conversation", "grounded_question", "read_only_task"],
+          "verifier_ids": ["verifier.text.exact-v1"]
+        },
+        {
+          "expert_id": "expert.math.llama3.2-reasoning",
+          "package_id": "fam.expert.math.llama3.2-reasoning",
+          "package_version": "1.0.0",
+          "intents": ["math"],
+          "verifier_ids": ["math.sympy-equivalence.v1"]
+        },
+        {
+          "expert_id": "expert.retrieval.llama3.2-synthesis",
+          "package_id": "fam.expert.retrieval.llama3.2-synthesis",
+          "package_version": "1.0.0",
+          "intents": ["retrieval"],
+          "verifier_ids": ["retrieval.citations.v1"]
+        }
+      ]
+    },
+    {
+      "intents": ["code", "application_mutation", "administration"],
+      "max_context_tokens": 32768,
+      "model_ref": "qwen2.5-coder:7b",
+      "tier": "specialist",
+      "verifier_ids": ["verifier.text.exact-v1", "python.deterministic-tests.v1"],
+      "expert_scopes": [{
+        "expert_id": "expert.code.qwen2.5-coder-7b",
+        "package_id": "fam.expert.code.qwen2.5-coder-7b",
+        "package_version": "1.0.0",
+        "intents": ["code", "application_mutation", "administration"],
+        "advisory_authorities": ["observe", "propose", "modify", "execute", "network", "publish", "raw_shell", "host_admin", "secret_use", "global_install", "production_mutate", "policy_change", "protected_ref_write", "self_update"],
+        "verifier_ids": ["verifier.text.exact-v1", "python.deterministic-tests.v1"]
+      }]
+    },
+    {
+      "intents": ["retrieval"],
+      "max_context_tokens": 8192,
+      "model_ref": "nomic-embed-text:latest",
+      "tier": "embedding",
+      "expert_scopes": [{
+        "expert_id": "expert.retrieval.nomic-embed-text",
+        "package_id": "fam.expert.retrieval.nomic-embed-text",
+        "package_version": "1.0.0",
+        "intents": ["retrieval"]
+      }]
+    },
+    {
+      "intents": ["media"],
+      "max_context_tokens": 32768,
+      "model_ref": "qwen3-vl:8b",
+      "tier": "specialist",
+      "verifier_ids": ["media.artifact-text.v1"],
+      "expert_scopes": [
+        {
+          "expert_id": "expert.vision.ocr-qwen3-vl-8b",
+          "package_id": "fam.expert.vision.ocr-qwen3-vl-8b",
+          "package_version": "1.0.0",
+          "intents": ["media"],
+          "verifier_ids": ["media.artifact-text.v1"]
+        },
+        {
+          "expert_id": "expert.vision.qwen3-vl-8b",
+          "package_id": "fam.expert.vision.qwen3-vl-8b",
+          "package_version": "1.0.0",
+          "intents": ["media"],
+          "verifier_ids": ["media.artifact-text.v1"]
+        }
+      ]
+    },
+    {
+      "intents": ["conversation", "grounded_question", "read_only_task", "code", "application_mutation", "math", "retrieval", "administration"],
+      "max_context_tokens": 65536,
+      "model_ref": "gemma4:26b",
+      "tier": "escalation",
+      "verifier_ids": ["verifier.text.exact-v1", "python.deterministic-tests.v1", "retrieval.citations.v1", "math.sympy-equivalence.v1"],
+      "expert_scopes": [{
+        "expert_id": "expert.code.gemma4-26b",
+        "package_id": "fam.expert.code.gemma4-26b",
+        "package_version": "1.0.2",
+        "intents": ["conversation", "grounded_question", "read_only_task", "code", "application_mutation", "math", "retrieval", "administration"],
+        "advisory_authorities": ["observe", "propose", "modify", "execute", "network", "publish", "raw_shell", "host_admin", "secret_use", "global_install", "production_mutate", "policy_change", "protected_ref_write", "self_update"],
+        "verifier_ids": ["verifier.text.exact-v1", "python.deterministic-tests.v1", "retrieval.citations.v1", "math.sympy-equivalence.v1"]
+      }]
+    },
+    {
+      "intents": ["conversation", "grounded_question", "read_only_task", "code", "application_mutation", "math", "retrieval", "administration"],
+      "max_context_tokens": 65536,
+      "model_ref": "laguna-xs.2:q4_K_M",
+      "tier": "escalation",
+      "verifier_ids": ["verifier.text.exact-v1", "python.deterministic-tests.v1", "retrieval.citations.v1", "math.sympy-equivalence.v1"],
+      "expert_scopes": [{
+        "expert_id": "expert.code.laguna-xs2-33b",
+        "package_id": "fam.expert.code.laguna-xs2-33b",
+        "package_version": "1.0.2",
+        "intents": ["conversation", "grounded_question", "read_only_task", "code", "application_mutation", "math", "retrieval", "administration"],
+        "advisory_authorities": ["observe", "propose", "modify", "execute", "network", "publish", "raw_shell", "host_admin", "secret_use", "global_install", "production_mutate", "policy_change", "protected_ref_write", "self_update"],
+        "verifier_ids": ["verifier.text.exact-v1", "python.deterministic-tests.v1", "retrieval.citations.v1", "math.sympy-equivalence.v1"]
+      }]
+    }
+  ]
+}

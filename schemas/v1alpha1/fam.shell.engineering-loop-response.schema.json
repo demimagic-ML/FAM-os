@@ -1,0 +1,3319 @@
+{
+  "$defs": {
+    "CandidateApplyReceipt": {
+      "additionalProperties": false,
+      "properties": {
+        "applied_paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "candidate_id": {
+          "type": "string"
+        },
+        "completed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "journal_sha256": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "preserved_owner_paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "rollback_complete": {
+          "type": "boolean"
+        },
+        "status": {
+          "enum": [
+            "applied",
+            "rolled_back",
+            "conflict",
+            "recovery_required"
+          ],
+          "type": "string"
+        },
+        "transaction_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "transaction_id",
+        "candidate_id",
+        "completed_at",
+        "status",
+        "applied_paths",
+        "preserved_owner_paths",
+        "journal_sha256",
+        "rollback_complete",
+        "message",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "CandidateArtifact": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "type": "string"
+        },
+        "content_kind": {
+          "enum": [
+            "text",
+            "binary"
+          ],
+          "type": "string"
+        },
+        "content_sha256": {
+          "type": "string"
+        },
+        "media_type": {
+          "type": "string"
+        },
+        "metadata": {
+          "items": {
+            "$ref": "#/$defs/CandidateArtifactMetadata"
+          },
+          "type": "array"
+        },
+        "provenance": {
+          "type": "string"
+        },
+        "size_bytes": {
+          "type": "integer"
+        },
+        "source_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "artifact_id",
+        "content_kind",
+        "media_type",
+        "content_sha256",
+        "size_bytes",
+        "provenance",
+        "source_name",
+        "metadata"
+      ],
+      "type": "object"
+    },
+    "CandidateArtifactMetadata": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "type": "object"
+    },
+    "CandidateChangesetRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "artifacts": {
+          "items": {
+            "$ref": "#/$defs/CandidateArtifact"
+          },
+          "type": "array"
+        },
+        "candidate_id": {
+          "type": "string"
+        },
+        "changeset_id": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "created_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "decision": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CheckpointDecision"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "definition_id": {
+          "type": "string"
+        },
+        "effect_authorization_decision_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "failure_code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "operations": {
+          "items": {
+            "$ref": "#/$defs/CandidateOperation"
+          },
+          "type": "array"
+        },
+        "preview": {
+          "$ref": "#/$defs/CandidateTransactionPreview"
+        },
+        "receipt": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CandidateApplyReceipt"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "revision": {
+          "type": "integer"
+        },
+        "rollback_authorization_decision_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "rollback_decision": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CheckpointDecision"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "rollback_receipt": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CandidateApplyReceipt"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "status": {
+          "enum": [
+            "previewed",
+            "apply_intent",
+            "applied",
+            "rolled_back",
+            "recovery_required",
+            "rollback_intent",
+            "explicitly_rolled_back",
+            "rollback_recovery_required"
+          ],
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        },
+        "updated_at": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "changeset_id",
+        "definition_id",
+        "task_id",
+        "candidate_id",
+        "preview",
+        "operations",
+        "artifacts",
+        "effect_authorization_decision_ids",
+        "status",
+        "revision",
+        "created_at",
+        "updated_at",
+        "decision",
+        "receipt",
+        "failure_code",
+        "rollback_decision",
+        "rollback_authorization_decision_ids",
+        "rollback_receipt",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "CandidateEditRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "after_sha256": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "artifact": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CandidateArtifact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "authorization_decision_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "candidate_id": {
+          "type": "string"
+        },
+        "changed_bytes": {
+          "type": "integer"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "definition_id": {
+          "type": "string"
+        },
+        "edit_id": {
+          "type": "string"
+        },
+        "failure_code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "operation": {
+          "$ref": "#/$defs/CandidateOperation"
+        },
+        "principal_id": {
+          "type": "string"
+        },
+        "recorded_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "revision": {
+          "type": "integer"
+        },
+        "session_id": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "intent_recorded",
+            "applied",
+            "failed",
+            "recovery_required"
+          ],
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        },
+        "updated_at": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "edit_id",
+        "definition_id",
+        "task_id",
+        "candidate_id",
+        "session_id",
+        "principal_id",
+        "operation",
+        "artifact",
+        "authorization_decision_ids",
+        "changed_bytes",
+        "status",
+        "revision",
+        "recorded_at",
+        "updated_at",
+        "after_sha256",
+        "failure_code",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "CandidateOperation": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "executable": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "expected_before_sha256": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "kind": {
+          "enum": [
+            "create_directory",
+            "create_file",
+            "patch_file",
+            "move",
+            "delete",
+            "set_executable",
+            "restore"
+          ],
+          "type": "string"
+        },
+        "operation_id": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "source_path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "operation_id",
+        "kind",
+        "path",
+        "expected_before_sha256",
+        "artifact_id",
+        "source_path",
+        "executable"
+      ],
+      "type": "object"
+    },
+    "CandidatePreviewItem": {
+      "additionalProperties": false,
+      "properties": {
+        "after_sha256": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "before_sha256": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "media_type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "operation_kind": {
+          "enum": [
+            "create_directory",
+            "create_file",
+            "patch_file",
+            "move",
+            "delete",
+            "set_executable",
+            "restore"
+          ],
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "preview": {
+          "type": "string"
+        },
+        "risk_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "size_delta_bytes": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "path",
+        "operation_kind",
+        "before_sha256",
+        "after_sha256",
+        "media_type",
+        "size_delta_bytes",
+        "preview",
+        "risk_codes"
+      ],
+      "type": "object"
+    },
+    "CandidateTransactionPreview": {
+      "additionalProperties": false,
+      "properties": {
+        "baseline_tree_sha256": {
+          "type": "string"
+        },
+        "candidate_id": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "generated_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "items": {
+          "items": {
+            "$ref": "#/$defs/CandidatePreviewItem"
+          },
+          "type": "array"
+        },
+        "required_confirmation": {
+          "type": "boolean"
+        },
+        "rollback_summary": {
+          "type": "string"
+        },
+        "transaction_id": {
+          "type": "string"
+        },
+        "verification_evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "verification_summary": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "transaction_id",
+        "candidate_id",
+        "baseline_tree_sha256",
+        "generated_at",
+        "items",
+        "verification_evidence_ids",
+        "verification_summary",
+        "rollback_summary",
+        "required_confirmation",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "CandidateVerificationRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "authorization_decision_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "candidate_id": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "definition_id": {
+          "type": "string"
+        },
+        "evidence": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EngineeringEvidence"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "failure_code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "principal_id": {
+          "type": "string"
+        },
+        "profile": {
+          "$ref": "#/$defs/EngineeringSandboxProfile"
+        },
+        "receipt": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EngineeringToolReceipt"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "recipe_id": {
+          "type": "string"
+        },
+        "recipe_version": {
+          "type": "string"
+        },
+        "recorded_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "revision": {
+          "type": "integer"
+        },
+        "session_id": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "intent_recorded",
+            "completed",
+            "recovery_required"
+          ],
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        },
+        "toolchain": {
+          "type": "string"
+        },
+        "updated_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "verification_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "verification_id",
+        "definition_id",
+        "task_id",
+        "candidate_id",
+        "session_id",
+        "principal_id",
+        "toolchain",
+        "recipe_id",
+        "recipe_version",
+        "profile",
+        "authorization_decision_ids",
+        "status",
+        "revision",
+        "recorded_at",
+        "updated_at",
+        "receipt",
+        "evidence",
+        "passed",
+        "failure_code",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "CheckpointDecision": {
+      "additionalProperties": false,
+      "properties": {
+        "checkpoint_id": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "decided_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "decided_by": {
+          "type": "string"
+        },
+        "decision_id": {
+          "type": "string"
+        },
+        "disposition": {
+          "enum": [
+            "approved",
+            "denied",
+            "expired"
+          ],
+          "type": "string"
+        },
+        "proposal_id": {
+          "type": "string"
+        },
+        "proposal_sha256": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "decision_id",
+        "task_id",
+        "proposal_id",
+        "checkpoint_id",
+        "decided_by",
+        "decided_at",
+        "disposition",
+        "proposal_sha256",
+        "reason",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "DatabaseBackupReceipt": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_sha256": {
+          "type": "string"
+        },
+        "backup_id": {
+          "type": "string"
+        },
+        "consistency_mode": {
+          "enum": [
+            "transaction_snapshot",
+            "engine_native_online",
+            "quiesced_offline"
+          ],
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "created_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "encrypted": {
+          "type": "boolean"
+        },
+        "plan_id": {
+          "type": "string"
+        },
+        "size_bytes": {
+          "type": "integer"
+        },
+        "source_data_sha256": {
+          "type": "string"
+        },
+        "source_schema_sha256": {
+          "type": "string"
+        },
+        "target_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "backup_id",
+        "plan_id",
+        "target_id",
+        "consistency_mode",
+        "artifact_sha256",
+        "size_bytes",
+        "source_schema_sha256",
+        "source_data_sha256",
+        "encrypted",
+        "created_at",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "DatabaseChangePlan": {
+      "additionalProperties": false,
+      "properties": {
+        "approved_changeset_id": {
+          "type": "string"
+        },
+        "backup_required": {
+          "type": "boolean"
+        },
+        "baseline_data_sha256": {
+          "type": "string"
+        },
+        "baseline_schema_sha256": {
+          "type": "string"
+        },
+        "candidate_id": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "created_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "execution_resource_impact": {
+          "$ref": "#/$defs/EngineeringResourceImpact"
+        },
+        "fixture_set": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DatabaseFixtureSet"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "migration_steps": {
+          "items": {
+            "$ref": "#/$defs/DatabaseMigrationStep"
+          },
+          "type": "array"
+        },
+        "plan_id": {
+          "type": "string"
+        },
+        "postcondition_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "required_authorities": {
+          "items": {
+            "enum": [
+              "observe",
+              "propose",
+              "modify",
+              "execute",
+              "network",
+              "publish",
+              "raw_shell",
+              "host_admin",
+              "secret_use",
+              "global_install",
+              "production_mutate",
+              "policy_change",
+              "protected_ref_write",
+              "self_update"
+            ],
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "rollback_required": {
+          "type": "boolean"
+        },
+        "target": {
+          "$ref": "#/$defs/DatabaseTarget"
+        },
+        "task_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "plan_id",
+        "task_id",
+        "candidate_id",
+        "target",
+        "baseline_schema_sha256",
+        "baseline_data_sha256",
+        "migration_steps",
+        "fixture_set",
+        "backup_required",
+        "rollback_required",
+        "postcondition_ids",
+        "required_authorities",
+        "execution_resource_impact",
+        "approved_changeset_id",
+        "created_at",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "DatabaseFixtureSet": {
+      "additionalProperties": false,
+      "properties": {
+        "contains_secret_content": {
+          "type": "boolean"
+        },
+        "fixture_id": {
+          "type": "string"
+        },
+        "manifest_path": {
+          "type": "string"
+        },
+        "manifest_sha256": {
+          "type": "string"
+        },
+        "row_count": {
+          "type": "integer"
+        },
+        "synthetic_only": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "fixture_id",
+        "manifest_path",
+        "manifest_sha256",
+        "row_count",
+        "synthetic_only",
+        "contains_secret_content"
+      ],
+      "type": "object"
+    },
+    "DatabaseMigrationStep": {
+      "additionalProperties": false,
+      "properties": {
+        "destructive": {
+          "type": "boolean"
+        },
+        "expected_schema_sha256": {
+          "type": "string"
+        },
+        "forward_path": {
+          "type": "string"
+        },
+        "forward_sha256": {
+          "type": "string"
+        },
+        "order": {
+          "type": "integer"
+        },
+        "rollback_path": {
+          "type": "string"
+        },
+        "rollback_sha256": {
+          "type": "string"
+        },
+        "step_id": {
+          "type": "string"
+        },
+        "transaction_safe": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "step_id",
+        "order",
+        "forward_path",
+        "forward_sha256",
+        "rollback_path",
+        "rollback_sha256",
+        "destructive",
+        "transaction_safe",
+        "expected_schema_sha256"
+      ],
+      "type": "object"
+    },
+    "DatabasePostapplyReceipt": {
+      "additionalProperties": false,
+      "properties": {
+        "changeset_id": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "data_sha256": {
+          "type": "string"
+        },
+        "diagnostic": {
+          "type": "string"
+        },
+        "integrity_ok": {
+          "type": "boolean"
+        },
+        "matches_verified_state": {
+          "type": "boolean"
+        },
+        "observed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "plan_id": {
+          "type": "string"
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "schema_sha256": {
+          "type": "string"
+        },
+        "target_id": {
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        },
+        "verification_receipt_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "receipt_id",
+        "task_id",
+        "plan_id",
+        "target_id",
+        "changeset_id",
+        "verification_receipt_id",
+        "schema_sha256",
+        "data_sha256",
+        "integrity_ok",
+        "matches_verified_state",
+        "passed",
+        "observed_at",
+        "diagnostic",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "DatabaseTarget": {
+      "additionalProperties": false,
+      "properties": {
+        "connection_secret_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "database_name": {
+          "type": "string"
+        },
+        "engine": {
+          "enum": [
+            "sqlite",
+            "postgresql",
+            "mysql"
+          ],
+          "type": "string"
+        },
+        "environment": {
+          "enum": [
+            "candidate",
+            "integration",
+            "staging",
+            "production"
+          ],
+          "type": "string"
+        },
+        "exact_host_id": {
+          "type": "string"
+        },
+        "production": {
+          "type": "boolean"
+        },
+        "target_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "target_id",
+        "engine",
+        "environment",
+        "database_name",
+        "connection_secret_ref",
+        "exact_host_id",
+        "production",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "DatabaseVerificationReceipt": {
+      "additionalProperties": false,
+      "properties": {
+        "applied_step_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "backup_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "completed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "data_sha256": {
+          "type": "string"
+        },
+        "diagnostic": {
+          "type": "string"
+        },
+        "execution_permit_id": {
+          "type": "string"
+        },
+        "plan_id": {
+          "type": "string"
+        },
+        "postcondition_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "restore_test_id": {
+          "type": "string"
+        },
+        "rollback_receipt_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "schema_sha256": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "planned",
+            "applied",
+            "verified",
+            "rolled_back",
+            "failed",
+            "recovery_required"
+          ],
+          "type": "string"
+        },
+        "target_id": {
+          "type": "string"
+        },
+        "transaction_test_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "receipt_id",
+        "plan_id",
+        "target_id",
+        "execution_permit_id",
+        "backup_id",
+        "status",
+        "applied_step_ids",
+        "schema_sha256",
+        "data_sha256",
+        "transaction_test_ids",
+        "restore_test_id",
+        "postcondition_ids",
+        "rollback_receipt_id",
+        "completed_at",
+        "diagnostic",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "DocumentationGenerationRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "candidate_id": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "created_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "generator_recipe_id": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "diagram",
+            "api_reference",
+            "runbook",
+            "changelog",
+            "generated_code"
+          ],
+          "type": "string"
+        },
+        "output_path": {
+          "type": "string"
+        },
+        "ownership_path": {
+          "type": "string"
+        },
+        "regeneration_instruction_path": {
+          "type": "string"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "sources": {
+          "items": {
+            "$ref": "#/$defs/DocumentationSource"
+          },
+          "type": "array"
+        },
+        "task_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "task_id",
+        "candidate_id",
+        "kind",
+        "output_path",
+        "generator_recipe_id",
+        "ownership_path",
+        "regeneration_instruction_path",
+        "sources",
+        "created_at",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "DocumentationGovernanceBinding": {
+      "additionalProperties": false,
+      "properties": {
+        "binding_id": {
+          "type": "string"
+        },
+        "bound_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "candidate_id": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "governance_sources": {
+          "items": {
+            "$ref": "#/$defs/DocumentationSource"
+          },
+          "type": "array"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "binding_id",
+        "request_id",
+        "task_id",
+        "candidate_id",
+        "governance_sources",
+        "bound_at",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "DocumentationRequirementSelection": {
+      "additionalProperties": false,
+      "properties": {
+        "candidate_id": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "evaluated_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "intent_sha256": {
+          "type": "string"
+        },
+        "policy_id": {
+          "type": "string"
+        },
+        "required_kinds": {
+          "items": {
+            "enum": [
+              "diagram",
+              "api_reference",
+              "runbook",
+              "changelog",
+              "generated_code"
+            ],
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "selection_id": {
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "selection_id",
+        "task_id",
+        "candidate_id",
+        "policy_id",
+        "intent_sha256",
+        "required_kinds",
+        "evaluated_at",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "DocumentationSource": {
+      "additionalProperties": false,
+      "properties": {
+        "content_sha256": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "content_sha256"
+      ],
+      "type": "object"
+    },
+    "DocumentationStalenessReport": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "missing_source_paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "observed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "output_modified": {
+          "type": "boolean"
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "report_id": {
+          "type": "string"
+        },
+        "stale": {
+          "type": "boolean"
+        },
+        "stale_source_paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "task_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "report_id",
+        "receipt_id",
+        "task_id",
+        "observed_at",
+        "stale_source_paths",
+        "missing_source_paths",
+        "output_modified",
+        "stale",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "EngineeringEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_sha256": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "changed_paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "checkpoint_decision_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "evidence_id": {
+          "type": "string"
+        },
+        "outcome": {
+          "enum": [
+            "succeeded",
+            "failed",
+            "partial",
+            "cancelled"
+          ],
+          "type": "string"
+        },
+        "proposal_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "recorded_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "snapshot_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "task_id": {
+          "type": "string"
+        },
+        "tool_run_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "unresolved_risks": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "verifier_run_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "evidence_id",
+        "task_id",
+        "recorded_at",
+        "outcome",
+        "snapshot_ids",
+        "proposal_ids",
+        "checkpoint_decision_ids",
+        "tool_run_ids",
+        "verifier_run_ids",
+        "artifact_sha256",
+        "changed_paths",
+        "unresolved_risks",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "EngineeringIncidentEvidenceReceipt": {
+      "additionalProperties": false,
+      "properties": {
+        "conclusion_code": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "incident_id": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "preservation",
+            "diagnosis",
+            "remediation_proposal",
+            "remediation",
+            "recovery_observation",
+            "rollback",
+            "report",
+            "closure"
+          ],
+          "type": "string"
+        },
+        "payload_sha256": {
+          "type": "string"
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "recorded_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "source_evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "task_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "receipt_id",
+        "incident_id",
+        "task_id",
+        "kind",
+        "source_evidence_ids",
+        "conclusion_code",
+        "recorded_at",
+        "payload_sha256",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "EngineeringIncidentState": {
+      "additionalProperties": false,
+      "properties": {
+        "closure_receipt_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "detected_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "diagnosis_receipt_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "incident_id": {
+          "type": "string"
+        },
+        "last_event_sha256": {
+          "type": "string"
+        },
+        "post_incident_report_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "preservation_receipt_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "recovery_observation_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "remediation_changeset_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "remediation_receipt_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "revision": {
+          "type": "integer"
+        },
+        "rollback_receipt_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "stage": {
+          "enum": [
+            "detected",
+            "evidence_preserved",
+            "diagnosed",
+            "remediation_proposed",
+            "remediated",
+            "recovery_monitored",
+            "rolled_back",
+            "reported",
+            "closed"
+          ],
+          "type": "string"
+        },
+        "symptom_evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "task_id": {
+          "type": "string"
+        },
+        "updated_at": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "incident_id",
+        "task_id",
+        "stage",
+        "revision",
+        "detected_at",
+        "updated_at",
+        "symptom_evidence_ids",
+        "preservation_receipt_ids",
+        "diagnosis_receipt_ids",
+        "remediation_changeset_ids",
+        "remediation_receipt_ids",
+        "recovery_observation_ids",
+        "rollback_receipt_ids",
+        "post_incident_report_ids",
+        "closure_receipt_ids",
+        "last_event_sha256",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "EngineeringResourceImpact": {
+      "additionalProperties": false,
+      "properties": {
+        "max_changed_bytes": {
+          "type": "integer"
+        },
+        "max_changed_files": {
+          "type": "integer"
+        },
+        "max_network_bytes": {
+          "type": "integer"
+        },
+        "max_processes": {
+          "type": "integer"
+        },
+        "max_tool_runs": {
+          "type": "integer"
+        },
+        "max_wall_seconds": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "max_wall_seconds",
+        "max_tool_runs",
+        "max_processes",
+        "max_changed_files",
+        "max_changed_bytes",
+        "max_network_bytes"
+      ],
+      "type": "object"
+    },
+    "EngineeringReviewCheckpoint": {
+      "additionalProperties": false,
+      "properties": {
+        "candidate_id": {
+          "type": "string"
+        },
+        "changeset_sha256": {
+          "type": "string"
+        },
+        "checkpoint_id": {
+          "type": "string"
+        },
+        "completed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "findings": {
+          "items": {
+            "$ref": "#/$defs/EngineeringReviewFinding"
+          },
+          "type": "array"
+        },
+        "producer_id": {
+          "type": "string"
+        },
+        "required_disciplines": {
+          "items": {
+            "enum": [
+              "code",
+              "security",
+              "architecture",
+              "design"
+            ],
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "reviewer_id": {
+          "type": "string"
+        },
+        "reviewer_independence_ref": {
+          "type": "string"
+        },
+        "revision": {
+          "type": "integer"
+        },
+        "status": {
+          "enum": [
+            "blocked",
+            "passed",
+            "waived"
+          ],
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "checkpoint_id",
+        "task_id",
+        "candidate_id",
+        "changeset_sha256",
+        "producer_id",
+        "reviewer_id",
+        "reviewer_independence_ref",
+        "required_disciplines",
+        "findings",
+        "status",
+        "completed_at",
+        "revision",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "EngineeringReviewFinding": {
+      "additionalProperties": false,
+      "properties": {
+        "discipline": {
+          "enum": [
+            "code",
+            "security",
+            "architecture",
+            "design"
+          ],
+          "type": "string"
+        },
+        "disposition": {
+          "enum": [
+            "open",
+            "resolved",
+            "waived"
+          ],
+          "type": "string"
+        },
+        "evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "finding_id": {
+          "type": "string"
+        },
+        "path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "resolution_receipt_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "severity": {
+          "enum": [
+            "information",
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ],
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "waiver_decision_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "finding_id",
+        "discipline",
+        "severity",
+        "title",
+        "path",
+        "evidence_ids",
+        "disposition",
+        "resolution_receipt_id",
+        "waiver_decision_id"
+      ],
+      "type": "object"
+    },
+    "EngineeringReviewResolutionReceipt": {
+      "additionalProperties": false,
+      "properties": {
+        "candidate_id": {
+          "type": "string"
+        },
+        "changeset_sha256": {
+          "type": "string"
+        },
+        "checkpoint_id": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "finding_id": {
+          "type": "string"
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "remediation_evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "resolved_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "reviewer_id": {
+          "type": "string"
+        },
+        "reviewer_independence_ref": {
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        },
+        "verification_evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "receipt_id",
+        "task_id",
+        "candidate_id",
+        "changeset_sha256",
+        "checkpoint_id",
+        "finding_id",
+        "remediation_evidence_ids",
+        "verification_evidence_ids",
+        "reviewer_id",
+        "reviewer_independence_ref",
+        "resolved_at",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "EngineeringReviewSelection": {
+      "additionalProperties": false,
+      "properties": {
+        "candidate_id": {
+          "type": "string"
+        },
+        "changeset_sha256": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "intent_sha256": {
+          "type": "string"
+        },
+        "policy_id": {
+          "type": "string"
+        },
+        "required_disciplines": {
+          "items": {
+            "enum": [
+              "code",
+              "security",
+              "architecture",
+              "design"
+            ],
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "selected_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "selection_id": {
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "selection_id",
+        "task_id",
+        "candidate_id",
+        "changeset_sha256",
+        "policy_id",
+        "intent_sha256",
+        "required_disciplines",
+        "selected_at",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "EngineeringReviewWaiverDecision": {
+      "additionalProperties": false,
+      "properties": {
+        "authentication_context_id": {
+          "type": "string"
+        },
+        "checkpoint_id": {
+          "type": "string"
+        },
+        "consequences_sha256": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "decided_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "decision_id": {
+          "type": "string"
+        },
+        "finding_id": {
+          "type": "string"
+        },
+        "owner_id": {
+          "type": "string"
+        },
+        "truthful_assurance": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "decision_id",
+        "checkpoint_id",
+        "finding_id",
+        "owner_id",
+        "authentication_context_id",
+        "consequences_sha256",
+        "truthful_assurance",
+        "decided_at",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "EngineeringSandboxProfile": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_bytes": {
+          "type": "integer"
+        },
+        "cpu_seconds": {
+          "type": "integer"
+        },
+        "git_hooks_enabled": {
+          "type": "boolean"
+        },
+        "host_home_mounted": {
+          "type": "boolean"
+        },
+        "inherited_credentials": {
+          "type": "boolean"
+        },
+        "memory_bytes": {
+          "type": "integer"
+        },
+        "network_hosts": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "network_mode": {
+          "enum": [
+            "denied",
+            "allowlist_proxy"
+          ],
+          "type": "string"
+        },
+        "output_bytes": {
+          "type": "integer"
+        },
+        "process_limit": {
+          "type": "integer"
+        },
+        "profile_id": {
+          "type": "string"
+        },
+        "sanitized_environment": {
+          "items": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "type": "array"
+        },
+        "wall_seconds": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "profile_id",
+        "memory_bytes",
+        "cpu_seconds",
+        "wall_seconds",
+        "process_limit",
+        "output_bytes",
+        "artifact_bytes",
+        "network_mode",
+        "network_hosts",
+        "sanitized_environment",
+        "host_home_mounted",
+        "inherited_credentials",
+        "git_hooks_enabled"
+      ],
+      "type": "object"
+    },
+    "EngineeringToolReceipt": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_digests": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "candidate_id": {
+          "type": "string"
+        },
+        "command_sha256": {
+          "type": "string"
+        },
+        "completed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "diagnostic": {
+          "type": "string"
+        },
+        "exit_code": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "isolation_evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "network_destinations": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "recipe_id": {
+          "type": "string"
+        },
+        "recipe_payload_sha256": {
+          "type": "string"
+        },
+        "sandbox_profile_id": {
+          "type": "string"
+        },
+        "started_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "passed",
+            "failed",
+            "unavailable"
+          ],
+          "type": "string"
+        },
+        "stderr_sha256": {
+          "type": "string"
+        },
+        "stdout_sha256": {
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "receipt_id",
+        "task_id",
+        "candidate_id",
+        "recipe_id",
+        "recipe_payload_sha256",
+        "sandbox_profile_id",
+        "command_sha256",
+        "started_at",
+        "completed_at",
+        "exit_code",
+        "stdout_sha256",
+        "stderr_sha256",
+        "artifact_digests",
+        "network_destinations",
+        "isolation_evidence_ids",
+        "status",
+        "diagnostic",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "GeneratedDocumentationReceipt": {
+      "additionalProperties": false,
+      "properties": {
+        "authoritative_regeneration": {
+          "type": "boolean"
+        },
+        "candidate_id": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "generated_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "generator_recipe_id": {
+          "type": "string"
+        },
+        "output_path": {
+          "type": "string"
+        },
+        "output_sha256": {
+          "type": "string"
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "sources": {
+          "items": {
+            "$ref": "#/$defs/DocumentationSource"
+          },
+          "type": "array"
+        },
+        "task_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "receipt_id",
+        "request_id",
+        "task_id",
+        "candidate_id",
+        "output_path",
+        "output_sha256",
+        "generator_recipe_id",
+        "sources",
+        "generated_at",
+        "authoritative_regeneration",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "GitPublicationReceipt": {
+      "additionalProperties": false,
+      "properties": {
+        "approval_id": {
+          "type": "string"
+        },
+        "change_request_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "completed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "draft": {
+          "type": "boolean"
+        },
+        "observed_old_object_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "provider_evidence_sha256": {
+          "type": "string"
+        },
+        "provider_id": {
+          "type": "string"
+        },
+        "published_new_object_id": {
+          "type": "string"
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "remote_name": {
+          "type": "string"
+        },
+        "target_ref": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "receipt_id",
+        "approval_id",
+        "provider_id",
+        "remote_name",
+        "target_ref",
+        "observed_old_object_id",
+        "published_new_object_id",
+        "change_request_url",
+        "draft",
+        "completed_at",
+        "provider_evidence_sha256",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "JsonValue": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "integer"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "items": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "type": "array"
+        },
+        {
+          "additionalProperties": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "type": "object"
+        }
+      ]
+    },
+    "RequirementTraceabilityRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "implementation_paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "recorded_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "requirement_id": {
+          "type": "string"
+        },
+        "requirement_source_path": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "satisfied",
+            "partial",
+            "unsatisfied"
+          ],
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        },
+        "test_paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "trace_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "trace_id",
+        "task_id",
+        "requirement_id",
+        "requirement_source_path",
+        "implementation_paths",
+        "test_paths",
+        "evidence_ids",
+        "status",
+        "recorded_at",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "RuntimeDiagnosticArtifact": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "type": "string"
+        },
+        "contains_secret_content": {
+          "type": "boolean"
+        },
+        "kind": {
+          "enum": [
+            "stack_trace",
+            "crash_dump",
+            "trace",
+            "profile",
+            "race_report",
+            "leak_report",
+            "performance_sample"
+          ],
+          "type": "string"
+        },
+        "media_type": {
+          "type": "string"
+        },
+        "sanitized": {
+          "type": "boolean"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "size_bytes": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "kind",
+        "media_type",
+        "sha256",
+        "size_bytes",
+        "sanitized",
+        "contains_secret_content"
+      ],
+      "type": "object"
+    },
+    "RuntimeDiagnosticLimits": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_bytes": {
+          "type": "integer"
+        },
+        "cpu_seconds": {
+          "type": "integer"
+        },
+        "memory_bytes": {
+          "type": "integer"
+        },
+        "output_bytes": {
+          "type": "integer"
+        },
+        "process_limit": {
+          "type": "integer"
+        },
+        "sample_limit": {
+          "type": "integer"
+        },
+        "temporary_file_bytes": {
+          "type": "integer"
+        },
+        "unbounded_virtual_address_space": {
+          "type": "boolean"
+        },
+        "wall_seconds": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "wall_seconds",
+        "cpu_seconds",
+        "memory_bytes",
+        "process_limit",
+        "output_bytes",
+        "artifact_bytes",
+        "sample_limit",
+        "temporary_file_bytes",
+        "unbounded_virtual_address_space"
+      ],
+      "type": "object"
+    },
+    "RuntimeDiagnosticReceipt": {
+      "additionalProperties": false,
+      "properties": {
+        "artifacts": {
+          "items": {
+            "$ref": "#/$defs/RuntimeDiagnosticArtifact"
+          },
+          "type": "array"
+        },
+        "authorization_decision_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "baseline_artifact_sha256": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "candidate_id": {
+          "type": "string"
+        },
+        "completed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "diagnostic": {
+          "type": "string"
+        },
+        "exit_code": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "finding_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "isolation_evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "observed_value_microunits": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "performance_mode": {
+          "enum": [
+            "not_applicable",
+            "baseline_capture",
+            "comparison"
+          ],
+          "type": "string"
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "recipe_payload_sha256": {
+          "type": "string"
+        },
+        "regression_ppm": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "sandbox_profile_id": {
+          "type": "string"
+        },
+        "signed_recipe_id": {
+          "type": "string"
+        },
+        "signed_recipe_version": {
+          "type": "string"
+        },
+        "started_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "passed",
+            "failed",
+            "cancelled",
+            "unavailable"
+          ],
+          "type": "string"
+        },
+        "stderr_sha256": {
+          "type": "string"
+        },
+        "stdout_sha256": {
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "receipt_id",
+        "request_id",
+        "task_id",
+        "candidate_id",
+        "signed_recipe_id",
+        "signed_recipe_version",
+        "recipe_payload_sha256",
+        "sandbox_profile_id",
+        "started_at",
+        "completed_at",
+        "status",
+        "exit_code",
+        "stdout_sha256",
+        "stderr_sha256",
+        "artifacts",
+        "finding_ids",
+        "isolation_evidence_ids",
+        "authorization_decision_ids",
+        "baseline_artifact_sha256",
+        "observed_value_microunits",
+        "regression_ppm",
+        "diagnostic",
+        "performance_mode",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "RuntimeDiagnosticRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "allowed_environment_keys": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "artifact_kinds": {
+          "items": {
+            "enum": [
+              "stack_trace",
+              "crash_dump",
+              "trace",
+              "profile",
+              "race_report",
+              "leak_report",
+              "performance_sample"
+            ],
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "baseline_artifact_sha256": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "baseline_value_microunits": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "candidate_id": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "created_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "grant_id": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "stack_trace",
+            "crash_dump",
+            "trace",
+            "cpu_profile",
+            "memory_profile",
+            "race_detection",
+            "leak_detection",
+            "performance_regression"
+          ],
+          "type": "string"
+        },
+        "limits": {
+          "$ref": "#/$defs/RuntimeDiagnosticLimits"
+        },
+        "maximum_regression_ppm": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "network_destinations": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "network_mode": {
+          "enum": [
+            "denied",
+            "allowlist_proxy"
+          ],
+          "type": "string"
+        },
+        "performance_mode": {
+          "enum": [
+            "not_applicable",
+            "baseline_capture",
+            "comparison"
+          ],
+          "type": "string"
+        },
+        "phase": {
+          "enum": [
+            "baseline",
+            "candidate",
+            "postapply"
+          ],
+          "type": "string"
+        },
+        "principal_id": {
+          "type": "string"
+        },
+        "recipe_payload_sha256": {
+          "type": "string"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "required_authority": {
+          "enum": [
+            "observe",
+            "propose",
+            "modify",
+            "execute",
+            "network",
+            "publish",
+            "raw_shell",
+            "host_admin",
+            "secret_use",
+            "global_install",
+            "production_mutate",
+            "policy_change",
+            "protected_ref_write",
+            "self_update"
+          ],
+          "type": "string"
+        },
+        "session_id": {
+          "type": "string"
+        },
+        "signed_recipe_id": {
+          "type": "string"
+        },
+        "signed_recipe_version": {
+          "type": "string"
+        },
+        "target_argv": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "task_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "task_id",
+        "candidate_id",
+        "grant_id",
+        "principal_id",
+        "session_id",
+        "phase",
+        "signed_recipe_id",
+        "signed_recipe_version",
+        "recipe_payload_sha256",
+        "kind",
+        "target_argv",
+        "allowed_environment_keys",
+        "artifact_kinds",
+        "limits",
+        "network_mode",
+        "network_destinations",
+        "created_at",
+        "baseline_artifact_sha256",
+        "baseline_value_microunits",
+        "maximum_regression_ppm",
+        "required_authority",
+        "performance_mode",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "ShellEngineeringLoopResponse": {
+      "additionalProperties": false,
+      "properties": {
+        "changeset": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CandidateChangesetRecord"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "changesets": {
+          "items": {
+            "$ref": "#/$defs/CandidateChangesetRecord"
+          },
+          "type": "array"
+        },
+        "contract_version": {
+          "const": "fam.shell.engineering-loop/v1alpha1"
+        },
+        "database_backups": {
+          "items": {
+            "$ref": "#/$defs/DatabaseBackupReceipt"
+          },
+          "type": "array"
+        },
+        "database_plans": {
+          "items": {
+            "$ref": "#/$defs/DatabaseChangePlan"
+          },
+          "type": "array"
+        },
+        "database_postapply": {
+          "items": {
+            "$ref": "#/$defs/DatabasePostapplyReceipt"
+          },
+          "type": "array"
+        },
+        "database_verifications": {
+          "items": {
+            "$ref": "#/$defs/DatabaseVerificationReceipt"
+          },
+          "type": "array"
+        },
+        "documentation": {
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/DocumentationGenerationRequest"
+              },
+              {
+                "$ref": "#/$defs/GeneratedDocumentationReceipt"
+              },
+              {
+                "$ref": "#/$defs/DocumentationGovernanceBinding"
+              },
+              {
+                "$ref": "#/$defs/DocumentationStalenessReport"
+              },
+              {
+                "$ref": "#/$defs/DocumentationRequirementSelection"
+              },
+              {
+                "$ref": "#/$defs/RequirementTraceabilityRecord"
+              }
+            ]
+          },
+          "type": "array"
+        },
+        "edit": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CandidateEditRecord"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "edits": {
+          "items": {
+            "$ref": "#/$defs/CandidateEditRecord"
+          },
+          "type": "array"
+        },
+        "incident": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EngineeringIncidentState"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "incident_evidence": {
+          "items": {
+            "$ref": "#/$defs/EngineeringIncidentEvidenceReceipt"
+          },
+          "type": "array"
+        },
+        "incidents": {
+          "items": {
+            "$ref": "#/$defs/EngineeringIncidentState"
+          },
+          "type": "array"
+        },
+        "operation": {
+          "enum": [
+            "start",
+            "list",
+            "inspect",
+            "resume",
+            "prepare",
+            "edit",
+            "edits",
+            "verify",
+            "reverify",
+            "verifications",
+            "preview",
+            "apply",
+            "changesets",
+            "publish",
+            "incidents",
+            "incident_advance",
+            "reviews",
+            "documentation",
+            "runtime_diagnostics",
+            "database"
+          ],
+          "type": "string"
+        },
+        "publication": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GitPublicationReceipt"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "review_evidence": {
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/EngineeringReviewSelection"
+              },
+              {
+                "$ref": "#/$defs/EngineeringReviewResolutionReceipt"
+              },
+              {
+                "$ref": "#/$defs/EngineeringReviewWaiverDecision"
+              }
+            ]
+          },
+          "type": "array"
+        },
+        "reviews": {
+          "items": {
+            "$ref": "#/$defs/EngineeringReviewCheckpoint"
+          },
+          "type": "array"
+        },
+        "runtime_diagnostic_requests": {
+          "items": {
+            "$ref": "#/$defs/RuntimeDiagnosticRequest"
+          },
+          "type": "array"
+        },
+        "runtime_diagnostics": {
+          "items": {
+            "$ref": "#/$defs/RuntimeDiagnosticReceipt"
+          },
+          "type": "array"
+        },
+        "verification": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CandidateVerificationRecord"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "verifications": {
+          "items": {
+            "$ref": "#/$defs/CandidateVerificationRecord"
+          },
+          "type": "array"
+        },
+        "view": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ShellEngineeringLoopView"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "views": {
+          "items": {
+            "$ref": "#/$defs/ShellEngineeringLoopView"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "request_id",
+        "operation",
+        "view",
+        "views",
+        "edit",
+        "edits",
+        "verification",
+        "verifications",
+        "changeset",
+        "changesets",
+        "publication",
+        "incident",
+        "incidents",
+        "incident_evidence",
+        "reviews",
+        "review_evidence",
+        "documentation",
+        "runtime_diagnostic_requests",
+        "runtime_diagnostics",
+        "database_plans",
+        "database_backups",
+        "database_verifications",
+        "database_postapply",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "ShellEngineeringLoopView": {
+      "additionalProperties": false,
+      "properties": {
+        "acceptance_policy_id": {
+          "type": "string"
+        },
+        "budget": {
+          "additionalProperties": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "type": "object"
+        },
+        "candidate_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "database_postapply_receipt_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "database_receipt_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "dependency_receipt_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "design_preview_receipt_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "diff_checkpoint_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "git_receipt_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "integration_environment_postapply_receipt_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "integration_environment_receipt_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "intent": {
+          "type": "string"
+        },
+        "publication_approval_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "revision": {
+          "type": "integer"
+        },
+        "rollback_receipt_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "runtime_diagnostic_receipt_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "stage": {
+          "type": "string"
+        },
+        "task_graph_evidence_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "task_id": {
+          "type": "string"
+        },
+        "test_receipt_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "workspace_roots": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "task_id",
+        "intent",
+        "workspace_roots",
+        "acceptance_policy_id",
+        "stage",
+        "revision",
+        "task_graph_evidence_id",
+        "candidate_id",
+        "diff_checkpoint_id",
+        "test_receipt_ids",
+        "runtime_diagnostic_receipt_ids",
+        "database_receipt_ids",
+        "database_postapply_receipt_ids",
+        "integration_environment_receipt_ids",
+        "integration_environment_postapply_receipt_ids",
+        "dependency_receipt_ids",
+        "design_preview_receipt_ids",
+        "rollback_receipt_ids",
+        "git_receipt_ids",
+        "publication_approval_id",
+        "budget"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.shell.engineering-loop-response/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.shell.engineering-loop/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/ShellEngineeringLoopResponse"
+    },
+    "schema_id": {
+      "const": "fam.shell.engineering-loop-response/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Persistent engineering lifecycle projection",
+  "type": "object"
+}

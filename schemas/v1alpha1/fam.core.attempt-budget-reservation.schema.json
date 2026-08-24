@@ -3,11 +3,23 @@
     "AttemptBudgetReservation": {
       "additionalProperties": false,
       "properties": {
+        "acceptance_sha256": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "attempt_id": {
           "type": "string"
         },
         "kind": {
           "enum": [
+            "remote",
+            "local_recovery",
             "repair",
             "escalation"
           ],
@@ -24,6 +36,16 @@
         },
         "reserved_wall_milliseconds": {
           "type": "integer"
+        },
+        "route_plan_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [
@@ -32,7 +54,9 @@
         "attempt_id",
         "kind",
         "reserved_tokens",
-        "reserved_wall_milliseconds"
+        "reserved_wall_milliseconds",
+        "acceptance_sha256",
+        "route_plan_id"
       ],
       "type": "object"
     }

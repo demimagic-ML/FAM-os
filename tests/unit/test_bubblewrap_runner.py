@@ -35,6 +35,13 @@ class FailingBubblewrapLauncher(FakeLauncher):
         )
 
 
+class FailingAppArmorLauncher(FakeLauncher):
+    def run(self, command, limits, environment, isolation):
+        return SandboxResult(
+            SandboxStatus.COMPLETED, isolation, 0.1, exit_code=231,
+        )
+
+
 class BubblewrapRunnerTests(unittest.TestCase):
     def test_refuses_silent_isolation_downgrade(self) -> None:
         launcher = FakeLauncher()
@@ -72,6 +79,20 @@ class BubblewrapRunnerTests(unittest.TestCase):
         ).run(SandboxRequest("pass"))
         self.assertEqual(SandboxStatus.UNAVAILABLE, result.status)
         self.assertEqual(IsolationLevel.NONE, result.isolation)
+
+    def test_missing_required_apparmor_profile_is_unavailable(self) -> None:
+        locator = FakeLocator({
+            "python3": "/usr/bin/python3", "bwrap": "/usr/bin/bwrap",
+            "systemd-run": "/usr/bin/systemd-run",
+        })
+        result = BubblewrapSandboxRunner(
+            BubblewrapSettings(apparmor_profile="fam-os-userns"),
+            locator, FailingAppArmorLauncher(),
+        ).run(SandboxRequest("pass"))
+
+        self.assertEqual(SandboxStatus.UNAVAILABLE, result.status)
+        self.assertEqual(IsolationLevel.NONE, result.isolation)
+        self.assertIn("fam-os-userns", result.reason)
 
 
 if __name__ == "__main__":

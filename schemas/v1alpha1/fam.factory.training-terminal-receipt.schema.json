@@ -1,0 +1,151 @@
+{
+  "$defs": {
+    "TrainingTerminalReceipt": {
+      "additionalProperties": false,
+      "properties": {
+        "adapter_bytes": {
+          "type": "integer"
+        },
+        "adapter_config_sha256": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "adapter_sha256": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "approval_id": {
+          "type": "string"
+        },
+        "base_weights_frozen": {
+          "type": "boolean"
+        },
+        "contract_version": {
+          "const": "fam.factory.training-backend/v1alpha1"
+        },
+        "energy_joules": {
+          "type": "integer"
+        },
+        "environment_sha256": {
+          "type": "string"
+        },
+        "exit_code": {
+          "type": "integer"
+        },
+        "finished_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "held_out_absent": {
+          "type": "boolean"
+        },
+        "job_id": {
+          "type": "string"
+        },
+        "maximum_temperature_celsius": {
+          "type": "integer"
+        },
+        "metrics_sha256": {
+          "type": "string"
+        },
+        "network_denied": {
+          "type": "boolean"
+        },
+        "peak_ram_bytes": {
+          "type": "integer"
+        },
+        "peak_vram_bytes": {
+          "type": "integer"
+        },
+        "reason_code": {
+          "type": "string"
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "receipt_sha256": {
+          "type": "string"
+        },
+        "started_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "completed",
+            "failed",
+            "cancelled",
+            "revoked",
+            "resource_stopped"
+          ],
+          "type": "string"
+        },
+        "unexpected_trainable_parameters": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "receipt_id",
+        "job_id",
+        "approval_id",
+        "environment_sha256",
+        "status",
+        "reason_code",
+        "adapter_sha256",
+        "adapter_config_sha256",
+        "adapter_bytes",
+        "metrics_sha256",
+        "started_at",
+        "finished_at",
+        "exit_code",
+        "network_denied",
+        "held_out_absent",
+        "base_weights_frozen",
+        "unexpected_trainable_parameters",
+        "peak_ram_bytes",
+        "peak_vram_bytes",
+        "maximum_temperature_celsius",
+        "energy_joules",
+        "receipt_sha256",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.factory.training-terminal-receipt/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.factory.training-backend/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/TrainingTerminalReceipt"
+    },
+    "schema_id": {
+      "const": "fam.factory.training-terminal-receipt/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Immutable isolated training terminal evidence",
+  "type": "object"
+}

@@ -1,0 +1,92 @@
+{
+  "$defs": {
+    "PhysicalPeerObservation": {
+      "additionalProperties": false,
+      "properties": {
+        "captured_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "checkpoint": {
+          "enum": [
+            "before_remote_success",
+            "after_remote_success",
+            "before_peer_loss",
+            "after_peer_restart"
+          ],
+          "type": "string"
+        },
+        "context_evidence_count": {
+          "type": "integer"
+        },
+        "contract_version": {
+          "const": "fam.fabric.physical-peer-observation/v1alpha1"
+        },
+        "device_fingerprint_sha256": {
+          "type": "string"
+        },
+        "device_id": {
+          "type": "string"
+        },
+        "device_public_key_base64": {
+          "type": "string"
+        },
+        "inspected_database_file_count": {
+          "type": "integer"
+        },
+        "observation_id": {
+          "type": "string"
+        },
+        "prompt_retained": {
+          "type": "boolean"
+        },
+        "prompt_sha256": {
+          "type": "string"
+        },
+        "qualification_id": {
+          "type": "string"
+        },
+        "signature_base64": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "observation_id",
+        "qualification_id",
+        "checkpoint",
+        "device_id",
+        "device_public_key_base64",
+        "device_fingerprint_sha256",
+        "context_evidence_count",
+        "inspected_database_file_count",
+        "prompt_sha256",
+        "prompt_retained",
+        "captured_at",
+        "signature_base64",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.fabric.physical-peer-observation/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.fabric.physical-peer-observation/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/PhysicalPeerObservation"
+    },
+    "schema_id": {
+      "const": "fam.fabric.physical-peer-observation/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Device-signed content-free physical peer checkpoint",
+  "type": "object"
+}

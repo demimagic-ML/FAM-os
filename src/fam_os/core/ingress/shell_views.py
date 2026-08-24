@@ -107,4 +107,7 @@ def _result(result):
         result.reason,
         result.verified,
         result.evidence_ids,
+        result.assurance,
+        result.citations,
+        result.result_kind,
     )

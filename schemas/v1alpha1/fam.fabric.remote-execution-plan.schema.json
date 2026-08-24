@@ -1,0 +1,145 @@
+{
+  "$defs": {
+    "RemoteExecutionPlan": {
+      "additionalProperties": false,
+      "properties": {
+        "capability_declaration_id": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.fabric.remote-execution/v1alpha1"
+        },
+        "created_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "descriptor": {
+          "$ref": "#/$defs/RemoteTaskDescriptor"
+        },
+        "enrollment_id": {
+          "type": "string"
+        },
+        "expected_privacy_revision": {
+          "type": "integer"
+        },
+        "expert_id": {
+          "type": "string"
+        },
+        "expert_tier": {
+          "type": "string"
+        },
+        "instance_id": {
+          "type": "string"
+        },
+        "maximum_context_bytes": {
+          "type": "integer"
+        },
+        "model_ref": {
+          "type": "string"
+        },
+        "peer_device_id": {
+          "type": "string"
+        },
+        "plan_id": {
+          "type": "string"
+        },
+        "predicted_completion_milliseconds": {
+          "type": "number"
+        },
+        "purpose_id": {
+          "type": "string"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "sensitivity": {
+          "enum": [
+            "public",
+            "private",
+            "restricted"
+          ],
+          "type": "string"
+        },
+        "workspace_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "plan_id",
+        "instance_id",
+        "request_id",
+        "enrollment_id",
+        "peer_device_id",
+        "expert_id",
+        "model_ref",
+        "expert_tier",
+        "capability_declaration_id",
+        "expected_privacy_revision",
+        "purpose_id",
+        "workspace_id",
+        "sensitivity",
+        "descriptor",
+        "maximum_context_bytes",
+        "predicted_completion_milliseconds",
+        "reason_codes",
+        "created_at",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "RemoteTaskDescriptor": {
+      "additionalProperties": false,
+      "properties": {
+        "assurance_id": {
+          "type": "string"
+        },
+        "capability_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "intent_id": {
+          "type": "string"
+        },
+        "maximum_output_bytes": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "intent_id",
+        "capability_ids",
+        "assurance_id",
+        "maximum_output_bytes"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.fabric.remote-execution-plan/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.fabric.remote-execution/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/RemoteExecutionPlan"
+    },
+    "schema_id": {
+      "const": "fam.fabric.remote-execution-plan/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Content-free Core remote execution route",
+  "type": "object"
+}

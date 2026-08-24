@@ -24,7 +24,7 @@ class UnixShellServerConfiguration:
             raise ValueError("shell server path must be absolute")
         if self.backlog <= 0 or self.backlog > 128:
             raise ValueError("shell server backlog is invalid")
-        if self.maximum_frame_bytes <= 0 or self.maximum_frame_bytes > 4_194_304:
+        if self.maximum_frame_bytes <= 0 or self.maximum_frame_bytes > MAX_SHELL_FRAME_BYTES:
             raise ValueError("shell frame limit is invalid")
 
 

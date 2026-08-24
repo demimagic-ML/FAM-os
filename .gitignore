@@ -1,5 +1,6 @@
 # Local-only evidence and caches
 artifacts/
+.phase*/
 .larry/
 .mypy_cache/
 .verification-venv/

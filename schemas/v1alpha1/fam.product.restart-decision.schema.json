@@ -1,0 +1,88 @@
+{
+  "$defs": {
+    "RestartRecoveryDecision": {
+      "additionalProperties": false,
+      "properties": {
+        "action_id": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.product.restart-recovery/v1alpha1"
+        },
+        "disposition": {
+          "enum": [
+            "require_fresh_approval",
+            "reconcile_postconditions",
+            "retain_terminal"
+          ],
+          "type": "string"
+        },
+        "previous_state": {
+          "enum": [
+            "prepared",
+            "awaiting_approval",
+            "approved",
+            "invoking",
+            "uncertain",
+            "reconciliation_required",
+            "verified",
+            "failed",
+            "cancelled"
+          ],
+          "type": "string"
+        },
+        "prior_confirmation_retained": {
+          "type": "boolean"
+        },
+        "provider_retry_allowed": {
+          "type": "boolean"
+        },
+        "resulting_state": {
+          "enum": [
+            "prepared",
+            "awaiting_approval",
+            "approved",
+            "invoking",
+            "uncertain",
+            "reconciliation_required",
+            "verified",
+            "failed",
+            "cancelled"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "action_id",
+        "disposition",
+        "previous_state",
+        "resulting_state",
+        "prior_confirmation_retained",
+        "provider_retry_allowed",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.product.restart-decision/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.product.restart-recovery/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/RestartRecoveryDecision"
+    },
+    "schema_id": {
+      "const": "fam.product.restart-decision/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Restart action recovery decision",
+  "type": "object"
+}

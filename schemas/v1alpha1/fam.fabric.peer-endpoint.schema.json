@@ -1,0 +1,41 @@
+{
+  "$defs": {
+    "PeerEndpoint": {
+      "additionalProperties": false,
+      "properties": {
+        "host": {
+          "type": "string"
+        },
+        "port": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "host",
+        "port"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.fabric.peer-endpoint/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.fabric.device-pairing/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/PeerEndpoint"
+    },
+    "schema_id": {
+      "const": "fam.fabric.peer-endpoint/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Manually advertised peer endpoint",
+  "type": "object"
+}

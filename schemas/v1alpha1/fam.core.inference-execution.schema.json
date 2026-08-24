@@ -1,0 +1,306 @@
+{
+  "$defs": {
+    "InferenceExecutionRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "assurance": {
+          "enum": [
+            "unverified",
+            "grounded",
+            "verified"
+          ],
+          "type": "string"
+        },
+        "candidate_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "contract_version": {
+          "const": "fam.core.inference-execution/v1alpha1"
+        },
+        "failure_code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "instance_id": {
+          "type": "string"
+        },
+        "intent": {
+          "enum": [
+            "conversation",
+            "grounded_question",
+            "read_only_task",
+            "application_mutation",
+            "code",
+            "math",
+            "retrieval",
+            "media",
+            "administration"
+          ],
+          "type": "string"
+        },
+        "remote_attempt_consumed": {
+          "type": "boolean"
+        },
+        "remote_plan": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RemoteExecutionPlan"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "revision": {
+          "type": "integer"
+        },
+        "selection": {
+          "$ref": "#/$defs/RuntimeModelSelection"
+        },
+        "state": {
+          "enum": [
+            "prepared",
+            "running",
+            "candidate_ready",
+            "terminal"
+          ],
+          "type": "string"
+        },
+        "verifier_feedback": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "instance_id",
+        "request_id",
+        "intent",
+        "selection",
+        "state",
+        "revision",
+        "candidate_id",
+        "assurance",
+        "failure_code",
+        "verifier_feedback",
+        "contract_version",
+        "remote_plan",
+        "remote_attempt_consumed"
+      ],
+      "type": "object"
+    },
+    "RemoteExecutionPlan": {
+      "additionalProperties": false,
+      "properties": {
+        "capability_declaration_id": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.fabric.remote-execution/v1alpha1"
+        },
+        "created_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "descriptor": {
+          "$ref": "#/$defs/RemoteTaskDescriptor"
+        },
+        "enrollment_id": {
+          "type": "string"
+        },
+        "expected_privacy_revision": {
+          "type": "integer"
+        },
+        "expert_id": {
+          "type": "string"
+        },
+        "expert_tier": {
+          "type": "string"
+        },
+        "instance_id": {
+          "type": "string"
+        },
+        "maximum_context_bytes": {
+          "type": "integer"
+        },
+        "model_ref": {
+          "type": "string"
+        },
+        "peer_device_id": {
+          "type": "string"
+        },
+        "plan_id": {
+          "type": "string"
+        },
+        "predicted_completion_milliseconds": {
+          "type": "number"
+        },
+        "purpose_id": {
+          "type": "string"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "sensitivity": {
+          "enum": [
+            "public",
+            "private",
+            "restricted"
+          ],
+          "type": "string"
+        },
+        "workspace_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "plan_id",
+        "instance_id",
+        "request_id",
+        "enrollment_id",
+        "peer_device_id",
+        "expert_id",
+        "model_ref",
+        "expert_tier",
+        "capability_declaration_id",
+        "expected_privacy_revision",
+        "purpose_id",
+        "workspace_id",
+        "sensitivity",
+        "descriptor",
+        "maximum_context_bytes",
+        "predicted_completion_milliseconds",
+        "reason_codes",
+        "created_at",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "RemoteTaskDescriptor": {
+      "additionalProperties": false,
+      "properties": {
+        "assurance_id": {
+          "type": "string"
+        },
+        "capability_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "intent_id": {
+          "type": "string"
+        },
+        "maximum_output_bytes": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "intent_id",
+        "capability_ids",
+        "assurance_id",
+        "maximum_output_bytes"
+      ],
+      "type": "object"
+    },
+    "RuntimeModelSelection": {
+      "additionalProperties": false,
+      "properties": {
+        "available_host_bytes": {
+          "type": "integer"
+        },
+        "available_vram_bytes": {
+          "type": "integer"
+        },
+        "estimated_resident_bytes": {
+          "type": "integer"
+        },
+        "intent": {
+          "enum": [
+            "conversation",
+            "grounded_question",
+            "read_only_task",
+            "application_mutation",
+            "code",
+            "math",
+            "retrieval",
+            "media",
+            "administration"
+          ],
+          "type": "string"
+        },
+        "model_ref": {
+          "type": "string"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "selection_id": {
+          "type": "string"
+        },
+        "tier": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "selection_id",
+        "request_id",
+        "intent",
+        "model_ref",
+        "tier",
+        "estimated_resident_bytes",
+        "available_host_bytes",
+        "available_vram_bytes",
+        "reason_codes"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.inference-execution/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.inference-execution/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/InferenceExecutionRecord"
+    },
+    "schema_id": {
+      "const": "fam.core.inference-execution/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Restart-safe inference execution",
+  "type": "object"
+}

@@ -1,0 +1,53 @@
+{
+  "$defs": {
+    "DocumentDeletionRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "confirmed": {
+          "type": "boolean"
+        },
+        "contract_version": {
+          "const": "fam.memory.management/v1alpha1"
+        },
+        "document_id": {
+          "type": "string"
+        },
+        "expected_content_sha256": {
+          "type": "string"
+        },
+        "request_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "document_id",
+        "expected_content_sha256",
+        "confirmed",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.memory.document-deletion-request/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.memory.management/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/DocumentDeletionRequest"
+    },
+    "schema_id": {
+      "const": "fam.memory.document-deletion-request/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Confirmed document deletion request",
+  "type": "object"
+}

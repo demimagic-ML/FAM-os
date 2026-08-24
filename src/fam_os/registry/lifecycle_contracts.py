@@ -16,6 +16,7 @@ PACKAGE_LIFECYCLE_CONTRACT_VERSION = "fam.registry.lifecycle/v1alpha1"
 
 class PackageLifecycleAction(StrEnum):
     INSTALL = "install"
+    ACTIVATE = "activate"
     UPDATE = "update"
     DISABLE = "disable"
     ROLLBACK = "rollback"

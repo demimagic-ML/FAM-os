@@ -1,0 +1,110 @@
+{
+  "$defs": {
+    "TrainingCaptureGrant": {
+      "additionalProperties": false,
+      "properties": {
+        "allowed_source_kinds": {
+          "items": {
+            "enum": [
+              "verified_fixture",
+              "owner_example",
+              "licensed_dataset"
+            ],
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "capability_id": {
+          "type": "string"
+        },
+        "confirmed": {
+          "type": "boolean"
+        },
+        "contract_version": {
+          "const": "fam.factory.dataset-provenance/v1alpha1"
+        },
+        "expires_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "grant_id": {
+          "type": "string"
+        },
+        "issued_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "maximum_examples": {
+          "type": "integer"
+        },
+        "maximum_source_bytes": {
+          "type": "integer"
+        },
+        "proposal_id": {
+          "type": "string"
+        },
+        "revision": {
+          "type": "integer"
+        },
+        "sensitivities": {
+          "items": {
+            "enum": [
+              "public",
+              "private",
+              "restricted"
+            ],
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "training_authorized": {
+          "type": "boolean"
+        },
+        "workspace_scopes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "grant_id",
+        "proposal_id",
+        "capability_id",
+        "allowed_source_kinds",
+        "workspace_scopes",
+        "sensitivities",
+        "maximum_source_bytes",
+        "maximum_examples",
+        "issued_at",
+        "expires_at",
+        "confirmed",
+        "revision",
+        "training_authorized",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.factory.training-capture-grant/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.factory.dataset-provenance/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/TrainingCaptureGrant"
+    },
+    "schema_id": {
+      "const": "fam.factory.training-capture-grant/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Confirmed expiring training-content capture grant",
+  "type": "object"
+}

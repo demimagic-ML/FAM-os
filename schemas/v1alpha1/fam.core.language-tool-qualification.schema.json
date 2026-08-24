@@ -1,0 +1,121 @@
+{
+  "$defs": {
+    "LanguageToolQualification": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "ecosystem": {
+          "enum": [
+            "python",
+            "javascript",
+            "typescript",
+            "rust",
+            "go",
+            "java",
+            "kotlin",
+            "c",
+            "cpp",
+            "shell",
+            "html",
+            "css"
+          ],
+          "type": "string"
+        },
+        "installed_release_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "negative_receipt_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "positive_receipt_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "qualification_id": {
+          "type": "string"
+        },
+        "qualified_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "passed",
+            "failed",
+            "unavailable"
+          ],
+          "type": "string"
+        },
+        "tool_name": {
+          "type": "string"
+        },
+        "tool_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "qualification_id",
+        "ecosystem",
+        "tool_name",
+        "tool_version",
+        "positive_receipt_id",
+        "negative_receipt_id",
+        "status",
+        "qualified_at",
+        "installed_release_id",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.language-tool-qualification/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/LanguageToolQualification"
+    },
+    "schema_id": {
+      "const": "fam.core.language-tool-qualification/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Positive and negative language tool qualification",
+  "type": "object"
+}

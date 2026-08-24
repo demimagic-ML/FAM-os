@@ -1,1 +1,1 @@
-"""Adversarial Supervisor boundary tests."""
+"""Adversarial engineering-fabric coverage."""

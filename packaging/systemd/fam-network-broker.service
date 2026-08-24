@@ -1,0 +1,43 @@
+[Unit]
+Description=FAM_OS deterministic integration network broker
+After=network.target docker.service
+ConditionPathExists=/etc/fam-os/network-broker.env
+ConditionFileIsExecutable=/usr/libexec/fam-os-network/bin/fam-network-broker
+ConditionPathIsDirectory=/run/netns
+
+[Service]
+Type=simple
+User=root
+Group=fam-os
+EnvironmentFile=/etc/fam-os/network-broker.env
+ExecStart=/usr/libexec/fam-os-network/bin/fam-network-broker \
+  --installation-prefix /usr/libexec/fam-os-network \
+  --socket /run/fam-os-network/broker.sock \
+  --socket-owner-uid 0 --socket-group-id ${FAM_CORE_GID} \
+  --core-uid ${FAM_CORE_UID} --core-cgroup ${FAM_CORE_CGROUP} \
+  --broker-state-root /var/lib/fam-os-network-broker \
+  --linux-state-root /var/lib/fam-os-network-linux \
+  --audit /var/lib/fam-os-network-audit/supervisor.jsonl \
+  --trusted-key-id ${FAM_NETWORK_KEY_ID} \
+  --trusted-public-key /etc/fam-os/network-authority.pem
+RuntimeDirectory=fam-os-network
+RuntimeDirectoryMode=0750
+StateDirectory=fam-os-network-broker fam-os-network-linux fam-os-network-audit
+StateDirectoryMode=0700
+UMask=0077
+CapabilityBoundingSet=CAP_NET_ADMIN CAP_SYS_ADMIN
+AmbientCapabilities=CAP_NET_ADMIN CAP_SYS_ADMIN
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
+ReadWritePaths=/run/fam-os-network /run/netns /var/lib/fam-os-network-broker /var/lib/fam-os-network-linux /var/lib/fam-os-network-audit
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

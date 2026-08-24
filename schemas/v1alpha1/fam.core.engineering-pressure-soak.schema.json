@@ -1,0 +1,108 @@
+{
+  "$defs": {
+    "EngineeringPressureSoakReport": {
+      "additionalProperties": false,
+      "properties": {
+        "candidate_cleanup_count": {
+          "type": "integer"
+        },
+        "compiler_workload_count": {
+          "type": "integer"
+        },
+        "completed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "dependency_failure_count": {
+          "type": "integer"
+        },
+        "duration_seconds": {
+          "type": "integer"
+        },
+        "failed_task_count": {
+          "type": "integer"
+        },
+        "interruption_count": {
+          "type": "integer"
+        },
+        "leaked_candidate_count": {
+          "type": "integer"
+        },
+        "model_eviction_count": {
+          "type": "integer"
+        },
+        "raw_evidence_sha256": {
+          "type": "string"
+        },
+        "release_id": {
+          "type": "string"
+        },
+        "report_id": {
+          "type": "string"
+        },
+        "rollback_count": {
+          "type": "integer"
+        },
+        "started_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "passed",
+            "failed",
+            "incomplete"
+          ],
+          "type": "string"
+        },
+        "task_count": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "report_id",
+        "release_id",
+        "started_at",
+        "completed_at",
+        "duration_seconds",
+        "task_count",
+        "interruption_count",
+        "rollback_count",
+        "model_eviction_count",
+        "compiler_workload_count",
+        "dependency_failure_count",
+        "candidate_cleanup_count",
+        "leaked_candidate_count",
+        "failed_task_count",
+        "raw_evidence_sha256",
+        "status",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.engineering-pressure-soak/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/EngineeringPressureSoakReport"
+    },
+    "schema_id": {
+      "const": "fam.core.engineering-pressure-soak/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Minimum 24-hour mixed engineering pressure soak",
+  "type": "object"
+}

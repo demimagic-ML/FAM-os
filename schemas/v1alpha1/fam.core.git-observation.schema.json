@@ -1,0 +1,101 @@
+{
+  "$defs": {
+    "GitRepositoryObservation": {
+      "additionalProperties": false,
+      "properties": {
+        "branch_refs": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "diff_sha256": {
+          "type": "string"
+        },
+        "head_object_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "head_ref": {
+          "type": "string"
+        },
+        "history_object_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "observation_id": {
+          "type": "string"
+        },
+        "observed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "remote_names": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "repository_root": {
+          "type": "string"
+        },
+        "status_porcelain": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "task_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "observation_id",
+        "task_id",
+        "repository_root",
+        "head_ref",
+        "head_object_id",
+        "status_porcelain",
+        "branch_refs",
+        "remote_names",
+        "history_object_ids",
+        "diff_sha256",
+        "observed_at",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.git-observation/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/GitRepositoryObservation"
+    },
+    "schema_id": {
+      "const": "fam.core.git-observation/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Read-only repository status history refs remotes and diff",
+  "type": "object"
+}

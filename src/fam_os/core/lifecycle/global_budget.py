@@ -36,6 +36,8 @@ class AttemptBudgetReservation:
     kind: AttemptKind
     reserved_tokens: int
     reserved_wall_milliseconds: int
+    acceptance_sha256: str | None = None
+    route_plan_id: str | None = None
 
     def __post_init__(self) -> None:
         if not all(value.strip() for value in (
@@ -44,6 +46,16 @@ class AttemptBudgetReservation:
             raise ValueError("budget reservation IDs must not be empty")
         if self.reserved_tokens <= 0 or self.reserved_wall_milliseconds <= 0:
             raise ValueError("budget reservations must be positive")
+        if self.acceptance_sha256 is not None and (
+            len(self.acceptance_sha256) != 64
+            or any(
+                character not in "0123456789abcdef"
+                for character in self.acceptance_sha256
+            )
+        ):
+            raise ValueError("budget reservation acceptance digest is invalid")
+        if self.route_plan_id is not None and not self.route_plan_id.strip():
+            raise ValueError("budget reservation route plan is invalid")
 
 
 @dataclass(frozen=True, slots=True)
@@ -93,6 +105,10 @@ class InMemoryGlobalAttemptBudgetLedger:
                 sum(item.kind is AttemptKind.ESCALATION for item in values),
                 tuple(sorted(self._reservations)),
             )
+
+    def reservation(self, reservation_id: str) -> AttemptBudgetReservation | None:
+        with self._lock:
+            return self._reservations.get(reservation_id)
 
     def _valid_new(self, reservation) -> bool:
         return (

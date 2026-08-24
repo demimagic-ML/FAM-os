@@ -52,6 +52,7 @@ class FakeRuntime:
         self.contents = list(contents)
         self.requests: list[InferenceRequest] = []
         self.unloaded: list[str] = []
+        self.prewarmed: list[str] = []
 
     def chat(self, request: InferenceRequest) -> InferenceResponse:
         self.requests.append(request)
@@ -61,6 +62,9 @@ class FakeRuntime:
 
     def unload(self, model_ref: str) -> None:
         self.unloaded.append(model_ref)
+
+    def prewarm(self, model_ref: str, keep_alive: str = "10m") -> None:
+        self.prewarmed.append(model_ref)
 
     def loaded_models(self) -> tuple[LoadedModel, ...]:
         return ()

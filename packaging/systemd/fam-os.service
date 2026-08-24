@@ -1,0 +1,19 @@
+[Unit]
+Description=FAM_OS local intelligence service
+After=network.target
+
+[Service]
+Type=simple
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=%h/.local/share/fam-os %t/fam-os
+Environment=PYTHONPATH=@FAM_PREFIX@/active/python
+EnvironmentFile=-%h/.config/fam-os/network-client.env
+ExecStart=@PYTHON@ -m fam_os.product.service
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=default.target

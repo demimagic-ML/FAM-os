@@ -1,0 +1,81 @@
+{
+  "$defs": {
+    "DocumentationGovernanceBinding": {
+      "additionalProperties": false,
+      "properties": {
+        "binding_id": {
+          "type": "string"
+        },
+        "bound_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "candidate_id": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "governance_sources": {
+          "items": {
+            "$ref": "#/$defs/DocumentationSource"
+          },
+          "type": "array"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "binding_id",
+        "request_id",
+        "task_id",
+        "candidate_id",
+        "governance_sources",
+        "bound_at",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "DocumentationSource": {
+      "additionalProperties": false,
+      "properties": {
+        "content_sha256": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "content_sha256"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.documentation-governance-binding/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/DocumentationGovernanceBinding"
+    },
+    "schema_id": {
+      "const": "fam.core.documentation-governance-binding/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Candidate-rehashed generated-content governance binding",
+  "type": "object"
+}

@@ -1,6 +1,10 @@
 """Explicit Bubblewrap adapter settings."""
 
 from dataclasses import dataclass
+import re
+
+
+_APPARMOR_PROFILE = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}")
 
 
 @dataclass(frozen=True, slots=True)
@@ -8,6 +12,7 @@ class BubblewrapSettings:
     python_executable: str = "python3"
     bubblewrap_executable: str = "bwrap"
     systemd_run_executable: str = "systemd-run"
+    apparmor_profile: str | None = None
     require_bubblewrap: bool = True
     require_systemd_cgroup: bool = True
     read_only_paths: tuple[str, ...] = ("/usr", "/lib")
@@ -26,3 +31,8 @@ class BubblewrapSettings:
             raise ValueError("sandbox bind paths must be absolute")
         if not self.temporary_directory.startswith("/"):
             raise ValueError("temporary_directory must be absolute")
+        if (
+            self.apparmor_profile is not None
+            and _APPARMOR_PROFILE.fullmatch(self.apparmor_profile) is None
+        ):
+            raise ValueError("AppArmor profile name is invalid")

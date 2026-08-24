@@ -1,0 +1,59 @@
+{
+  "$defs": {
+    "AttemptBudgetPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "escalation_step_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "max_escalations": {
+          "type": "integer"
+        },
+        "max_repairs": {
+          "type": "integer"
+        },
+        "plan_id": {
+          "type": "string"
+        },
+        "repair_step_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "plan_id",
+        "repair_step_ids",
+        "escalation_step_ids",
+        "max_repairs",
+        "max_escalations"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.attempt-policy/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/AttemptBudgetPolicy"
+    },
+    "schema_id": {
+      "const": "fam.core.attempt-policy/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Plan attempt policy",
+  "type": "object"
+}

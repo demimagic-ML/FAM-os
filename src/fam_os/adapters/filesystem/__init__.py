@@ -12,6 +12,13 @@ from fam_os.adapters.filesystem.expert_metadata import (
     DirectoryExpertRoutingEmbeddingSource,
 )
 from fam_os.adapters.filesystem.residency_state import JsonExpertResidencyRepository
+from fam_os.adapters.filesystem.candidate_workspace import CandidateWorkspaceAdapter
+from fam_os.adapters.filesystem.candidate_verification import (
+    CandidateVerificationAdapter,
+    CandidateVerificationEvidence,
+)
+from fam_os.adapters.filesystem.repository_evidence import BoundedFilesystemRepositoryObserver
+from fam_os.adapters.filesystem.candidate_context import BoundedCandidateContextReader
 
 __all__ = [
     "DirectoryExpertManifestSource",
@@ -21,4 +28,9 @@ __all__ = [
     "JsonPackageLifecycleStateStore",
     "Sha256FileArtifactHasher",
     "JsonExpertResidencyRepository",
+    "CandidateWorkspaceAdapter",
+    "CandidateVerificationAdapter",
+    "CandidateVerificationEvidence",
+    "BoundedFilesystemRepositoryObserver",
+    "BoundedCandidateContextReader",
 ]

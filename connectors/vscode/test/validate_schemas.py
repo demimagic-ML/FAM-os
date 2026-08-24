@@ -12,8 +12,8 @@ ROOT = Path(__file__).parents[1]
 
 def main() -> int:
     paths = tuple(sorted((ROOT / "schemas").glob("*.schema.json")))
-    if len(paths) != 8:
-        raise RuntimeError("expected eight VS Code capability schemas")
+    if len(paths) != 10:
+        raise RuntimeError("expected ten VS Code capability schemas")
     schemas = {path.stem.removesuffix(".schema"): json.loads(path.read_text()) for path in paths}
     for schema in schemas.values():
         Draft202012Validator.check_schema(schema)
@@ -33,7 +33,10 @@ def main() -> int:
     Draft202012Validator(schemas["vscode.workspace_edit.input.v1"]).validate(
         {"reversal_token": "token-1"}
     )
-    print("validated 8 VS Code capability schemas")
+    Draft202012Validator(schemas["vscode.document.save.input.v1"]).validate(
+        {"document_uri": "file:///workspace/example.ts"}
+    )
+    print("validated 10 VS Code capability schemas")
     return 0
 
 

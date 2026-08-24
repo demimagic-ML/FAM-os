@@ -1,0 +1,49 @@
+{
+  "$defs": {
+    "IntegrationNetworkAttachment": {
+      "additionalProperties": false,
+      "properties": {
+        "attachment_reference": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "linux_namespace",
+            "docker_internal_network"
+          ],
+          "type": "string"
+        },
+        "proxy_uri": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "attachment_reference",
+        "proxy_uri"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.integration-network-attachment/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/IntegrationNetworkAttachment"
+    },
+    "schema_id": {
+      "const": "fam.core.integration-network-attachment/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Broker-owned provider-specific network attachment",
+  "type": "object"
+}

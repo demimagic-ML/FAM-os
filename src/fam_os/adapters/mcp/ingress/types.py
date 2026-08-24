@@ -1,6 +1,7 @@
 """SDK-neutral MCP ingress tool and result values."""
 
 from dataclasses import dataclass
+from typing import Protocol
 
 from fam_os.applications.payloads import JsonObject, freeze_payload
 
@@ -34,3 +35,11 @@ class McpIngressOutcome:
         object.__setattr__(
             self, "structured_content", freeze_payload(self.structured_content)
         )
+
+
+class McpIngressSession(Protocol):
+    async def list_tools(self) -> tuple[McpIngressTool, ...]: ...
+
+    async def call_tool(
+        self, tool_name: str, arguments: dict,
+    ) -> McpIngressOutcome: ...

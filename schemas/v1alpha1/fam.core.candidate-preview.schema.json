@@ -1,0 +1,153 @@
+{
+  "$defs": {
+    "CandidatePreviewItem": {
+      "additionalProperties": false,
+      "properties": {
+        "after_sha256": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "before_sha256": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "media_type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "operation_kind": {
+          "enum": [
+            "create_directory",
+            "create_file",
+            "patch_file",
+            "move",
+            "delete",
+            "set_executable",
+            "restore"
+          ],
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "preview": {
+          "type": "string"
+        },
+        "risk_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "size_delta_bytes": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "path",
+        "operation_kind",
+        "before_sha256",
+        "after_sha256",
+        "media_type",
+        "size_delta_bytes",
+        "preview",
+        "risk_codes"
+      ],
+      "type": "object"
+    },
+    "CandidateTransactionPreview": {
+      "additionalProperties": false,
+      "properties": {
+        "baseline_tree_sha256": {
+          "type": "string"
+        },
+        "candidate_id": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "generated_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "items": {
+          "items": {
+            "$ref": "#/$defs/CandidatePreviewItem"
+          },
+          "type": "array"
+        },
+        "required_confirmation": {
+          "type": "boolean"
+        },
+        "rollback_summary": {
+          "type": "string"
+        },
+        "transaction_id": {
+          "type": "string"
+        },
+        "verification_evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "verification_summary": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "transaction_id",
+        "candidate_id",
+        "baseline_tree_sha256",
+        "generated_at",
+        "items",
+        "verification_evidence_ids",
+        "verification_summary",
+        "rollback_summary",
+        "required_confirmation",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.candidate-preview/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/CandidateTransactionPreview"
+    },
+    "schema_id": {
+      "const": "fam.core.candidate-preview/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Approval-ready candidate transaction preview",
+  "type": "object"
+}

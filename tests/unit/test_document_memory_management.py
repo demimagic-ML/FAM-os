@@ -57,7 +57,7 @@ class DocumentMemoryManagementTests(unittest.TestCase):
         receipt = self.manager.delete(request, self.context, NOW)
         self.assertTrue(receipt.payload_removed)
         self.assertIsNone(self.repository.document("doc"))
-        self.assertEqual([], self.repository.chunks("doc"))
+        self.assertEqual((), self.repository.chunks("doc"))
 
 
 if __name__ == "__main__":

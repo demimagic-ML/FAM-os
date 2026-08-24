@@ -1,0 +1,74 @@
+{
+  "$defs": {
+    "SyntheticExampleReview": {
+      "additionalProperties": false,
+      "properties": {
+        "acceptance_id": {
+          "type": "string"
+        },
+        "accepted": {
+          "type": "boolean"
+        },
+        "contract_version": {
+          "const": "fam.factory.dataset-provenance/v1alpha1"
+        },
+        "evidence_sha256": {
+          "type": "string"
+        },
+        "example_id": {
+          "type": "string"
+        },
+        "review_id": {
+          "type": "string"
+        },
+        "review_kind": {
+          "enum": [
+            "deterministic",
+            "human"
+          ],
+          "type": "string"
+        },
+        "reviewed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "reviewer_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "review_id",
+        "example_id",
+        "review_kind",
+        "reviewer_id",
+        "acceptance_id",
+        "evidence_sha256",
+        "accepted",
+        "reviewed_at",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.factory.synthetic-example-review/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.factory.dataset-provenance/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/SyntheticExampleReview"
+    },
+    "schema_id": {
+      "const": "fam.factory.synthetic-example-review/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Independent synthetic example review",
+  "type": "object"
+}

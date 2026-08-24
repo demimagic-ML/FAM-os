@@ -1,0 +1,118 @@
+{
+  "$defs": {
+    "IntegrationCoverageItem": {
+      "additionalProperties": false,
+      "properties": {
+        "evidence_refs": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "installed_evidence": {
+          "type": "boolean"
+        },
+        "known_gaps": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "maturity": {
+          "enum": [
+            "contract_only",
+            "component_tested",
+            "acceptance_only",
+            "source_composed",
+            "production_wired",
+            "installed_tested",
+            "operationally_proven"
+          ],
+          "type": "string"
+        },
+        "production_reachable": {
+          "type": "boolean"
+        },
+        "subsystem_id": {
+          "type": "string"
+        },
+        "target_maturity": {
+          "enum": [
+            "contract_only",
+            "component_tested",
+            "acceptance_only",
+            "source_composed",
+            "production_wired",
+            "installed_tested",
+            "operationally_proven"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "subsystem_id",
+        "maturity",
+        "target_maturity",
+        "production_reachable",
+        "installed_evidence",
+        "evidence_refs",
+        "known_gaps"
+      ],
+      "type": "object"
+    },
+    "IntegrationCoverageManifest": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.product.integration-coverage/v1alpha1"
+        },
+        "items": {
+          "items": {
+            "$ref": "#/$defs/IntegrationCoverageItem"
+          },
+          "type": "array"
+        },
+        "observed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "program_status": {
+          "enum": [
+            "integration_incomplete",
+            "release_qualification",
+            "complete"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "observed_at",
+        "program_status",
+        "items",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.product.integration-coverage/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.product.integration-coverage/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/IntegrationCoverageManifest"
+    },
+    "schema_id": {
+      "const": "fam.product.integration-coverage/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Final integration coverage manifest",
+  "type": "object"
+}

@@ -1,0 +1,74 @@
+{
+  "$defs": {
+    "GitRemoteRefObservationRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "credential_ref": {
+          "type": "string"
+        },
+        "proposed_new_object_id": {
+          "type": "string"
+        },
+        "remote_name": {
+          "type": "string"
+        },
+        "remote_url_sha256": {
+          "type": "string"
+        },
+        "repository_root": {
+          "type": "string"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "requested_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "target_ref": {
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "task_id",
+        "repository_root",
+        "remote_name",
+        "remote_url_sha256",
+        "target_ref",
+        "proposed_new_object_id",
+        "credential_ref",
+        "requested_at",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.git-remote-ref-observation-request/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/GitRemoteRefObservationRequest"
+    },
+    "schema_id": {
+      "const": "fam.core.git-remote-ref-observation-request/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Credential-opaque exact remote-ref observation request",
+  "type": "object"
+}

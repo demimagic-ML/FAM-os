@@ -1,0 +1,129 @@
+{
+  "$defs": {
+    "DatabaseVerificationReceipt": {
+      "additionalProperties": false,
+      "properties": {
+        "applied_step_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "backup_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "completed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "data_sha256": {
+          "type": "string"
+        },
+        "diagnostic": {
+          "type": "string"
+        },
+        "execution_permit_id": {
+          "type": "string"
+        },
+        "plan_id": {
+          "type": "string"
+        },
+        "postcondition_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "restore_test_id": {
+          "type": "string"
+        },
+        "rollback_receipt_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "schema_sha256": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "planned",
+            "applied",
+            "verified",
+            "rolled_back",
+            "failed",
+            "recovery_required"
+          ],
+          "type": "string"
+        },
+        "target_id": {
+          "type": "string"
+        },
+        "transaction_test_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "receipt_id",
+        "plan_id",
+        "target_id",
+        "execution_permit_id",
+        "backup_id",
+        "status",
+        "applied_step_ids",
+        "schema_sha256",
+        "data_sha256",
+        "transaction_test_ids",
+        "restore_test_id",
+        "postcondition_ids",
+        "rollback_receipt_id",
+        "completed_at",
+        "diagnostic",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.database-verification-receipt/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/DatabaseVerificationReceipt"
+    },
+    "schema_id": {
+      "const": "fam.core.database-verification-receipt/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Migration transaction restore and postcondition evidence",
+  "type": "object"
+}

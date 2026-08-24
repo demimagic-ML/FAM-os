@@ -48,12 +48,25 @@ def build_bubblewrap_command(
 
 
 def build_systemd_sandbox_command(
-    systemd_run: str, command: tuple[str, ...], limits: SandboxLimits
+    systemd_run: str,
+    command: tuple[str, ...],
+    limits: SandboxLimits,
+    apparmor_profile: str | None = None,
 ) -> tuple[str, ...]:
-    return (
-        systemd_run, "--user", "--scope", "--quiet",
+    common = (
+        systemd_run, "--user",
         "-p", f"TasksMax={limits.processes}",
         "-p", f"MemoryMax={limits.memory_bytes}",
         "-p", "MemorySwapMax=0",
+    )
+    if apparmor_profile is None:
+        return (*common[:2], "--scope", "--quiet", *common[2:], "--", *command)
+    # A scope inherits NoNewPrivileges from the FAM daemon, which prevents the
+    # AppArmor transition.  A transient service is created by the user manager
+    # instead, so only this short-lived verifier receives the userns profile.
+    return (
+        *common[:2], "--pipe", "--wait", "--collect", "--quiet",
+        "--service-type=exec", *common[2:],
+        "-p", f"AppArmorProfile={apparmor_profile}",
         "--", *command,
     )

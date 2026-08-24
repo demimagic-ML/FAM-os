@@ -1,0 +1,154 @@
+{
+  "$defs": {
+    "PhysicalHostEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "architecture": {
+          "type": "string"
+        },
+        "block_device_bytes": {
+          "type": "integer"
+        },
+        "captured_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.fabric.physical-host-evidence/v1alpha1"
+        },
+        "cpu_threads": {
+          "type": "integer"
+        },
+        "device_fingerprint_sha256": {
+          "type": "string"
+        },
+        "device_id": {
+          "type": "string"
+        },
+        "device_public_key_base64": {
+          "type": "string"
+        },
+        "evidence_id": {
+          "type": "string"
+        },
+        "hardware_anchor_kind": {
+          "enum": [
+            "dmi_product_uuid",
+            "device_tree_serial",
+            "block_device_serial"
+          ],
+          "type": "string"
+        },
+        "hardware_anchor_sha256": {
+          "type": "string"
+        },
+        "hostname_sha256": {
+          "type": "string"
+        },
+        "installation_healthy": {
+          "type": "boolean"
+        },
+        "kernel_release": {
+          "type": "string"
+        },
+        "machine_id_sha256": {
+          "type": "string"
+        },
+        "memory_bytes": {
+          "type": "integer"
+        },
+        "network_interface_count": {
+          "type": "integer"
+        },
+        "non_loopback_address_sha256": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "physical_host": {
+          "type": "boolean"
+        },
+        "qualification_id": {
+          "type": "string"
+        },
+        "release_component_count": {
+          "type": "integer"
+        },
+        "release_id": {
+          "type": "string"
+        },
+        "release_manifest_sha256": {
+          "type": "string"
+        },
+        "role": {
+          "enum": [
+            "requester",
+            "expert_peer"
+          ],
+          "type": "string"
+        },
+        "signature_base64": {
+          "type": "string"
+        },
+        "signer_key_id": {
+          "type": "string"
+        },
+        "virtualization_kind": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "evidence_id",
+        "qualification_id",
+        "role",
+        "device_id",
+        "device_public_key_base64",
+        "device_fingerprint_sha256",
+        "machine_id_sha256",
+        "hardware_anchor_kind",
+        "hardware_anchor_sha256",
+        "hostname_sha256",
+        "kernel_release",
+        "architecture",
+        "virtualization_kind",
+        "physical_host",
+        "cpu_threads",
+        "memory_bytes",
+        "block_device_bytes",
+        "network_interface_count",
+        "non_loopback_address_sha256",
+        "release_id",
+        "signer_key_id",
+        "release_manifest_sha256",
+        "release_component_count",
+        "installation_healthy",
+        "captured_at",
+        "signature_base64",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.fabric.physical-host-evidence/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.fabric.physical-host-evidence/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/PhysicalHostEvidence"
+    },
+    "schema_id": {
+      "const": "fam.fabric.physical-host-evidence/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Content-free physical Linux host qualification evidence",
+  "type": "object"
+}

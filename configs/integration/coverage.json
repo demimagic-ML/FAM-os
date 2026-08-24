@@ -1,0 +1,326 @@
+{
+  "contract_version": "fam.product.integration-coverage/v1alpha1",
+  "payload": {
+    "contract_version": "fam.product.integration-coverage/v1alpha1",
+    "items": [
+      {
+        "evidence_refs": ["MASTER_PLANv2.md", "docs/decisions/0165-engineering-authority-is-typed-and-core-admitted.md", "docs/decisions/0202-natural-engineering-effects-require-core-binding-and-two-owner-checkpoints.md", "handoffs/0237-builder-independent-signed-natural-lifecycle.md", "artifacts/product/phase30/natural-local-delivery-20260719-02/evidence.json", "tests/unit/test_engineering_contracts.py", "tests/unit/test_action_intent_firewall.py"],
+        "installed_evidence": true,
+        "known_gaps": ["The signed installed ordinary local lifecycle directly exercises bounded observe authority through Console and Shell. All authority modes, revocation/expiry variants, and specialized operational observations still require final-candidate matrix proof."],
+        "maturity": "installed_tested",
+        "production_reachable": true,
+        "subsystem_id": "engineering_authority.observe",
+        "target_maturity": "operationally_proven"
+      },
+      {
+        "evidence_refs": ["MASTER_PLANv2.md", "docs/decisions/0165-engineering-authority-is-typed-and-core-admitted.md", "docs/decisions/0202-natural-engineering-effects-require-core-binding-and-two-owner-checkpoints.md", "handoffs/0237-builder-independent-signed-natural-lifecycle.md", "artifacts/product/phase30/natural-local-delivery-20260719-02/evidence.json", "tests/unit/test_engineering_contracts.py", "tests/unit/test_action_intent_firewall.py"],
+        "installed_evidence": true,
+        "known_gaps": ["The signed installed ordinary local lifecycle directly exercises non-authoritative repository, architecture, generated-plan, and exact changeset proposals. Design, deployment, publication, and multi-repository proposal variants remain outside this evidence."],
+        "maturity": "installed_tested",
+        "production_reachable": true,
+        "subsystem_id": "engineering_authority.propose",
+        "target_maturity": "operationally_proven"
+      },
+      {
+        "evidence_refs": ["MASTER_PLANv2.md", "docs/decisions/0165-engineering-authority-is-typed-and-core-admitted.md", "docs/decisions/0202-natural-engineering-effects-require-core-binding-and-two-owner-checkpoints.md", "handoffs/0237-builder-independent-signed-natural-lifecycle.md", "artifacts/product/phase30/natural-local-delivery-20260719-02/evidence.json", "tests/unit/test_engineering_contracts.py", "tests/unit/test_action_intent_firewall.py"],
+        "installed_evidence": true,
+        "known_gaps": ["The signed installed ordinary local lifecycle directly exercises owner-confirmed candidate modification, transactional owner apply, and exact local Git commit. Explicit post-success rollback and specialized mutation authorities remain open."],
+        "maturity": "installed_tested",
+        "production_reachable": true,
+        "subsystem_id": "engineering_authority.modify",
+        "target_maturity": "operationally_proven"
+      },
+      {
+        "evidence_refs": ["MASTER_PLANv2.md", "docs/decisions/0165-engineering-authority-is-typed-and-core-admitted.md", "docs/decisions/0202-natural-engineering-effects-require-core-binding-and-two-owner-checkpoints.md", "handoffs/0237-builder-independent-signed-natural-lifecycle.md", "artifacts/product/phase30/natural-local-delivery-20260719-02/evidence.json", "tests/unit/test_engineering_contracts.py", "tests/unit/test_action_intent_firewall.py"],
+        "installed_evidence": true,
+        "known_gaps": ["The signed installed ordinary local lifecycle directly exercises trusted signed Python test execution before and after apply. The complete language, runtime-debugging, dependency, service, deployment, and release execution matrix remains open."],
+        "maturity": "installed_tested",
+        "production_reachable": true,
+        "subsystem_id": "engineering_authority.execute",
+        "target_maturity": "operationally_proven"
+      },
+      {
+        "evidence_refs": ["MASTER_PLANv2.md", "docs/decisions/0165-engineering-authority-is-typed-and-core-admitted.md", "handoffs/0188-typed-engineering-authority-contracts.md", "tests/unit/test_engineering_contracts.py", "tests/unit/test_action_intent_firewall.py"],
+        "installed_evidence": false,
+        "known_gaps": ["The network engineering authority is typed and deterministically recognized, but its owner-grant lifecycle and Phase 24 effect path are not production-reachable."],
+        "maturity": "component_tested",
+        "production_reachable": false,
+        "subsystem_id": "engineering_authority.network",
+        "target_maturity": "operationally_proven"
+      },
+      {
+        "evidence_refs": ["MASTER_PLANv2.md", "docs/decisions/0165-engineering-authority-is-typed-and-core-admitted.md", "handoffs/0188-typed-engineering-authority-contracts.md", "tests/unit/test_engineering_contracts.py", "tests/unit/test_action_intent_firewall.py"],
+        "installed_evidence": false,
+        "known_gaps": ["The publish engineering authority is typed and deterministically recognized, but its owner-grant lifecycle and Phase 24 effect path are not production-reachable."],
+        "maturity": "component_tested",
+        "production_reachable": false,
+        "subsystem_id": "engineering_authority.publish",
+        "target_maturity": "operationally_proven"
+      },
+      {
+        "evidence_refs": ["MASTER_PLANv2.md", "docs/decisions/0165-engineering-authority-is-typed-and-core-admitted.md", "handoffs/0188-typed-engineering-authority-contracts.md", "tests/unit/test_engineering_contracts.py", "tests/unit/test_action_intent_firewall.py"],
+        "installed_evidence": false,
+        "known_gaps": ["The raw_shell engineering authority is typed and deterministically recognized, but its owner-grant lifecycle and Phase 24 effect path are not production-reachable."],
+        "maturity": "component_tested",
+        "production_reachable": false,
+        "subsystem_id": "engineering_authority.raw_shell",
+        "target_maturity": "operationally_proven"
+      },
+      {
+        "evidence_refs": ["MASTER_PLANv2.md", "docs/decisions/0165-engineering-authority-is-typed-and-core-admitted.md", "handoffs/0188-typed-engineering-authority-contracts.md", "tests/unit/test_engineering_contracts.py", "tests/unit/test_action_intent_firewall.py"],
+        "installed_evidence": false,
+        "known_gaps": ["The host_admin engineering authority is typed and deterministically recognized, but its owner-grant lifecycle and Phase 24 effect path are not production-reachable."],
+        "maturity": "component_tested",
+        "production_reachable": false,
+        "subsystem_id": "engineering_authority.host_admin",
+        "target_maturity": "operationally_proven"
+      },
+      {
+        "evidence_refs": ["MASTER_PLANv2.md", "docs/decisions/0165-engineering-authority-is-typed-and-core-admitted.md", "handoffs/0188-typed-engineering-authority-contracts.md", "tests/unit/test_engineering_contracts.py", "tests/unit/test_action_intent_firewall.py"],
+        "installed_evidence": false,
+        "known_gaps": ["The secret_use engineering authority is typed and deterministically recognized, but its owner-grant lifecycle and Phase 24 effect path are not production-reachable."],
+        "maturity": "component_tested",
+        "production_reachable": false,
+        "subsystem_id": "engineering_authority.secret_use",
+        "target_maturity": "operationally_proven"
+      },
+      {
+        "evidence_refs": ["MASTER_PLANv2.md", "docs/decisions/0165-engineering-authority-is-typed-and-core-admitted.md", "handoffs/0188-typed-engineering-authority-contracts.md", "tests/unit/test_engineering_contracts.py", "tests/unit/test_action_intent_firewall.py"],
+        "installed_evidence": false,
+        "known_gaps": ["The global_install engineering authority is typed and deterministically recognized, but its owner-grant lifecycle and Phase 24 effect path are not production-reachable."],
+        "maturity": "component_tested",
+        "production_reachable": false,
+        "subsystem_id": "engineering_authority.global_install",
+        "target_maturity": "operationally_proven"
+      },
+      {
+        "evidence_refs": ["MASTER_PLANv2.md", "docs/decisions/0165-engineering-authority-is-typed-and-core-admitted.md", "handoffs/0188-typed-engineering-authority-contracts.md", "tests/unit/test_engineering_contracts.py", "tests/unit/test_action_intent_firewall.py"],
+        "installed_evidence": false,
+        "known_gaps": ["The production_mutate engineering authority is typed and deterministically recognized, but its owner-grant lifecycle and Phase 24 effect path are not production-reachable."],
+        "maturity": "component_tested",
+        "production_reachable": false,
+        "subsystem_id": "engineering_authority.production_mutate",
+        "target_maturity": "operationally_proven"
+      },
+      {
+        "evidence_refs": ["MASTER_PLANv2.md", "docs/decisions/0165-engineering-authority-is-typed-and-core-admitted.md", "handoffs/0188-typed-engineering-authority-contracts.md", "tests/unit/test_engineering_contracts.py", "tests/unit/test_action_intent_firewall.py"],
+        "installed_evidence": false,
+        "known_gaps": ["The policy_change engineering authority is typed and deterministically recognized, but its owner-grant lifecycle and Phase 24 effect path are not production-reachable."],
+        "maturity": "component_tested",
+        "production_reachable": false,
+        "subsystem_id": "engineering_authority.policy_change",
+        "target_maturity": "operationally_proven"
+      },
+      {
+        "evidence_refs": ["MASTER_PLANv2.md", "docs/decisions/0165-engineering-authority-is-typed-and-core-admitted.md", "handoffs/0188-typed-engineering-authority-contracts.md", "tests/unit/test_engineering_contracts.py", "tests/unit/test_action_intent_firewall.py"],
+        "installed_evidence": false,
+        "known_gaps": ["The protected_ref_write engineering authority is typed and deterministically recognized, but its owner-grant lifecycle and Phase 24 effect path are not production-reachable."],
+        "maturity": "component_tested",
+        "production_reachable": false,
+        "subsystem_id": "engineering_authority.protected_ref_write",
+        "target_maturity": "operationally_proven"
+      },
+      {
+        "evidence_refs": ["MASTER_PLANv2.md", "docs/decisions/0165-engineering-authority-is-typed-and-core-admitted.md", "handoffs/0188-typed-engineering-authority-contracts.md", "tests/unit/test_engineering_contracts.py", "tests/unit/test_action_intent_firewall.py"],
+        "installed_evidence": false,
+        "known_gaps": ["The self_update engineering authority is typed and deterministically recognized, but its owner-grant lifecycle and Phase 24 effect path are not production-reachable."],
+        "maturity": "component_tested",
+        "production_reachable": false,
+        "subsystem_id": "engineering_authority.self_update",
+        "target_maturity": "operationally_proven"
+      },
+      {
+        "evidence_refs": ["MASTER_PLAN.md", "NEXT_STEPS.md", "docs/operations/FINAL_MASTER_PLAN_AUDIT.md", "docs/decisions/0111-final-integration-requires-production-reachability.md", "docs/decisions/0157-installation-health-uses-a-versioned-expected-file-ledger.md", "docs/decisions/0158-runtime-routing-is-bound-to-verifier-and-expert-scope.md", "docs/decisions/0159-signed-configuration-forbids-ambiguous-json-and-version-inference.md", "handoffs/0174-query-bound-extractive-grounding.md", "handoffs/0176-clean-built-artifact-profile-matrix.md", "handoffs/0179-installed-verifier-host-policy-and-total-removal.md", "handoffs/0180-phase23-lifecycle-diagnosis-and-tool-import-correction.md", "handoffs/0181-verifier-compatible-expert-scoped-runtime-routing.md", "handoffs/0182-exact-package-scopes-and-strict-json.md"],
+        "installed_evidence": false,
+        "known_gaps": ["The refreshed maturity manifest has source-contract coverage but has not yet been sealed and verified from the final signed release candidate."],
+        "maturity": "component_tested",
+        "production_reachable": false,
+        "subsystem_id": "governance",
+        "target_maturity": "operationally_proven"
+      },
+      {
+        "evidence_refs": ["MASTER_PLANv2.md", "docs/decisions/0169-candidate-workspaces-reconcile-through-owned-journals.md", "docs/decisions/0202-natural-engineering-effects-require-core-binding-and-two-owner-checkpoints.md", "handoffs/0237-builder-independent-signed-natural-lifecycle.md", "artifacts/product/phase30/natural-local-delivery-20260719-02/evidence.json", "tests/unit/test_candidate_workspace.py", "tests/contract/schema_transaction_fixtures.py"],
+        "installed_evidence": true,
+        "known_gaps": ["Signed installed Console and Shell tasks directly create, edit, verify, preview, and transactionally apply an isolated candidate before exact local commit. The complete operation, binary/design, conflict, cancellation, explicit rollback, self-source, and polyglot matrices remain open."],
+        "maturity": "installed_tested",
+        "production_reachable": true,
+        "subsystem_id": "engineering_candidate_workspace",
+        "target_maturity": "operationally_proven"
+      },
+      {
+        "evidence_refs": ["MASTER_PLANv2.md", "docs/decisions/0183-integration-environments-are-declarative-permitted-and-cleanup-safe.md", "docs/decisions/0195-integration-start-intent-audit-is-owner-visible-and-read-only.md", "handoffs/0228-owner-visible-integration-intent-audit.md", "artifacts/engineering/phase27/integration-environment-installed-20260719-attempt14.json"],
+        "installed_evidence": true,
+        "known_gaps": ["Docker, process/API, real browser control, durable active and pre-result restart cleanup, retained artifacts, owner-provisioned opaque secrets, atomic active/pending-use revocation, owner-visible intent audit, and groupable mixed Docker/process clusters pass from a fresh installed wheel on one host. Backend interleaving/shared networking, allowlisted egress, portable browser packaging, independently enforced physical profiles, soak, and independent review remain open."],
+        "maturity": "production_wired",
+        "production_reachable": true,
+        "subsystem_id": "engineering_integration_environment",
+        "target_maturity": "operationally_proven"
+      },
+      {
+        "evidence_refs": ["artifacts/product/phase15/phase15-exit.json", "artifacts/product/phase18/unified-installed-core.json", "handoffs/0138-production-application-fabric-and-console.md", "artifacts/product/phase19/phase19-exit.json", "handoffs/0141-phase19-signed-application-weaving-exit.md", "artifacts/product/phase23/action-intent-firewall.json", "handoffs/0170-action-intent-firewall-and-verified-directory-receipts.md", "handoffs/0174-query-bound-extractive-grounding.md", "artifacts/product/phase23/installed-matrix/phase23-installed-20260718-11/installed-scenario-matrix.json", "artifacts/product/phase23/hardware-matrix/phase23-hardware-20260718-06/installed-hardware-matrix.json", "artifacts/product/phase23/lifecycle/phase23-lifecycle-preflight-20260718-04/installed-lifecycle.json", "handoffs/0180-phase23-lifecycle-diagnosis-and-tool-import-correction.md"],
+        "installed_evidence": true,
+        "known_gaps": ["The signed consolidated installed and hardware matrices pass local, application, MCP, memory, escalation, media, same-host remote, Factory, approval-restart, uncertain-action recovery, both hardware profiles, and Console authority; physical-remote, 24-hour soak, human review, and final fresh-user lifecycle gates remain open."],
+        "maturity": "production_wired",
+        "production_reachable": true,
+        "subsystem_id": "installed_service",
+        "target_maturity": "operationally_proven"
+      },
+      {
+        "evidence_refs": ["handoffs/0136-installed-unified-core-gateway.md", "artifacts/product/phase18/unified-installed-core.json", "docs/decisions/0147-action-intent-is-authority-bearing-and-fails-closed.md", "tests/integration/test_verified_directory_action.py", "artifacts/product/phase23/action-intent-firewall.json", "handoffs/0170-action-intent-firewall-and-verified-directory-receipts.md", "artifacts/product/phase23/installed-matrix/phase23-installed-20260718-11/installed-scenario-matrix.json"],
+        "installed_evidence": true,
+        "known_gaps": ["Action-shaped natural language fails closed before model selection; verified receipts, restart during approval, and uncertain-action recovery pass from one signed installed candidate. The deterministic intent vocabulary must expand with each admitted capability, and final Phase 23 qualification remains open."],
+        "maturity": "production_wired",
+        "production_reachable": true,
+        "subsystem_id": "core",
+        "target_maturity": "operationally_proven"
+      },
+      {
+        "evidence_refs": ["handoffs/0058-reference-expert-packages.md", "handoffs/0137-signed-live-expert-catalog-and-responsive-workers.md", "artifacts/product/phase18/unified-installed-core.json", "artifacts/adaptation/phase20.6-hardware-prewarm.json", "artifacts/fabric/phase21.4-remote-core-route.json", "handoffs/0166-real-expert-factory-signed-installed-exit.md", "handoffs/0174-query-bound-extractive-grounding.md", "artifacts/product/phase23/installed-matrix/phase23-installed-20260718-11/installed-scenario-matrix.json", "artifacts/product/phase23/hardware-matrix/phase23-hardware-20260718-06/installed-hardware-matrix.json", "docs/decisions/0158-runtime-routing-is-bound-to-verifier-and-expert-scope.md", "docs/decisions/0159-signed-configuration-forbids-ambiguous-json-and-version-inference.md", "handoffs/0181-verifier-compatible-expert-scoped-runtime-routing.md", "handoffs/0182-exact-package-scopes-and-strict-json.md"],
+        "installed_evidence": true,
+        "known_gaps": ["Verifier-compatible exact package scopes and shared-model enablement pass the complete source suite, but the corrected catalog has not yet been rebuilt into and exercised from the final signed installed candidate."],
+        "maturity": "production_wired",
+        "production_reachable": true,
+        "subsystem_id": "expert_fabric",
+        "target_maturity": "operationally_proven"
+      },
+      {
+        "evidence_refs": ["artifacts/scheduler/phase7.10/", "handoffs/0137-signed-live-expert-catalog-and-responsive-workers.md", "artifacts/product/phase18/unified-installed-core.json", "handoffs/0172-production-resource-policy-wiring.md", "handoffs/0173-production-residency-and-confirmed-eviction.md", "artifacts/product/phase23/hardware-matrix/phase23-hardware-20260718-06/installed-hardware-matrix.json"],
+        "installed_evidence": true,
+        "known_gaps": ["The signed CPU/full-workstation profile matrix passes; the final 24-hour integrated pressure soak remains Phase 23 work."],
+        "maturity": "production_wired",
+        "production_reachable": true,
+        "subsystem_id": "scheduler",
+        "target_maturity": "operationally_proven"
+      },
+      {
+        "evidence_refs": ["handoffs/0007-python-verifier-sandbox.md", "artifacts/product/phase18/unified-installed-core.json", "handoffs/0138-production-application-fabric-and-console.md", "handoffs/0142-production-declared-verifier-bindings.md", "artifacts/verification/phase18-production-verifiers.json", "tests/integration/test_production_verifier_bindings.py", "docs/decisions/0150-query-bound-extractive-retrieval-verification.md", "handoffs/0174-query-bound-extractive-grounding.md", "artifacts/product/phase23/hardware-matrix/phase23-hardware-20260718-06/installed-hardware-matrix.json", "docs/decisions/0155-verifier-userns-profile-is-applied-to-a-transient-worker.md", "handoffs/0179-installed-verifier-host-policy-and-total-removal.md", "docs/decisions/0158-runtime-routing-is-bound-to-verifier-and-expert-scope.md", "handoffs/0181-verifier-compatible-expert-scoped-runtime-routing.md"],
+        "installed_evidence": true,
+        "known_gaps": ["The first installed 24-hour soak attempt exposed a restrictive-AppArmor service failure. The dedicated signed profile and narrow transient-verifier fix pass source and mechanics probes, but require administrator loading and a fresh installed 24-hour rerun.", "Exact verifier-compatible model selection and expert-scoped verifier authority pass the complete source suite but still require the next signed installed matrix."],
+        "maturity": "production_wired",
+        "production_reachable": true,
+        "subsystem_id": "verification",
+        "target_maturity": "operationally_proven"
+      },
+      {
+        "evidence_refs": ["handoffs/0050-cross-application-acceptance.md", "handoffs/0138-production-application-fabric-and-console.md", "handoffs/0140-explicit-production-desktop-fallbacks.md", "handoffs/0141-phase19-signed-application-weaving-exit.md", "artifacts/product/phase19/phase19-exit.json", "tests/integration/test_product_application_fabric.py", "tests/integration/test_product_application_action.py", "tests/integration/test_product_os_workflows.py", "tests/integration/test_verified_directory_action.py", "tests/unit/test_product_fallbacks.py", "tests/unit/test_console_workspaces.py", "tests/unit/test_console_task_activity.py", "artifacts/product/phase23/action-intent-firewall.json", "handoffs/0170-action-intent-firewall-and-verified-directory-receipts.md", "artifacts/product/phase23/installed-matrix/phase23-installed-20260718-11/installed-scenario-matrix.json", "handoffs/0184-owner-workspaces-and-tool-evidence-terminal.md", "artifacts/product/phase19/workspace-tools-20260718.json"],
+        "installed_evidence": true,
+        "known_gaps": ["Explicit workspace selection and exact bounded list/read observations pass from the signed installed release; autonomous recursive repository work still requires the bounded Core-owned Phase 19.13 tool loop."],
+        "maturity": "production_wired",
+        "production_reachable": true,
+        "subsystem_id": "applications",
+        "target_maturity": "operationally_proven"
+      },
+      {
+        "evidence_refs": ["handoffs/0047-native-vscode-semantic-connector.md", "handoffs/0138-production-application-fabric-and-console.md", "handoffs/0141-phase19-signed-application-weaving-exit.md", "artifacts/product/phase19/phase19-exit.json", "tests/unit/test_vscode_connector_installation.py"],
+        "installed_evidence": true,
+        "known_gaps": ["The signed VSIX passes observe, structured preview, apply, verification, and model-free undo, and the clean built-artifact VS Code profile passes; Phase 23 still owns the consolidated final signed installed application matrix."],
+        "maturity": "operationally_proven",
+        "production_reachable": true,
+        "subsystem_id": "vscode",
+        "target_maturity": "operationally_proven"
+      },
+      {
+        "evidence_refs": ["handoffs/0041-local-mcp-client-adapter.md", "handoffs/0042-authenticated-mcp-core-ingress.md", "handoffs/0139-permission-filtered-production-mcp-ingress.md", "tests/unit/test_product_mcp_clients.py", "tests/integration/test_product_mcp_ingress.py", "artifacts/product/phase23/installed-matrix/phase23-installed-20260718-11/installed-scenario-matrix.json"],
+        "installed_evidence": true,
+        "known_gaps": ["Allowlisted outbound resources and typed tools plus permission-filtered official-SDK ingress pass from the signed installed candidate; final product release qualification remains open outside this subsystem."],
+        "maturity": "operationally_proven",
+        "production_reachable": true,
+        "subsystem_id": "mcp",
+        "target_maturity": "operationally_proven"
+      },
+      {
+        "evidence_refs": ["handoffs/0046-fam-shell-mvp.md", "artifacts/product/phase15/phase15-exit.json", "handoffs/0138-production-application-fabric-and-console.md", "handoffs/0141-phase19-signed-application-weaving-exit.md", "artifacts/product/phase19/phase19-exit.json", "handoffs/0146-production-memory-management-controls.md", "artifacts/memory/phase20.4-memory-management.json", "handoffs/0149-production-live-adaptation-controls.md", "artifacts/adaptation/phase20.7-control-and-rollback.json", "handoffs/0151-production-peer-state-and-owner-controls.md", "artifacts/fabric/phase21.2-peer-state-and-controls.json", "tests/integration/test_console_peers.py", "tests/unit/test_console_task_updates.py", "artifacts/product/phase23/action-intent-firewall.json", "handoffs/0170-action-intent-firewall-and-verified-directory-receipts.md", "artifacts/product/phase23/installed-matrix/phase23-installed-20260718-11/installed-scenario-matrix.json", "artifacts/product/phase23/hardware-matrix/phase23-hardware-20260718-06/installed-hardware-matrix.json", "handoffs/0184-owner-workspaces-and-tool-evidence-terminal.md", "artifacts/product/phase19/workspace-tools-20260718.json"],
+        "installed_evidence": true,
+        "known_gaps": ["The owner workspace and Tool terminal pass from a signed installed release; the richer multi-step project workflow remains Phase 19.13."],
+        "maturity": "production_wired",
+        "production_reachable": true,
+        "subsystem_id": "ui",
+        "target_maturity": "operationally_proven"
+      },
+      {
+        "evidence_refs": ["handoffs/0093-memory-quality-privacy.md", "handoffs/0143-production-ephemeral-session-memory.md", "artifacts/memory/phase20.1-session-memory.json", "handoffs/0144-production-expiring-document-indexing.md", "artifacts/memory/phase20.2-document-indexing.json", "handoffs/0145-production-grounded-answers.md", "artifacts/memory/phase20.3-grounded-answers.json", "handoffs/0146-production-memory-management-controls.md", "artifacts/memory/phase20.4-memory-management.json", "handoffs/0149-production-live-adaptation-controls.md", "artifacts/adaptation/phase20.7-control-and-rollback.json", "tests/unit/test_product_document_management_service.py", "tests/integration/test_console_memory_management.py", "artifacts/product/phase23/installed-matrix/phase23-installed-20260718-11/installed-scenario-matrix.json", "artifacts/product/phase23/hardware-matrix/phase23-hardware-20260718-06/installed-hardware-matrix.json"],
+        "installed_evidence": true,
+        "known_gaps": [],
+        "maturity": "operationally_proven",
+        "production_reachable": true,
+        "subsystem_id": "memory",
+        "target_maturity": "operationally_proven"
+      },
+      {
+        "evidence_refs": ["handoffs/0100-phase11-local-adaptation-exit.md", "handoffs/0147-production-verified-outcome-learning.md", "artifacts/adaptation/phase20.5-verified-learning.json", "handoffs/0148-production-live-predictive-adaptation.md", "artifacts/adaptation/phase20.6-live-adaptation.json", "artifacts/adaptation/phase20.6-hardware-prewarm.json", "handoffs/0149-production-live-adaptation-controls.md", "artifacts/adaptation/phase20.7-control-and-rollback.json", "tests/unit/test_verified_outcome_learning.py", "tests/unit/test_product_live_adaptation.py", "tests/unit/test_product_adaptation_control.py", "tests/unit/test_production_task_gateway.py", "tests/integration/test_console_adaptation.py", "artifacts/product/phase23/hardware-matrix/phase23-hardware-20260718-06/installed-hardware-matrix.json"],
+        "installed_evidence": true,
+        "known_gaps": [],
+        "maturity": "operationally_proven",
+        "production_reachable": true,
+        "subsystem_id": "adaptation",
+        "target_maturity": "operationally_proven"
+      },
+      {
+        "evidence_refs": ["handoffs/0106-phase12-trusted-fabric-exit.md", "handoffs/0150-production-persistent-peer-identity-and-mtls.md", "artifacts/fabric/phase21.1-persistent-mtls.json", "handoffs/0151-production-peer-state-and-owner-controls.md", "artifacts/fabric/phase21.2-peer-state-and-controls.json", "handoffs/0152-production-minimum-remote-context.md", "artifacts/fabric/phase21.3-minimum-context.json", "handoffs/0153-production-remote-core-route.md", "artifacts/fabric/phase21.4-remote-core-route.json", "handoffs/0154-production-complete-remote-evidence.md", "artifacts/fabric/phase21.5-complete-remote-evidence.json", "handoffs/0155-production-remote-loss-recovery.md", "artifacts/fabric/phase21.6-remote-loss-recovery.json", "handoffs/0156-phase21-physical-qualification-kit.md", "docs/operations/PHASE21_PHYSICAL_QUALIFICATION.md", "schemas/v1alpha1/fam.fabric.physical-host-evidence.schema.json", "tests/integration/test_mutual_tls_peer_transport.py", "tests/integration/test_product_peer_service.py", "tests/integration/test_product_peer_management.py", "tests/integration/test_product_peer_context.py", "tests/integration/test_product_remote_execution.py", "tests/unit/test_remote_context.py", "tests/unit/test_remote_execution.py", "tests/unit/test_remote_recovery.py", "tests/unit/test_physical_fabric_qualification.py", "tests/unit/test_fam_shell_peer_transport.py", "tests/integration/test_console_peers.py", "tests/integration/test_console_http.py"],
+        "installed_evidence": true,
+        "known_gaps": ["Persistent identity, pairing, encrypted peer state, TLS 1.3, signed capabilities, measured performance, privacy, owner controls, revocation, exact minimum context, real Gemma execution, content-free complete evidence, partial-frame discard, abrupt requester loss, restart reconciliation, and unchanged-acceptance local retry pass from two isolated signed installs on one host. Qualification on at least two physical Linux machines remains Phase 21.7."],
+        "maturity": "production_wired",
+        "production_reachable": true,
+        "subsystem_id": "multi_device",
+        "target_maturity": "operationally_proven"
+      },
+      {
+        "evidence_refs": ["handoffs/0158-phase22-plan-and-production-failure-discovery.md", "handoffs/0159-governed-dataset-capture-and-synthesis.md", "handoffs/0160-real-qlora-backend-and-physical-smoke.md", "handoffs/0161-held-out-evaluation-and-signed-denial.md", "handoffs/0165-typed-held-out-learning-curve.md", "handoffs/0166-real-expert-factory-signed-installed-exit.md", "docs/architecture/PHASE22_REAL_EXPERT_FACTORY.md", "artifacts/training/phase22-stable-toposort-diverse2500-chat-20260718-03/phase22-exit-evidence.json", "artifacts/training/phase22-stable-toposort-diverse2500-chat-20260718-03/release-attempt-10-installed/release-evidence.json", "tests/integration/test_console_factory.py", "artifacts/product/phase23/installed-matrix/phase23-installed-20260718-11/installed-scenario-matrix.json"],
+        "installed_evidence": true,
+        "known_gaps": ["The governed QLoRA lifecycle, clean Training profile, and consolidated signed installed Factory scenario pass. The qualification specialist is intentionally retired rather than left enabled; final product-wide release qualification remains open outside this subsystem."],
+        "maturity": "operationally_proven",
+        "production_reachable": true,
+        "subsystem_id": "expert_factory",
+        "target_maturity": "operationally_proven"
+      },
+      {
+        "evidence_refs": ["handoffs/0027-immutable-supervisor-audit.md"],
+        "installed_evidence": true,
+        "known_gaps": ["Final 24-hour integrated worker-pressure qualification remains Phase 23."],
+        "maturity": "production_wired",
+        "production_reachable": true,
+        "subsystem_id": "supervisor",
+        "target_maturity": "operationally_proven"
+      },
+      {
+        "evidence_refs": ["docs/operations/ATOMIC_UPDATES.md", "artifacts/product/phase15/phase15-exit.json", "docs/decisions/0156-total-removal-requires-owner-bound-root-authority.md", "docs/decisions/0157-installation-health-uses-a-versioned-expected-file-ledger.md", "handoffs/0180-phase23-lifecycle-diagnosis-and-tool-import-correction.md", "artifacts/product/phase23/lifecycle/phase23-lifecycle-preflight-20260718-04/installed-lifecycle.json"],
+        "installed_evidence": true,
+        "known_gaps": ["The lifecycle preflight passes install, update, rollback, damage diagnosis, repair, connector installation, installed-service HTTP 200, and complete removal. The required AppArmor sandbox event and exact final post-soak candidate run remain open."],
+        "maturity": "production_wired",
+        "production_reachable": true,
+        "subsystem_id": "product_updates",
+        "target_maturity": "operationally_proven"
+      },
+      {
+        "evidence_refs": ["artifacts/security/", "docs/operations/FINAL_MASTER_PLAN_AUDIT.md"],
+        "installed_evidence": false,
+        "known_gaps": ["Independent human review of the integrated installed release has not occurred."],
+        "maturity": "component_tested",
+        "production_reachable": false,
+        "subsystem_id": "security",
+        "target_maturity": "operationally_proven"
+      },
+      {
+        "evidence_refs": ["docs/operations/PRODUCTION_SOAK.md", "artifacts/product/phase15/operational-service-soak.json", "artifacts/product/phase23/soak/phase23-soak-qualification-20260718-01/installed-soak.json", "docs/decisions/0155-verifier-userns-profile-is-applied-to-a-transient-worker.md", "handoffs/0179-installed-verifier-host-policy-and-total-removal.md"],
+        "installed_evidence": false,
+        "known_gaps": ["The first 24-hour candidate failed after 21 seconds at installed verifier recovery. The source correction is ready, but the dedicated host profile must be loaded and the complete 24-hour clock restarted from zero."],
+        "maturity": "acceptance_only",
+        "production_reachable": false,
+        "subsystem_id": "reliability",
+        "target_maturity": "operationally_proven"
+      },
+      {
+        "evidence_refs": ["pyproject.toml", "tests/", "tools/phase23_release_matrix/", "tools/run_phase23_release_matrix.py", "tools/phase23_lifecycle/", "tools/run_phase23_lifecycle.py", "docs/decisions/0151-built-wheel-is-self-contained-and-profile-qualified.md", "docs/decisions/0156-total-removal-requires-owner-bound-root-authority.md", "docs/decisions/0157-installation-health-uses-a-versioned-expected-file-ledger.md", "handoffs/0176-clean-built-artifact-profile-matrix.md", "handoffs/0179-installed-verifier-host-policy-and-total-removal.md", "handoffs/0180-phase23-lifecycle-diagnosis-and-tool-import-correction.md", "artifacts/product/phase23/profile-matrix/phase23-required-20260718-01/profile-matrix.json", "artifacts/product/phase23/installed-matrix/phase23-installed-20260718-11/installed-scenario-matrix.json", "artifacts/product/phase23/hardware-matrix/phase23-hardware-20260718-06/installed-hardware-matrix.json", "artifacts/product/phase23/lifecycle/phase23-lifecycle-preflight-20260718-04/installed-lifecycle.json"],
+        "installed_evidence": false,
+        "known_gaps": ["Clean built-artifact profiles, signed installed scenarios, both physical hardware profiles, and every independent lifecycle event except the required AppArmor sandbox pass. The two-host remote gate, loaded-profile 24-hour soak, human review, and exact final post-soak lifecycle qualification remain separate gates."],
+        "maturity": "acceptance_only",
+        "production_reachable": false,
+        "subsystem_id": "test_environment",
+        "target_maturity": "operationally_proven"
+      }
+    ],
+    "observed_at": "2026-07-19T05:26:39+03:00",
+    "program_status": "integration_incomplete"
+  },
+  "schema_id": "fam.product.integration-coverage/v1alpha1"
+}

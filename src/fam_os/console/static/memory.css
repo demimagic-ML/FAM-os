@@ -1,0 +1,17 @@
+.memory-workspace{border-top:1px solid var(--line);padding-top:28px}
+.memory-ledger-head{display:flex;justify-content:space-between;gap:24px;align-items:flex-start;margin-bottom:22px}
+.memory-ledger-head h2{font:500 34px/1.05 "Noto Serif Display",serif;margin:0 0 8px}
+.memory-ledger-head p:not(.kicker){color:var(--muted);margin:0;max-width:610px}
+.memory-layout{display:grid;grid-template-columns:minmax(0,2fr) minmax(270px,1fr);border:1px solid var(--line);background:var(--line);gap:1px}
+.memory-documents,.memory-receipts{background:var(--sheet);padding:22px;min-width:0}
+.memory-column-head{display:flex;justify-content:space-between;gap:18px;align-items:baseline;border-bottom:1px solid var(--line);padding-bottom:13px}
+.memory-column-head h3{font-size:13px;margin:0}.memory-column-head span{font:700 9px "Noto Sans Mono",monospace;color:var(--muted);text-transform:uppercase}
+.memory-list{display:grid}.memory-record{padding:20px 0;border-bottom:1px solid var(--line)}
+.memory-record header{display:flex;justify-content:space-between;gap:18px}.memory-record h4{font:500 22px/1.2 "Noto Serif Display",serif;margin:0;overflow-wrap:anywhere}.memory-record header span{font:700 9px "Noto Sans Mono",monospace;color:var(--green);text-transform:uppercase;white-space:nowrap}
+.memory-record dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 24px;margin:16px 0}.memory-record dl div{min-width:0}.memory-record dt{font:700 9px "Noto Sans Mono",monospace;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}.memory-record dd{font-size:12px;margin:2px 0 0;overflow-wrap:anywhere}
+.memory-actions{display:flex;flex-wrap:wrap;gap:7px}.memory-actions button{border:1px solid var(--line);background:transparent;padding:7px 10px;font-size:11px;font-weight:700}.memory-actions button:hover{border-color:var(--ink)}.memory-actions .memory-destructive{color:var(--red)}
+.memory-editor{margin-top:22px;border:1px solid var(--blue);background:#edf3f5;padding:20px}.memory-editor h3{font:500 25px "Noto Serif Display",serif;margin:0}.memory-editor>p:not(.kicker){font-size:12px;color:var(--muted);overflow-wrap:anywhere}.memory-editor>label:not(.memory-confirm){display:block;font-weight:700;font-size:12px;margin:16px 0 7px}.memory-editor textarea{width:100%;resize:vertical;border:1px solid var(--line);background:white;padding:12px;font:12px/1.55 "Noto Sans Mono",monospace}.memory-confirm{display:flex;gap:9px;align-items:flex-start;margin:14px 0;font-size:11px}.memory-editor-actions{display:flex;gap:8px}
+.memory-receipts ol{list-style:none;margin:0;padding:0}.memory-receipts li{border-bottom:1px solid var(--line);padding:16px 0}.memory-receipts li strong{display:block;font:700 10px "Noto Sans Mono",monospace;text-transform:uppercase}.memory-receipts li p{font-size:11px;color:var(--muted);margin:5px 0;overflow-wrap:anywhere}.memory-receipts li time{font:10px "Noto Sans Mono",monospace;color:var(--muted)}
+.memory-empty{padding:34px 0;color:var(--muted);font-size:13px}.memory-message{min-height:23px;margin:14px 0 0;color:var(--muted);font-size:12px}.memory-message.error{color:var(--red)}
+@media(max-width:900px){.memory-layout{grid-template-columns:1fr}.memory-receipts{border-top:1px solid var(--line)}}
+@media(max-width:700px){.memory-ledger-head{display:block}.memory-ledger-head .quiet{margin-top:16px}.memory-documents,.memory-receipts{padding:16px}.memory-record dl{grid-template-columns:1fr}.memory-editor-actions{display:grid}.memory-editor-actions .primary{justify-content:center}}

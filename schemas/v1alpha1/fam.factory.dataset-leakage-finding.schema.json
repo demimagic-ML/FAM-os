@@ -1,0 +1,66 @@
+{
+  "$defs": {
+    "DatasetLeakageFinding": {
+      "additionalProperties": false,
+      "properties": {
+        "blocking": {
+          "type": "boolean"
+        },
+        "contract_version": {
+          "const": "fam.factory.sealed-dataset/v1alpha1"
+        },
+        "finding_id": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "source_family_crossed_partitions",
+            "exact_cross_partition",
+            "near_cross_partition"
+          ],
+          "type": "string"
+        },
+        "left_record_id": {
+          "type": "string"
+        },
+        "right_record_id": {
+          "type": "string"
+        },
+        "similarity_ppm": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "finding_id",
+        "kind",
+        "left_record_id",
+        "right_record_id",
+        "similarity_ppm",
+        "blocking",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.factory.dataset-leakage-finding/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.factory.sealed-dataset/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/DatasetLeakageFinding"
+    },
+    "schema_id": {
+      "const": "fam.factory.dataset-leakage-finding/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Blocking cross-partition leakage finding",
+  "type": "object"
+}

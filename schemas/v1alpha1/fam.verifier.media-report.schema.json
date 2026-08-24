@@ -1,0 +1,69 @@
+{
+  "$defs": {
+    "MediaArtifactTextReport": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_bytes": {
+          "type": "integer"
+        },
+        "artifact_matched": {
+          "type": "boolean"
+        },
+        "artifact_sha256": {
+          "type": "string"
+        },
+        "candidate_binding_matched": {
+          "type": "boolean"
+        },
+        "contract_version": {
+          "const": "fam.verifier.media/v1alpha1"
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "reason_code": {
+          "type": "string"
+        },
+        "text_matched": {
+          "type": "boolean"
+        },
+        "verification_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "verification_id",
+        "artifact_sha256",
+        "artifact_bytes",
+        "artifact_matched",
+        "candidate_binding_matched",
+        "text_matched",
+        "passed",
+        "reason_code",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.verifier.media-report/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.verifier.media/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/MediaArtifactTextReport"
+    },
+    "schema_id": {
+      "const": "fam.verifier.media-report/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Media artifact and text verification report",
+  "type": "object"
+}

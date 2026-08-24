@@ -1,0 +1,77 @@
+{
+  "$defs": {
+    "ResultCitation": {
+      "additionalProperties": false,
+      "properties": {
+        "citation_id": {
+          "type": "string"
+        },
+        "claim_id": {
+          "type": "string"
+        },
+        "claim_text": {
+          "type": "string"
+        },
+        "end_character": {
+          "type": "integer"
+        },
+        "provenance_id": {
+          "type": "string"
+        },
+        "quoted_text": {
+          "type": "string"
+        },
+        "quoted_text_sha256": {
+          "type": "string"
+        },
+        "source_content_sha256": {
+          "type": "string"
+        },
+        "source_id": {
+          "type": "string"
+        },
+        "source_locator": {
+          "type": "string"
+        },
+        "start_character": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "citation_id",
+        "claim_id",
+        "claim_text",
+        "source_id",
+        "source_locator",
+        "source_content_sha256",
+        "provenance_id",
+        "start_character",
+        "end_character",
+        "quoted_text",
+        "quoted_text_sha256"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.result-citation/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/ResultCitation"
+    },
+    "schema_id": {
+      "const": "fam.core.result-citation/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Verified result citation",
+  "type": "object"
+}

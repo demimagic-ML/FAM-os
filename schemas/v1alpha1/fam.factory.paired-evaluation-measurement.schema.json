@@ -1,0 +1,128 @@
+{
+  "$defs": {
+    "PairedEvaluationMeasurement": {
+      "additionalProperties": false,
+      "properties": {
+        "baseline_energy_millijoules": {
+          "type": "integer"
+        },
+        "baseline_latency_microseconds": {
+          "type": "integer"
+        },
+        "baseline_output_sha256": {
+          "type": "string"
+        },
+        "baseline_passed": {
+          "type": "boolean"
+        },
+        "baseline_peak_ram_bytes": {
+          "type": "integer"
+        },
+        "baseline_peak_vram_bytes": {
+          "type": "integer"
+        },
+        "candidate_energy_millijoules": {
+          "type": "integer"
+        },
+        "candidate_latency_microseconds": {
+          "type": "integer"
+        },
+        "candidate_output_sha256": {
+          "type": "string"
+        },
+        "candidate_passed": {
+          "type": "boolean"
+        },
+        "candidate_peak_ram_bytes": {
+          "type": "integer"
+        },
+        "candidate_peak_vram_bytes": {
+          "type": "integer"
+        },
+        "case_id": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.factory.evaluation/v1alpha1"
+        },
+        "evaluation_id": {
+          "type": "string"
+        },
+        "expected_sha256": {
+          "type": "string"
+        },
+        "input_sha256": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "quality",
+            "safety",
+            "policy",
+            "unrelated"
+          ],
+          "type": "string"
+        },
+        "measured_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "measurement_id": {
+          "type": "string"
+        },
+        "measurement_sha256": {
+          "type": "string"
+        },
+        "requirement_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "measurement_id",
+        "evaluation_id",
+        "case_id",
+        "kind",
+        "requirement_id",
+        "input_sha256",
+        "expected_sha256",
+        "baseline_output_sha256",
+        "candidate_output_sha256",
+        "baseline_passed",
+        "candidate_passed",
+        "baseline_latency_microseconds",
+        "candidate_latency_microseconds",
+        "baseline_peak_ram_bytes",
+        "candidate_peak_ram_bytes",
+        "baseline_peak_vram_bytes",
+        "candidate_peak_vram_bytes",
+        "baseline_energy_millijoules",
+        "candidate_energy_millijoules",
+        "measured_at",
+        "measurement_sha256",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.factory.paired-evaluation-measurement/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.factory.evaluation/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/PairedEvaluationMeasurement"
+    },
+    "schema_id": {
+      "const": "fam.factory.paired-evaluation-measurement/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Candidate and incumbent paired measurement",
+  "type": "object"
+}

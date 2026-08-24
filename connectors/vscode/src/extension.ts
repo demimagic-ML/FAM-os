@@ -5,23 +5,36 @@ import { VsCodeSemanticProvider } from "./editor/provider";
 
 let activeConnector: NativeConnector | undefined;
 let connecting = false;
+let retryTimer: NodeJS.Timeout | undefined;
+let automatic = false;
 
 export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
-    vscode.commands.registerCommand("famOS.connect", () => connect()),
-    vscode.commands.registerCommand("famOS.disconnect", () => disconnect()),
+    vscode.commands.registerCommand("famOS.connect", () => {
+      automatic = true;
+      return connect(true);
+    }),
+    vscode.commands.registerCommand("famOS.disconnect", () => {
+      automatic = false;
+      clearRetry();
+      disconnect();
+    }),
     vscode.workspace.onDidChangeWorkspaceFolders(() => reconnectForWorkspaceChange()),
   );
   const configuration = vscode.workspace.getConfiguration("famOS.connector");
-  if (configuration.get<boolean>("autoConnect", false)) void connect();
+  automatic = configuration.get<boolean>("autoConnect", false);
+  if (automatic) void connect(false);
 }
 
 export function deactivate(): void {
+  automatic = false;
+  clearRetry();
   disconnect(false);
 }
 
-async function connect(): Promise<void> {
+async function connect(notify = true): Promise<void> {
   if (activeConnector !== undefined || connecting) return;
+  clearRetry();
   connecting = true;
   const configuration = vscode.workspace.getConfiguration("famOS.connector");
   const maximum = configuration.get<number>("maximumObservationCharacters", 16_384);
@@ -38,14 +51,18 @@ async function connect(): Promise<void> {
     connector = new NativeConnector(socketPath(configuration), provider, (status) => {
       if (status === "disconnected" && activeConnector === connector) {
         activeConnector = undefined;
+        scheduleRetry();
       }
     });
     await connector.connect();
     activeConnector = connector;
-    void vscode.window.showInformationMessage("FAM_OS semantic connector is connected.");
+    if (notify) void vscode.window.showInformationMessage("FAM_OS semantic connector is connected.");
   } catch {
     connector?.disconnect();
-    void vscode.window.showErrorMessage("FAM_OS semantic connector could not connect safely.");
+    if (notify) {
+      void vscode.window.showErrorMessage("FAM_OS semantic connector could not connect safely.");
+    }
+    scheduleRetry();
   } finally {
     connecting = false;
   }
@@ -61,7 +78,20 @@ function disconnect(notify = true): void {
 function reconnectForWorkspaceChange(): void {
   if (activeConnector === undefined) return;
   disconnect(false);
-  void connect();
+  void connect(false);
+}
+
+function scheduleRetry(): void {
+  if (!automatic || retryTimer !== undefined) return;
+  retryTimer = setTimeout(() => {
+    retryTimer = undefined;
+    void connect(false);
+  }, 5_000);
+}
+
+function clearRetry(): void {
+  if (retryTimer !== undefined) clearTimeout(retryTimer);
+  retryTimer = undefined;
 }
 
 function socketPath(configuration: vscode.WorkspaceConfiguration): string {

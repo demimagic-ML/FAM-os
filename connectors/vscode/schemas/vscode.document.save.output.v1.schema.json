@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vscode.document.save.output.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["document_uri", "disk_sha256"],
+  "properties": {
+    "document_uri": {"type": "string", "pattern": "^file:"},
+    "disk_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

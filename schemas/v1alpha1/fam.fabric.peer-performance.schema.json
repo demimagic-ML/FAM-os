@@ -1,0 +1,74 @@
+{
+  "$defs": {
+    "PeerPerformanceObservation": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.fabric.peer-state/v1alpha1"
+        },
+        "enrollment_id": {
+          "type": "string"
+        },
+        "observation_id": {
+          "type": "string"
+        },
+        "observed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "peer_certificate_sha256": {
+          "type": "string"
+        },
+        "peer_device_id": {
+          "type": "string"
+        },
+        "response_bytes": {
+          "type": "integer"
+        },
+        "round_trip_milliseconds": {
+          "type": "number"
+        },
+        "source": {
+          "type": "string"
+        },
+        "tls_version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "observation_id",
+        "enrollment_id",
+        "peer_device_id",
+        "round_trip_milliseconds",
+        "response_bytes",
+        "observed_at",
+        "peer_certificate_sha256",
+        "tls_version",
+        "source",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.fabric.peer-performance/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.fabric.peer-state/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/PeerPerformanceObservation"
+    },
+    "schema_id": {
+      "const": "fam.fabric.peer-performance/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Locally measured authenticated peer performance",
+  "type": "object"
+}

@@ -1,0 +1,20 @@
+{
+  "contract_version": "fam.expert.runtime-binding/v1alpha1",
+  "payload": {
+    "artifact_id": "ollama.model",
+    "artifact_ref": "qwen3:1.7b",
+    "contract_version": "fam.expert.runtime-binding/v1alpha1",
+    "coordinate": {
+      "package_id": "fam.expert.language.qwen3-1.7b",
+      "package_version": "1.0.0"
+    },
+    "expected_artifact_digest": {
+      "algorithm": "sha256",
+      "value": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7"
+    },
+    "expert_id": "expert.language.qwen3-1.7b",
+    "runtime_adapter_id": "ollama.local/v1",
+    "runtime_contract_id": "fam.inference.chat/v1"
+  },
+  "schema_id": "fam.expert.runtime-binding/v1alpha1"
+}

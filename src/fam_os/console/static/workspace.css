@@ -1,0 +1,135 @@
+.workbench {
+  grid-template-columns: minmax(270px, 320px) minmax(520px, 1fr) minmax(300px, 370px);
+}
+
+.work-tools {
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 27px 18px 30px;
+  border-right: 1px solid var(--line);
+  background: #eef2f2;
+}
+
+.work-tools-head,
+.tool-section-head,
+.workspace-browser-head,
+.workspace-dialog header,
+.workspace-dialog footer {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.work-tools-head h2,
+.workspace-dialog h2 {
+  margin: 0;
+  font: 500 24px/1.08 "Noto Serif Display", Georgia, serif;
+  letter-spacing: -.025em;
+}
+
+.work-tools-head .quiet { padding: 7px 9px; font-size: 10px; }
+
+.workspace-authority {
+  margin-top: 20px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  background: var(--paper-strong);
+  display: grid;
+  gap: 6px;
+}
+
+.workspace-authority.selected { border-left: 3px solid var(--signal); }
+.workspace-state { margin: 0; color: var(--green); font: 700 9px/1.2 "Noto Sans Mono", monospace; text-transform: uppercase; letter-spacing: .08em; }
+.workspace-authority:not(.selected) .workspace-state { color: var(--muted); }
+.workspace-authority strong { overflow-wrap: anywhere; }
+.workspace-authority span { color: var(--muted); font: 10px/1.45 "Noto Sans Mono", monospace; overflow-wrap: anywhere; }
+.workspace-authority .quiet { margin-top: 7px; justify-self: start; padding: 7px 10px; font-size: 10px; }
+
+.workspace-files,
+.tool-terminal {
+  margin-top: 24px;
+  border-top: 1px solid var(--line);
+  padding-top: 15px;
+}
+
+.tool-section-head { align-items: baseline; }
+.tool-section-head h3 { margin: 0; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+.tool-section-head span { color: var(--muted); font: 700 8px "Noto Sans Mono", monospace; text-transform: uppercase; }
+
+.workspace-file-list {
+  display: grid;
+  margin-top: 10px;
+  max-height: 230px;
+  overflow-y: auto;
+}
+
+.workspace-file-list p { margin: 8px 0; color: var(--muted); font-size: 11px; }
+.workspace-entry {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid var(--line-soft);
+  background: transparent;
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) auto;
+  gap: 7px;
+  padding: 8px 2px;
+  text-align: left;
+  font-size: 11px;
+}
+.workspace-entry i { color: var(--signal); font: 700 9px "Noto Sans Mono", monospace; font-style: normal; }
+.workspace-entry b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.workspace-entry small { color: var(--muted); font: 8px "Noto Sans Mono", monospace; }
+
+.tool-terminal ol { list-style: none; padding: 0; margin: 10px 0 0; display: grid; gap: 10px; }
+.tool-terminal li { border-left: 2px solid var(--line); padding-left: 10px; }
+.tool-terminal li[data-status="observed"],
+.tool-terminal li[data-status="verified"] { border-color: var(--green); }
+.tool-terminal li[data-status="awaiting_approval"] { border-color: var(--amber); }
+.tool-terminal header { display: flex; justify-content: space-between; gap: 8px; }
+.tool-terminal header strong { font: 700 9px/1.35 "Noto Sans Mono", monospace; overflow-wrap: anywhere; }
+.tool-terminal header span { color: var(--muted); font: 700 7px "Noto Sans Mono", monospace; text-transform: uppercase; }
+.tool-terminal pre { margin: 6px 0 0; padding: 9px; max-height: 190px; overflow: auto; border: 1px solid #26373d; background: #17272e; color: #d9e5e7; white-space: pre-wrap; overflow-wrap: anywhere; font: 10px/1.55 "Noto Sans Mono", monospace; }
+.terminal-empty { display: grid; grid-template-columns: auto 1fr; gap: 7px; color: var(--muted); }
+.terminal-empty span { color: var(--signal); font: 700 10px "Noto Sans Mono", monospace; }
+.terminal-empty p { margin: 0; font-size: 10px; }
+
+.workspace-dialog {
+  width: min(760px, calc(100vw - 32px));
+  max-height: min(760px, calc(100vh - 32px));
+  padding: 0;
+  border: 1px solid var(--line);
+  background: var(--paper-strong);
+  color: var(--ink);
+}
+.workspace-dialog::backdrop { background: #13252d99; backdrop-filter: blur(3px); }
+.workspace-dialog form { padding: 24px; }
+.workspace-dialog header { padding-bottom: 20px; border-bottom: 1px solid var(--line); }
+.workspace-dialog header p:last-child { max-width: 480px; margin: 8px 0 0; color: var(--muted); font-size: 12px; }
+.workspace-location { display: grid; grid-template-columns: 1fr auto; gap: 10px; margin: 18px 0 12px; }
+.workspace-location label { display: grid; gap: 5px; }
+.workspace-location label span { color: var(--muted); font: 700 9px "Noto Sans Mono", monospace; text-transform: uppercase; }
+.workspace-location input { width: 100%; border: 1px solid var(--line); padding: 10px 11px; font: 12px "Noto Sans Mono", monospace; }
+.workspace-browser-head { align-items: center; padding: 8px 0; }
+.workspace-browser-head span { color: var(--muted); font: 10px "Noto Sans Mono", monospace; overflow-wrap: anywhere; text-align: right; }
+.workspace-browser { min-height: 260px; max-height: 370px; overflow-y: auto; border: 1px solid var(--line); }
+.workspace-browser .workspace-entry { padding: 10px 12px; }
+.workspace-dialog footer { align-items: center; padding-top: 18px; }
+.workspace-dialog footer p { margin: 0; color: var(--red); font-size: 11px; }
+
+@media (max-width: 1480px) {
+  .workbench { grid-template-columns: minmax(250px, 290px) minmax(480px, 1fr) minmax(285px, 330px); }
+}
+
+@media (max-width: 1180px) {
+  .workbench { grid-template-columns: minmax(250px, 320px) minmax(0, 1fr); }
+  .execution { grid-column: 1 / -1; }
+}
+
+@media (max-width: 760px) {
+  .workbench { grid-template-columns: 1fr; }
+  .work-tools { max-height: 460px; border-right: 0; border-bottom: 1px solid var(--line); }
+  .execution { grid-column: 1; }
+  .workspace-location { grid-template-columns: 1fr; }
+}

@@ -1,0 +1,118 @@
+{
+  "$defs": {
+    "ArchitectureDecision": {
+      "additionalProperties": false,
+      "properties": {
+        "area": {
+          "enum": [
+            "modules",
+            "interfaces",
+            "schemas",
+            "migrations",
+            "adrs",
+            "dependency_direction",
+            "security_boundaries",
+            "rollout",
+            "acceptance_criteria"
+          ],
+          "type": "string"
+        },
+        "decision": {
+          "type": "string"
+        },
+        "evidence_refs": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "required": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "area",
+        "required",
+        "decision",
+        "evidence_refs"
+      ],
+      "type": "object"
+    },
+    "ArchitectureProposal": {
+      "additionalProperties": false,
+      "properties": {
+        "affected_test_paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "analysis_id": {
+          "type": "string"
+        },
+        "checkpoint_required": {
+          "type": "boolean"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "created_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "decisions": {
+          "items": {
+            "$ref": "#/$defs/ArchitectureDecision"
+          },
+          "type": "array"
+        },
+        "mutation_performed": {
+          "type": "boolean"
+        },
+        "proposal_id": {
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "proposal_id",
+        "task_id",
+        "analysis_id",
+        "created_at",
+        "title",
+        "decisions",
+        "affected_test_paths",
+        "checkpoint_required",
+        "mutation_performed",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.architecture-proposal/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/ArchitectureProposal"
+    },
+    "schema_id": {
+      "const": "fam.core.architecture-proposal/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Decision-complete architecture proposal",
+  "type": "object"
+}

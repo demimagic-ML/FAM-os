@@ -1,0 +1,227 @@
+{
+  "$defs": {
+    "RuntimeDiagnosticArtifact": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "type": "string"
+        },
+        "contains_secret_content": {
+          "type": "boolean"
+        },
+        "kind": {
+          "enum": [
+            "stack_trace",
+            "crash_dump",
+            "trace",
+            "profile",
+            "race_report",
+            "leak_report",
+            "performance_sample"
+          ],
+          "type": "string"
+        },
+        "media_type": {
+          "type": "string"
+        },
+        "sanitized": {
+          "type": "boolean"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "size_bytes": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "kind",
+        "media_type",
+        "sha256",
+        "size_bytes",
+        "sanitized",
+        "contains_secret_content"
+      ],
+      "type": "object"
+    },
+    "RuntimeDiagnosticReceipt": {
+      "additionalProperties": false,
+      "properties": {
+        "artifacts": {
+          "items": {
+            "$ref": "#/$defs/RuntimeDiagnosticArtifact"
+          },
+          "type": "array"
+        },
+        "authorization_decision_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "baseline_artifact_sha256": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "candidate_id": {
+          "type": "string"
+        },
+        "completed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "diagnostic": {
+          "type": "string"
+        },
+        "exit_code": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "finding_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "isolation_evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "observed_value_microunits": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "performance_mode": {
+          "enum": [
+            "not_applicable",
+            "baseline_capture",
+            "comparison"
+          ],
+          "type": "string"
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "recipe_payload_sha256": {
+          "type": "string"
+        },
+        "regression_ppm": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "sandbox_profile_id": {
+          "type": "string"
+        },
+        "signed_recipe_id": {
+          "type": "string"
+        },
+        "signed_recipe_version": {
+          "type": "string"
+        },
+        "started_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "passed",
+            "failed",
+            "cancelled",
+            "unavailable"
+          ],
+          "type": "string"
+        },
+        "stderr_sha256": {
+          "type": "string"
+        },
+        "stdout_sha256": {
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "receipt_id",
+        "request_id",
+        "task_id",
+        "candidate_id",
+        "signed_recipe_id",
+        "signed_recipe_version",
+        "recipe_payload_sha256",
+        "sandbox_profile_id",
+        "started_at",
+        "completed_at",
+        "status",
+        "exit_code",
+        "stdout_sha256",
+        "stderr_sha256",
+        "artifacts",
+        "finding_ids",
+        "isolation_evidence_ids",
+        "authorization_decision_ids",
+        "baseline_artifact_sha256",
+        "observed_value_microunits",
+        "regression_ppm",
+        "diagnostic",
+        "performance_mode",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.runtime-diagnostic-receipt/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/RuntimeDiagnosticReceipt"
+    },
+    "schema_id": {
+      "const": "fam.core.runtime-diagnostic-receipt/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Sanitized runtime diagnostic evidence receipt",
+  "type": "object"
+}

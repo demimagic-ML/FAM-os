@@ -5,6 +5,7 @@ from fam_os.supervisor.ports.resources import ResourceObserver
 from fam_os.supervisor.ports.recovery import ServiceFailureReset
 from fam_os.supervisor.ports.access import ServiceAccessAdapter
 from fam_os.supervisor.ports.audit import SupervisorAuditSink
+from fam_os.supervisor.ports.network import NetworkEnforcementAdapter
 
 __all__ = [
     "ResourceObserver",
@@ -13,4 +14,5 @@ __all__ = [
     "ServiceDefinitionProjector",
     "ServiceLifecycle",
     "SupervisorAuditSink",
+    "NetworkEnforcementAdapter",
 ]

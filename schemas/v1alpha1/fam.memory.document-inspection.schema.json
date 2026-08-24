@@ -1,0 +1,165 @@
+{
+  "$defs": {
+    "DocumentIndexApproval": {
+      "additionalProperties": false,
+      "properties": {
+        "approved_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "approved_by": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.memory.document-index/v1alpha1"
+        },
+        "document_id": {
+          "type": "string"
+        },
+        "embedding_artifact_sha256": {
+          "type": "string"
+        },
+        "embedding_model_ref": {
+          "type": "string"
+        },
+        "expires_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "grant_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "scope": {
+          "$ref": "#/$defs/MemoryScope"
+        },
+        "source_locator": {
+          "type": "string"
+        },
+        "source_sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "document_id",
+        "source_locator",
+        "source_sha256",
+        "scope",
+        "approved_by",
+        "approved_at",
+        "embedding_model_ref",
+        "embedding_artifact_sha256",
+        "contract_version",
+        "grant_id",
+        "expires_at"
+      ],
+      "type": "object"
+    },
+    "DocumentInspection": {
+      "additionalProperties": false,
+      "properties": {
+        "approval": {
+          "$ref": "#/$defs/DocumentIndexApproval"
+        },
+        "chunk_count": {
+          "type": "integer"
+        },
+        "content_bytes": {
+          "type": "integer"
+        },
+        "content_sha256": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.memory.management/v1alpha1"
+        }
+      },
+      "required": [
+        "approval",
+        "chunk_count",
+        "content_bytes",
+        "content_sha256",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "MemoryScope": {
+      "additionalProperties": false,
+      "properties": {
+        "application_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "owner_id": {
+          "type": "string"
+        },
+        "purpose_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "session_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "workspace_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "owner_id",
+        "purpose_ids",
+        "application_ids",
+        "workspace_ids",
+        "session_id"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.memory.document-inspection/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.memory.management/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/DocumentInspection"
+    },
+    "schema_id": {
+      "const": "fam.memory.document-inspection/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Managed document inspection",
+  "type": "object"
+}

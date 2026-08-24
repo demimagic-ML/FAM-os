@@ -77,6 +77,20 @@ input JSON Schema, and text/JSON output kind. There is no arbitrary executable,
 argument array, shell string, inherited secret environment, or unbounded output
 surface. Malformed JSON and failed commands return content-free stable errors.
 
+## Owner workspace observations
+
+The installed owner-filesystem connector exposes `os.directory.inspect`,
+`os.directory.list`, and `os.file.read` beneath the owner's home directory.
+Directory traversal is descriptor-relative, rejects symlinks, sorts entries,
+and returns at most 256 names with explicit truncation. File reads reject
+symlinks and non-regular files and return at most 256 KiB with SHA-256 and size.
+
+Console workspace navigation grants the exact selected `file:` URI to the task.
+The Tool terminal renders the acquired observation and its receipt identifier;
+it never turns displayed model text into a subprocess request. Exact listing
+questions are released from deterministic observation formatting rather than
+model synthesis.
+
 ## Application Fabric registration
 
 `build_deterministic_registration` publishes declarations as one OS-tool

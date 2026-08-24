@@ -1,0 +1,129 @@
+{
+  "$defs": {
+    "FactoryConversionApproval": {
+      "additionalProperties": false,
+      "properties": {
+        "active": {
+          "type": "boolean"
+        },
+        "adapter_output_type": {
+          "enum": [
+            "f16",
+            "bf16",
+            "q8_0"
+          ],
+          "type": "string"
+        },
+        "adapter_sha256": {
+          "type": "string"
+        },
+        "approval_id": {
+          "type": "string"
+        },
+        "approval_sha256": {
+          "type": "string"
+        },
+        "base_model_sha256": {
+          "type": "string"
+        },
+        "base_output_type": {
+          "enum": [
+            "f16",
+            "bf16",
+            "q8_0"
+          ],
+          "type": "string"
+        },
+        "comparison_decision_id": {
+          "type": "string"
+        },
+        "comparison_decision_sha256": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.factory.conversion/v1alpha1"
+        },
+        "environment_sha256": {
+          "type": "string"
+        },
+        "evaluation_id": {
+          "type": "string"
+        },
+        "expires_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "issued_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "maximum_cpu_cores": {
+          "type": "integer"
+        },
+        "maximum_output_bytes": {
+          "type": "integer"
+        },
+        "maximum_ram_bytes": {
+          "type": "integer"
+        },
+        "maximum_wall_seconds": {
+          "type": "integer"
+        },
+        "one_use_conversion_id": {
+          "type": "string"
+        },
+        "revision": {
+          "type": "integer"
+        },
+        "runtime_model_ref": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "approval_id",
+        "evaluation_id",
+        "comparison_decision_id",
+        "comparison_decision_sha256",
+        "adapter_sha256",
+        "base_model_sha256",
+        "environment_sha256",
+        "base_output_type",
+        "adapter_output_type",
+        "runtime_model_ref",
+        "maximum_output_bytes",
+        "maximum_wall_seconds",
+        "maximum_ram_bytes",
+        "maximum_cpu_cores",
+        "one_use_conversion_id",
+        "issued_at",
+        "expires_at",
+        "revision",
+        "active",
+        "approval_sha256",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.factory.conversion-approval/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.factory.conversion/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/FactoryConversionApproval"
+    },
+    "schema_id": {
+      "const": "fam.factory.conversion-approval/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "One-use promotable adapter conversion authority",
+  "type": "object"
+}

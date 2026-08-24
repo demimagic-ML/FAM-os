@@ -1,0 +1,60 @@
+{
+  "$defs": {
+    "RequestRecoveryRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.product.request-recovery/v1alpha1"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "state": {
+          "enum": [
+            "active",
+            "waiting_approval",
+            "complete",
+            "failed"
+          ],
+          "type": "string"
+        },
+        "work_kind": {
+          "enum": [
+            "read_only",
+            "inference",
+            "mutation"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "work_kind",
+        "state",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.product.request-recovery/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.product.request-recovery/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/RequestRecoveryRecord"
+    },
+    "schema_id": {
+      "const": "fam.product.request-recovery/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Persisted request recovery classification",
+  "type": "object"
+}

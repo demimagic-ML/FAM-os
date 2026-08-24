@@ -1,0 +1,7 @@
+# Mirrors the pinned llama.cpp 86d86ed conversion requirements.
+--extra-index-url https://download.pytorch.org/whl/cpu
+numpy==1.26.4
+sentencepiece==0.2.1
+transformers==4.57.6
+torch==2.11.0
+protobuf==4.25.8

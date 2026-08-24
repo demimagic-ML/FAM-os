@@ -1,0 +1,77 @@
+{
+  "$defs": {
+    "ShellEngineeringCandidateVerificationRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "confirmed": {
+          "type": "boolean"
+        },
+        "contract_version": {
+          "const": "fam.shell.engineering-loop/v1alpha1"
+        },
+        "owner_id": {
+          "type": "string"
+        },
+        "principal_id": {
+          "type": "string"
+        },
+        "recipe_id": {
+          "type": "string"
+        },
+        "recipe_version": {
+          "type": "string"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "session_id": {
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        },
+        "toolchain": {
+          "type": "string"
+        },
+        "verification_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "owner_id",
+        "task_id",
+        "verification_id",
+        "session_id",
+        "principal_id",
+        "toolchain",
+        "recipe_id",
+        "recipe_version",
+        "confirmed",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.shell.engineering-candidate-verification/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.shell.engineering-loop/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/ShellEngineeringCandidateVerificationRequest"
+    },
+    "schema_id": {
+      "const": "fam.shell.engineering-candidate-verification/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Confirmed signed candidate verification request",
+  "type": "object"
+}

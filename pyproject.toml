@@ -11,12 +11,16 @@ dependencies = [
     "cryptography>=48.0.1,<49",
     "jsonschema>=4.10,<5",
     "mcp>=1.27,<2",
+    "sympy>=1.13,<2",
 ]
 
 [project.optional-dependencies]
 verification = [
     "mypy>=1.10,<2",
     "ruff>=0.5,<1",
+]
+mathematics = [
+    "sympy>=1.13,<2",
 ]
 math-verification = [
     "sympy>=1.13,<2",
@@ -26,12 +30,34 @@ media = [
     "pillow>=10,<13",
     "piper-tts>=1.3,<2",
 ]
+development = [
+    "build>=1.2,<2",
+    "coverage>=7.6,<8",
+    "mypy>=1.10,<2",
+    "ruff>=0.5,<1",
+    "wheel>=0.44,<1",
+]
+hardware = [
+    "nvidia-ml-py>=12.560,<13",
+    "psutil>=6,<8",
+]
+training = [
+    "accelerate>=1.2,<2",
+    "bitsandbytes>=0.45,<1",
+    "datasets>=3.2,<5",
+    "peft>=0.14,<1",
+    "torch>=2.6,<3",
+    "transformers>=4.51,<6",
+    "trl>=0.16,<1",
+]
 
 [project.scripts]
 fam-shell = "fam_os.adapters.shell.cli:main"
 fam-os = "fam_os.product.cli:main"
 fam-console = "fam_os.console.service:main"
 fam-service = "fam_os.product.service:main"
+fam-network-broker = "fam_os.product.network_broker_service_cli:main"
+fam-network-authority = "fam_os.product.network_authority_cli:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
@@ -41,7 +67,15 @@ where = ["src"]
 include = ["fam_os*"]
 
 [tool.setuptools.package-data]
-"fam_os.console.static" = ["*.html", "*.css", "*.js"]
+"fam_os.console.static" = ["*.html", "*.css", "*.js", "fonts/*.ttf", "fonts/*.txt"]
+"fam_os.product.storage.migrations" = ["*.sql"]
+"fam_os.product.resources" = [
+    "*.md",
+    "profiles/*.json",
+    "runtime/*.json",
+    "verifiers/*.json",
+    "verifier-bindings/*.json",
+]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/fixtures/verification/stable_topological_sort_parity_tests.py" = ["F821"]

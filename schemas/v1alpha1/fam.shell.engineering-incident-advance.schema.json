@@ -1,0 +1,76 @@
+{
+  "$defs": {
+    "ShellEngineeringIncidentAdvanceRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "confirmed": {
+          "type": "boolean"
+        },
+        "contract_version": {
+          "const": "fam.shell.engineering-loop/v1alpha1"
+        },
+        "evidence_id": {
+          "type": "string"
+        },
+        "incident_id": {
+          "type": "string"
+        },
+        "owner_id": {
+          "type": "string"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "stage": {
+          "enum": [
+            "detected",
+            "evidence_preserved",
+            "diagnosed",
+            "remediation_proposed",
+            "remediated",
+            "recovery_monitored",
+            "rolled_back",
+            "reported",
+            "closed"
+          ],
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "owner_id",
+        "task_id",
+        "incident_id",
+        "stage",
+        "evidence_id",
+        "confirmed",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.shell.engineering-incident-advance/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.shell.engineering-loop/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/ShellEngineeringIncidentAdvanceRequest"
+    },
+    "schema_id": {
+      "const": "fam.shell.engineering-incident-advance/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Confirmed evidence-bound engineering incident transition",
+  "type": "object"
+}

@@ -31,6 +31,16 @@ from fam_os.supervisor.audit_contracts import (
 from fam_os.supervisor.audited_access import AuditedServiceAccessController
 from fam_os.supervisor.audited_constrained import AuditedConstrainedServiceLifecycle
 from fam_os.supervisor.audited_lifecycle import AuditedOwnedServiceLifecycle
+from fam_os.supervisor.audited_network import AuditedNetworkEnforcementController
+from fam_os.supervisor.network_control import NetworkEnforcementController
+from fam_os.supervisor.network_contracts import (
+    NETWORK_ENFORCEMENT_VERSION,
+    NetworkAttachmentKind,
+    NetworkAttachment,
+    NetworkEnforcementLease,
+    NetworkEnforcementSpec,
+    NetworkUsageSnapshot,
+)
 from fam_os.supervisor.access_registry import (
     InMemoryAccessGrantRegistry,
     InMemoryAccessResourceCatalog,
@@ -71,6 +81,8 @@ from fam_os.supervisor.contracts import (
     ResourceLimits,
     ResourceSnapshot,
     ServiceDefinition,
+    ServiceRestartMode,
+    ServiceRestartPolicy,
     ServiceState,
     ServiceStatus,
 )
@@ -92,6 +104,7 @@ from fam_os.supervisor.ports import (
     ServiceDefinitionProjector,
     ServiceLifecycle,
     SupervisorAuditSink,
+    NetworkEnforcementAdapter,
 )
 
 __all__ = [
@@ -103,7 +116,9 @@ __all__ = [
     "AuditedOwnedServiceLifecycle",
     "AuditedConstrainedServiceLifecycle",
     "AuditedServiceAccessController",
+    "AuditedNetworkEnforcementController",
     "SUPERVISOR_BOUNDARY_CONTRACT_VERSION",
+    "NETWORK_ENFORCEMENT_VERSION",
     "CountCeiling",
     "BlockIoBandwidthCeiling",
     "BlockIoBandwidthLimit",
@@ -125,9 +140,18 @@ __all__ = [
     "ResourceLimits",
     "ResourceObservationError",
     "ResourceObserver",
+    "NetworkAttachmentKind",
+    "NetworkAttachment",
+    "NetworkEnforcementAdapter",
+    "NetworkEnforcementController",
+    "NetworkEnforcementLease",
+    "NetworkEnforcementSpec",
+    "NetworkUsageSnapshot",
     "ServiceFailureReset",
     "ResourceSnapshot",
     "ServiceDefinition",
+    "ServiceRestartMode",
+    "ServiceRestartPolicy",
     "ServiceDefinitionConflictError",
     "ServiceLifecycle",
     "ServiceLifecycleError",

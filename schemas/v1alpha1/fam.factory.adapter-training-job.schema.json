@@ -1,0 +1,98 @@
+{
+  "$defs": {
+    "AdapterTrainingJob": {
+      "additionalProperties": false,
+      "properties": {
+        "admitted_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "approval_consumption_receipt_id": {
+          "type": "string"
+        },
+        "approval_id": {
+          "type": "string"
+        },
+        "approval_revision": {
+          "type": "integer"
+        },
+        "base_model_files_sha256": {
+          "type": "string"
+        },
+        "capability_id": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.factory.training-backend/v1alpha1"
+        },
+        "dataset_id": {
+          "type": "string"
+        },
+        "dataset_manifest_sha256": {
+          "type": "string"
+        },
+        "environment_sha256": {
+          "type": "string"
+        },
+        "held_out_excluded": {
+          "type": "boolean"
+        },
+        "job_id": {
+          "type": "string"
+        },
+        "job_sha256": {
+          "type": "string"
+        },
+        "proposal_id": {
+          "type": "string"
+        },
+        "train_blob_sha256": {
+          "type": "string"
+        },
+        "validation_blob_sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "job_id",
+        "approval_id",
+        "approval_revision",
+        "approval_consumption_receipt_id",
+        "proposal_id",
+        "capability_id",
+        "dataset_id",
+        "dataset_manifest_sha256",
+        "train_blob_sha256",
+        "validation_blob_sha256",
+        "base_model_files_sha256",
+        "environment_sha256",
+        "held_out_excluded",
+        "admitted_at",
+        "job_sha256",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.factory.adapter-training-job/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.factory.training-backend/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/AdapterTrainingJob"
+    },
+    "schema_id": {
+      "const": "fam.factory.adapter-training-job/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Consumed one-use isolated adapter training job",
+  "type": "object"
+}

@@ -1,0 +1,58 @@
+{
+  "$defs": {
+    "TrainingApprovalConsumption": {
+      "additionalProperties": false,
+      "properties": {
+        "approval_id": {
+          "type": "string"
+        },
+        "approval_revision": {
+          "type": "integer"
+        },
+        "consumed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.factory.training-approval/v1alpha1"
+        },
+        "job_id": {
+          "type": "string"
+        },
+        "receipt_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "receipt_id",
+        "approval_id",
+        "job_id",
+        "approval_revision",
+        "consumed_at",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.factory.training-approval-consumption/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.factory.training-approval/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/TrainingApprovalConsumption"
+    },
+    "schema_id": {
+      "const": "fam.factory.training-approval-consumption/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Durable one-use training authority consumption",
+  "type": "object"
+}

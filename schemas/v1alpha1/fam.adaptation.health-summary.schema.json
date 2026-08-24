@@ -1,0 +1,87 @@
+{
+  "$defs": {
+    "AdaptationHealthSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.adaptation.live-control/v1alpha1"
+        },
+        "max_temperature_c": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "p95_latency_seconds": {
+          "type": "number"
+        },
+        "policy_violation_count": {
+          "type": "integer"
+        },
+        "sample_count": {
+          "type": "integer"
+        },
+        "snapshot_id": {
+          "type": "string"
+        },
+        "source_evidence_sha256": {
+          "type": "string"
+        },
+        "source_sample_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "thermal_sample_count": {
+          "type": "integer"
+        },
+        "verification_quality": {
+          "type": "number"
+        },
+        "workflow_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "snapshot_id",
+        "workflow_id",
+        "sample_count",
+        "verification_quality",
+        "p95_latency_seconds",
+        "max_temperature_c",
+        "thermal_sample_count",
+        "policy_violation_count",
+        "source_sample_ids",
+        "source_evidence_sha256",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.adaptation.health-summary/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.adaptation.live-control/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/AdaptationHealthSummary"
+    },
+    "schema_id": {
+      "const": "fam.adaptation.health-summary/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Repeated adaptation health summary",
+  "type": "object"
+}

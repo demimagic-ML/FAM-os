@@ -25,6 +25,7 @@ class ResidencyTransitionReason(StrEnum):
     LEASE_ACQUIRED = "lease_acquired"
     LEASE_RELEASED = "lease_released"
     LEASES_EXPIRED = "leases_expired"
+    PROCESS_LEASES_RECOVERED = "process_leases_recovered"
     EVICTION_STARTED = "eviction_started"
     EVICTION_CONFIRMED = "eviction_confirmed"
     EVICTION_ABORTED = "eviction_aborted"

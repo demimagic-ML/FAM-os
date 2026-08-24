@@ -1,0 +1,279 @@
+{
+  "$defs": {
+    "GitLocalAction": {
+      "additionalProperties": false,
+      "properties": {
+        "action_id": {
+          "type": "string"
+        },
+        "approved_change_set_id": {
+          "type": "string"
+        },
+        "branch_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "expected_head_object_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "kind": {
+          "enum": [
+            "create_branch",
+            "stage_paths",
+            "commit",
+            "restore_paths"
+          ],
+          "type": "string"
+        },
+        "message": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "repository_root": {
+          "type": "string"
+        },
+        "requested_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        },
+        "verification_evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "action_id",
+        "task_id",
+        "repository_root",
+        "kind",
+        "branch_name",
+        "paths",
+        "message",
+        "approved_change_set_id",
+        "verification_evidence_ids",
+        "expected_head_object_id",
+        "requested_at",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "GitLocalActionReceipt": {
+      "additionalProperties": false,
+      "properties": {
+        "action_id": {
+          "type": "string"
+        },
+        "after_object_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "before_object_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "completed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "staged_paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "status_sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "receipt_id",
+        "action_id",
+        "before_object_id",
+        "after_object_id",
+        "staged_paths",
+        "status_sha256",
+        "completed_at",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "LocalGitDeliveryRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "authorization_decision_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "branch_action": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GitLocalAction"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "branch_receipt": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GitLocalActionReceipt"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "changeset_id": {
+          "type": "string"
+        },
+        "commit_action": {
+          "$ref": "#/$defs/GitLocalAction"
+        },
+        "commit_receipt": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GitLocalActionReceipt"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "created_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "delivery_id": {
+          "type": "string"
+        },
+        "revision": {
+          "type": "integer"
+        },
+        "stage_action": {
+          "$ref": "#/$defs/GitLocalAction"
+        },
+        "stage_receipt": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GitLocalActionReceipt"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "status": {
+          "enum": [
+            "intent_recorded",
+            "staged",
+            "committed"
+          ],
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        },
+        "updated_at": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "delivery_id",
+        "task_id",
+        "changeset_id",
+        "stage_action",
+        "commit_action",
+        "status",
+        "authorization_decision_ids",
+        "revision",
+        "created_at",
+        "updated_at",
+        "stage_receipt",
+        "commit_receipt",
+        "branch_action",
+        "branch_receipt",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.git-local-delivery/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/LocalGitDeliveryRecord"
+    },
+    "schema_id": {
+      "const": "fam.core.git-local-delivery/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Restart-safe approved changeset local Git delivery",
+  "type": "object"
+}

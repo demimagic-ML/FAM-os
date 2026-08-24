@@ -87,6 +87,18 @@ class ConnectorRequestBroker:
             connector_id, LocalMessageKind.CONFIRM_ACTION, confirmation, ActionResult,
         )
 
+    def close(self) -> None:
+        """Close every live connector and release blocked Core requests."""
+        with self._condition:
+            connections = tuple(self._sessions.values())
+        for connection in connections:
+            connection.close()
+        with self._condition:
+            for pending in self._pending.values():
+                pending.error = {"code": "application.fabric_stopped"}
+                pending.done = True
+            self._condition.notify_all()
+
     def _exchange(self, connector_id, kind, value, expected_type):
         request_id = self.id_factory()
         pending = _Pending()

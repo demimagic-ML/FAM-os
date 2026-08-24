@@ -1,0 +1,216 @@
+{
+  "$defs": {
+    "RemoteExecutionEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "acceptance_evidence_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "acceptance_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "authenticated_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "budget_attempt_id": {
+          "type": "string"
+        },
+        "budget_reservation_id": {
+          "type": "string"
+        },
+        "candidate_id": {
+          "type": "string"
+        },
+        "candidate_sha256": {
+          "type": "string"
+        },
+        "capability_declaration_id": {
+          "type": "string"
+        },
+        "context_content_bytes": {
+          "type": "integer"
+        },
+        "context_content_sha256": {
+          "type": "string"
+        },
+        "context_evidence_id": {
+          "type": "string"
+        },
+        "context_id": {
+          "type": "string"
+        },
+        "context_receipt_sha256": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.fabric.remote-execution-evidence/v1alpha1"
+        },
+        "disposition": {
+          "enum": [
+            "authenticated_candidate",
+            "released",
+            "rejected",
+            "withheld"
+          ],
+          "type": "string"
+        },
+        "enrollment_id": {
+          "type": "string"
+        },
+        "evidence_id": {
+          "type": "string"
+        },
+        "execution_id": {
+          "type": "string"
+        },
+        "execution_request_sha256": {
+          "type": "string"
+        },
+        "execution_result_sha256": {
+          "type": "string"
+        },
+        "expert_id": {
+          "type": "string"
+        },
+        "expert_tier": {
+          "type": "string"
+        },
+        "finalized_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "instance_id": {
+          "type": "string"
+        },
+        "model_ref": {
+          "type": "string"
+        },
+        "partial_output_retained": {
+          "type": "boolean"
+        },
+        "peer_device_id": {
+          "type": "string"
+        },
+        "raw_content_retained": {
+          "type": "boolean"
+        },
+        "remote_plan_id": {
+          "type": "string"
+        },
+        "remote_plan_sha256": {
+          "type": "string"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "result_content_bytes": {
+          "type": "integer"
+        },
+        "result_content_sha256": {
+          "type": "string"
+        },
+        "verification_outcome": {
+          "enum": [
+            "pending",
+            "not_required",
+            "passed",
+            "failed",
+            "unavailable"
+          ],
+          "type": "string"
+        },
+        "verification_run_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "evidence_id",
+        "instance_id",
+        "request_id",
+        "remote_plan_id",
+        "remote_plan_sha256",
+        "execution_id",
+        "execution_request_sha256",
+        "execution_result_sha256",
+        "enrollment_id",
+        "peer_device_id",
+        "expert_id",
+        "model_ref",
+        "expert_tier",
+        "capability_declaration_id",
+        "context_evidence_id",
+        "context_id",
+        "context_content_bytes",
+        "context_content_sha256",
+        "context_receipt_sha256",
+        "budget_reservation_id",
+        "budget_attempt_id",
+        "candidate_id",
+        "candidate_sha256",
+        "result_content_bytes",
+        "result_content_sha256",
+        "disposition",
+        "verification_outcome",
+        "acceptance_id",
+        "acceptance_evidence_id",
+        "verification_run_id",
+        "authenticated_at",
+        "finalized_at",
+        "raw_content_retained",
+        "partial_output_retained",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.fabric.remote-execution-evidence/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.fabric.remote-execution-evidence/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/RemoteExecutionEvidence"
+    },
+    "schema_id": {
+      "const": "fam.fabric.remote-execution-evidence/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Content-free durable complete remote inference evidence",
+  "type": "object"
+}

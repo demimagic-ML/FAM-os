@@ -1,0 +1,9 @@
+# Phase 22 NVIDIA QLoRA candidate environment. The environment builder resolves
+# transitive wheels once, records every wheel SHA-256, then installs offline.
+accelerate==1.14.0
+bitsandbytes==0.49.2
+datasets==4.8.5
+peft==0.19.1
+torch==2.13.0
+transformers==5.14.1
+trl==0.29.1

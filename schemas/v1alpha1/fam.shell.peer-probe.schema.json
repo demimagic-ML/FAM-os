@@ -1,0 +1,45 @@
+{
+  "$defs": {
+    "ShellPeerProbeRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.shell.peer/v1alpha1"
+        },
+        "enrollment_id": {
+          "type": "string"
+        },
+        "request_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "enrollment_id",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.shell.peer-probe/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.shell.peer/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/ShellPeerProbeRequest"
+    },
+    "schema_id": {
+      "const": "fam.shell.peer-probe/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Authenticated Shell peer probe request",
+  "type": "object"
+}

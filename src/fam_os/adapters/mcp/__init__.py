@@ -5,7 +5,9 @@ from fam_os.adapters.mcp.mapping import (
     McpCapabilityBinding, McpMappedConnector, McpPrimitiveKind, map_discovery,
 )
 from fam_os.adapters.mcp.lifecycle import McpConnectorLifecycle
-from fam_os.adapters.mcp.policy import McpConnectorPolicy, McpToolPolicy
+from fam_os.adapters.mcp.policy import (
+    McpArgumentBinding, McpArgumentSource, McpConnectorPolicy, McpToolPolicy,
+)
 from fam_os.adapters.mcp.ports import McpClientSessionPort
 from fam_os.adapters.mcp.sdk import McpStdioConfiguration, OfficialMcpStdioSession
 from fam_os.adapters.mcp.types import (
@@ -14,7 +16,8 @@ from fam_os.adapters.mcp.types import (
 )
 
 __all__ = [
-    "McpCallResult", "McpCapabilityBinding", "McpClientAdapter",
+    "McpArgumentBinding", "McpArgumentSource", "McpCallResult",
+    "McpCapabilityBinding", "McpClientAdapter",
     "McpClientSessionPort", "McpConnectorPolicy", "McpDiscoverySnapshot",
     "McpConnectorLifecycle", "McpMappedConnector", "McpOperationOutcome", "McpPrimitiveKind",
     "McpReadResult", "McpResource", "McpResourcePage", "McpServerInfo",

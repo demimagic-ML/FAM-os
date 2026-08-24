@@ -52,7 +52,9 @@ class OfficialMcpStdioSession:
         parameters = StdioServerParameters(
             command=str(configuration.command),
             args=list(configuration.arguments),
-            env=dict(configuration.environment) or None,
+            # Never inherit the product service environment into an untrusted
+            # local MCP process. Every variable must be explicitly allowlisted.
+            env=dict(configuration.environment),
             cwd=configuration.working_directory,
         )
         error_stream = open(os.devnull, "w", encoding="utf-8")

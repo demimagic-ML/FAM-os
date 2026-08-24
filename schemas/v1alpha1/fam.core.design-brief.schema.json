@@ -1,0 +1,164 @@
+{
+  "$defs": {
+    "DesignBrief": {
+      "additionalProperties": false,
+      "properties": {
+        "approved_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "audiences": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "brief_id": {
+          "type": "string"
+        },
+        "components": {
+          "items": {
+            "$ref": "#/$defs/DesignComponent"
+          },
+          "type": "array"
+        },
+        "constraints": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "goals": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "human_preview_required": {
+          "type": "boolean"
+        },
+        "reference_asset_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "task_id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "tokens": {
+          "items": {
+            "$ref": "#/$defs/DesignToken"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "brief_id",
+        "task_id",
+        "title",
+        "audiences",
+        "goals",
+        "constraints",
+        "tokens",
+        "components",
+        "reference_asset_ids",
+        "approved_at",
+        "human_preview_required",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "DesignComponent": {
+      "additionalProperties": false,
+      "properties": {
+        "accessibility_requirements": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "architecture_element_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "component_id": {
+          "type": "string"
+        },
+        "interaction_specifications": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "responsive_states": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "component_id",
+        "architecture_element_ids",
+        "responsive_states",
+        "interaction_specifications",
+        "accessibility_requirements"
+      ],
+      "type": "object"
+    },
+    "DesignToken": {
+      "additionalProperties": false,
+      "properties": {
+        "category": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "token_id": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "token_id",
+        "category",
+        "value",
+        "description"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.design-brief/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/DesignBrief"
+    },
+    "schema_id": {
+      "const": "fam.core.design-brief/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Architecture-traceable design system brief",
+  "type": "object"
+}

@@ -1,7 +1,12 @@
 """Pure command construction for user-scoped systemd operations."""
 
 from fam_os.adapters.systemd.settings import SystemdUserSettings
-from fam_os.supervisor.contracts import ResourceLimits, ServiceDefinition
+from fam_os.supervisor.contracts import (
+    ResourceLimits,
+    ServiceDefinition,
+    ServiceRestartMode,
+    ServiceRestartPolicy,
+)
 
 
 STATUS_PROPERTIES = (
@@ -37,10 +42,22 @@ def build_start_command(
     ))
     if settings.apparmor_profile is not None:
         command.append(f"--property=AppArmorProfile={settings.apparmor_profile}")
+    command.extend(_restart_arguments(definition.restart_policy))
     command.extend(_limit_arguments(definition.limits))
     command.extend(f"--setenv={key}={value}" for key, value in definition.environment)
     command.extend(("--", *definition.command))
     return tuple(command)
+
+
+def _restart_arguments(policy: ServiceRestartPolicy) -> tuple[str, ...]:
+    if policy.mode is ServiceRestartMode.NEVER:
+        return ()
+    return (
+        f"--property=Restart={policy.mode.value}",
+        f"--property=RestartSec={policy.delay_seconds:g}s",
+        f"--property=StartLimitBurst={policy.maximum_attempts}",
+        f"--property=StartLimitIntervalSec={policy.window_seconds:g}s",
+    )
 
 
 def build_stop_command(service_id: str, settings: SystemdUserSettings) -> tuple[str, ...]:
@@ -65,6 +82,8 @@ def build_show_command(service_id: str, settings: SystemdUserSettings) -> tuple[
 
 def _limit_arguments(limits: ResourceLimits) -> tuple[str, ...]:
     values: list[str] = []
+    if limits.memory_high_bytes is not None:
+        values.append(f"--property=MemoryHigh={limits.memory_high_bytes}")
     if limits.memory_max_bytes is not None:
         values.append(f"--property=MemoryMax={limits.memory_max_bytes}")
     if limits.swap_max_bytes is not None:

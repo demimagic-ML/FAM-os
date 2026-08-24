@@ -90,6 +90,25 @@ class ApplicationJsonlAuditSink:
         finally:
             os.close(fd)
 
+    def contains_event(self, event_id: str) -> bool:
+        if not isinstance(event_id, str) or not event_id.strip():
+            raise ValueError("application audit event identity must be nonempty")
+        try:
+            fd = self._open(os.O_RDONLY)
+        except FileNotFoundError:
+            return False
+        try:
+            fcntl.flock(fd, fcntl.LOCK_SH)
+            return event_id in _scan(fd, self.max_line_bytes).event_ids
+        except _Invalid as error:
+            raise ApplicationAuditIntegrityError(
+                f"application audit {error.reason} at sequence {error.sequence}"
+            ) from error
+        except (OSError, ValueError) as error:
+            raise ApplicationAuditEmissionError("application audit lookup failed") from error
+        finally:
+            os.close(fd)
+
     def _open(self, flags):
         _require_parent(self.path.parent)
         try:

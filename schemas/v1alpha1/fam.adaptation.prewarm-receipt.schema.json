@@ -1,0 +1,111 @@
+{
+  "$defs": {
+    "ModelPrewarmReceipt": {
+      "additionalProperties": false,
+      "properties": {
+        "candidate_model_ref": {
+          "type": "string"
+        },
+        "completed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.adaptation.live-prediction/v1alpha1"
+        },
+        "evicted_model_refs": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "latency_ms": {
+          "type": "number"
+        },
+        "loaded_after": {
+          "type": "boolean"
+        },
+        "loaded_before": {
+          "type": "boolean"
+        },
+        "local_only": {
+          "type": "boolean"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "reserved_bytes": {
+          "type": "integer"
+        },
+        "snapshot_id": {
+          "type": "string"
+        },
+        "source": {
+          "enum": [
+            "escalation",
+            "transition",
+            "frequency"
+          ],
+          "type": "string"
+        },
+        "started_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "rejected",
+            "completed",
+            "failed"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "receipt_id",
+        "snapshot_id",
+        "candidate_model_ref",
+        "source",
+        "status",
+        "started_at",
+        "completed_at",
+        "reserved_bytes",
+        "loaded_before",
+        "loaded_after",
+        "latency_ms",
+        "reason_codes",
+        "evicted_model_refs",
+        "local_only",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.adaptation.prewarm-receipt/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.adaptation.live-prediction/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/ModelPrewarmReceipt"
+    },
+    "schema_id": {
+      "const": "fam.adaptation.prewarm-receipt/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Resource-bounded model prewarm receipt",
+  "type": "object"
+}

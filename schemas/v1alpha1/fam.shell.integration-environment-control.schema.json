@@ -1,0 +1,67 @@
+{
+  "$defs": {
+    "ShellIntegrationEnvironmentControlRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "confirmed": {
+          "type": "boolean"
+        },
+        "contract_version": {
+          "const": "fam.shell.integration-environment/v1alpha1"
+        },
+        "environment_id": {
+          "type": "string"
+        },
+        "operation": {
+          "enum": [
+            "start",
+            "list",
+            "inspect",
+            "audit",
+            "cleanup",
+            "reconcile",
+            "intent_list",
+            "intent_inspect"
+          ],
+          "type": "string"
+        },
+        "owner_id": {
+          "type": "string"
+        },
+        "request_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "operation",
+        "owner_id",
+        "environment_id",
+        "confirmed",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.shell.integration-environment-control/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.shell.integration-environment/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/ShellIntegrationEnvironmentControlRequest"
+    },
+    "schema_id": {
+      "const": "fam.shell.integration-environment-control/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Confirmed integration cleanup or reconciliation",
+  "type": "object"
+}

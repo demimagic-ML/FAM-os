@@ -27,7 +27,7 @@ class MemoryEncryptionTests(unittest.TestCase):
             repository = SqliteDocumentIndexRepository(path, cipher)
             index = ApprovedDocumentIndex(repository, Runtime())
             index.index(approval(), CONTENT, ("GPU and CPU share work.", "Rain falls from clouds."))
-            self.assertEqual("GPU and CPU share work.", repository.chunks("doc-1")[0][3])
+            self.assertEqual("GPU and CPU share work.", repository.chunks("doc-1")[0].content)
             repository.close()
             raw = sqlite3.connect(path).execute("SELECT content,embedding FROM chunks").fetchall()
             self.assertTrue(all(value.startswith("aesgcm:") for row in raw for value in row))

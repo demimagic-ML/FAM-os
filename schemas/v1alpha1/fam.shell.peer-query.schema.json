@@ -1,0 +1,60 @@
+{
+  "$defs": {
+    "ShellPeerQuery": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.shell.peer/v1alpha1"
+        },
+        "limit": {
+          "type": "integer"
+        },
+        "offset": {
+          "type": "integer"
+        },
+        "operation": {
+          "enum": [
+            "peers",
+            "probe",
+            "receipts",
+            "context",
+            "context_evidence"
+          ],
+          "type": "string"
+        },
+        "request_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "operation",
+        "offset",
+        "limit",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.shell.peer-query/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.shell.peer/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/ShellPeerQuery"
+    },
+    "schema_id": {
+      "const": "fam.shell.peer-query/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Bounded Shell trusted peer query",
+  "type": "object"
+}

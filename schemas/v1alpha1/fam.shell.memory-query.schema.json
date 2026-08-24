@@ -1,0 +1,73 @@
+{
+  "$defs": {
+    "ShellMemoryQuery": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.shell.memory/v1alpha1"
+        },
+        "limit": {
+          "type": "integer"
+        },
+        "offset": {
+          "type": "integer"
+        },
+        "operation": {
+          "enum": [
+            "list",
+            "inspect",
+            "export",
+            "correct",
+            "expire",
+            "delete",
+            "receipts"
+          ],
+          "type": "string"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "target_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "request_id",
+        "operation",
+        "target_id",
+        "offset",
+        "limit",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.shell.memory-query/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.shell.memory/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/ShellMemoryQuery"
+    },
+    "schema_id": {
+      "const": "fam.shell.memory-query/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Bounded Shell memory query",
+  "type": "object"
+}

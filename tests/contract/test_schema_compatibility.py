@@ -12,6 +12,20 @@ from fam_os.schemas import (
     encode_document,
 )
 from tests.contract.schema_core_fixtures import task_request
+from tests.contract.schema_engineering_fixtures import (
+    engineering_result_schema_values,
+    engineering_grant_schema_values,
+    engineering_schema_values,
+)
+from tests.contract.schema_diagnostics_fixtures import diagnostics_schema_values
+from tests.contract.schema_diagnostic_qualification_fixtures import diagnostic_qualification_schema_values
+from tests.contract.schema_database_engineering_fixtures import (
+    database_engineering_schema_values, database_postapply_schema_values,
+    postgresql_integration_verification_schema_values,
+)
+from tests.contract.schema_repository_fixtures import repository_schema_values
+from tests.contract.schema_transaction_fixtures import transaction_schema_values
+from tests.contract.schema_execution_fixtures import execution_schema_values
 
 
 FIXTURES = Path("tests/fixtures/schema_compatibility/v1alpha1")
@@ -98,6 +112,41 @@ class SchemaCompatibilityTests(unittest.TestCase):
             ).compatible
         )
 
+    def test_result_and_shell_v1alpha1_remain_exact_beside_v1alpha2(self) -> None:
+        from fam_os.core.contracts import (
+            ResultStatus, TaskResultV1Alpha1, migrate_task_result_v1alpha1,
+        )
+        from fam_os.shell import (
+            ShellResultV1Alpha1, ShellRunState, ShellSessionSnapshotV1Alpha1,
+            migrate_shell_snapshot_v1alpha1,
+        )
+
+        legacy_result = TaskResultV1Alpha1(
+            "legacy-result", ResultStatus.COMPLETED, "answer",
+        )
+        legacy_snapshot = ShellSessionSnapshotV1Alpha1(
+            "legacy-session", "legacy-result", 1, ShellRunState.TERMINAL,
+            result=ShellResultV1Alpha1(
+                "legacy-result", ResultStatus.COMPLETED, "answer",
+            ),
+        )
+        self.assertEqual(
+            "fam.core.task-result/v1alpha1",
+            encode_document(legacy_result)["schema_id"],
+        )
+        self.assertEqual(
+            "fam.shell.snapshot/v1alpha1",
+            encode_document(legacy_snapshot)["schema_id"],
+        )
+        self.assertEqual(
+            "fam.core.task-result/v1alpha2",
+            encode_document(migrate_task_result_v1alpha1(legacy_result))["schema_id"],
+        )
+        self.assertEqual(
+            "fam.shell.snapshot/v1alpha2",
+            encode_document(migrate_shell_snapshot_v1alpha1(legacy_snapshot))["schema_id"],
+        )
+
     def test_fixed_unknown_field_fixture_remains_rejected(self) -> None:
         from fam_os.schemas import loads_document
 
@@ -109,6 +158,70 @@ class SchemaCompatibilityTests(unittest.TestCase):
 
         with self.assertRaises(UnsupportedSchemaVersionError):
             loads_document((FIXTURES / "task-request.future-version.json").read_text())
+
+    def test_engineering_contracts_reject_unknown_fields_and_future_versions(self) -> None:
+        values = (
+            engineering_schema_values()
+            + engineering_result_schema_values()
+            + engineering_grant_schema_values()
+        )
+        for value in values:
+            with self.subTest(root_type=type(value).__name__):
+                unknown = copy.deepcopy(encode_document(value))
+                unknown["payload"]["unexpected"] = True
+                with self.assertRaises(SchemaValidationError):
+                    decode_document(unknown)
+                future = copy.deepcopy(encode_document(value))
+                family = future["schema_id"].rsplit("/", 1)[0]
+                future["schema_id"] = f"{family}/v1alpha2"
+                with self.assertRaises(UnsupportedSchemaVersionError):
+                    decode_document(future)
+
+    def test_repository_contracts_reject_unknown_fields_and_future_versions(self) -> None:
+        for value in (
+            repository_schema_values() + transaction_schema_values()
+            + execution_schema_values()
+        ):
+            with self.subTest(root_type=type(value).__name__):
+                unknown = copy.deepcopy(encode_document(value))
+                unknown["payload"]["unexpected"] = True
+                with self.assertRaises(SchemaValidationError):
+                    decode_document(unknown)
+                future = copy.deepcopy(encode_document(value))
+                family = future["schema_id"].rsplit("/", 1)[0]
+                future["schema_id"] = f"{family}/v1alpha2"
+                with self.assertRaises(UnsupportedSchemaVersionError):
+                    decode_document(future)
+
+    def test_diagnostic_contracts_reject_unknown_fields_and_future_versions(self) -> None:
+        for value in diagnostics_schema_values() + diagnostic_qualification_schema_values():
+            with self.subTest(root_type=type(value).__name__):
+                unknown = copy.deepcopy(encode_document(value))
+                unknown["payload"]["unexpected"] = True
+                with self.assertRaises(SchemaValidationError):
+                    decode_document(unknown)
+                future = copy.deepcopy(encode_document(value))
+                family = future["schema_id"].rsplit("/", 1)[0]
+                future["schema_id"] = f"{family}/v1alpha2"
+                with self.assertRaises(UnsupportedSchemaVersionError):
+                    decode_document(future)
+
+    def test_database_contracts_reject_unknown_fields_and_future_versions(self) -> None:
+        for value in (
+            *database_engineering_schema_values(),
+            *database_postapply_schema_values(),
+            *postgresql_integration_verification_schema_values(),
+        ):
+            with self.subTest(root_type=type(value).__name__):
+                unknown = copy.deepcopy(encode_document(value))
+                unknown["payload"]["unexpected"] = True
+                with self.assertRaises(SchemaValidationError):
+                    decode_document(unknown)
+                future = copy.deepcopy(encode_document(value))
+                family = future["schema_id"].rsplit("/", 1)[0]
+                future["schema_id"] = f"{family}/v1alpha2"
+                with self.assertRaises(UnsupportedSchemaVersionError):
+                    decode_document(future)
 
 
 if __name__ == "__main__":

@@ -27,6 +27,7 @@ from fam_os.core.lifecycle.application_contracts import (
 )
 from fam_os.core.lifecycle.application_authorization import (
     grant_allows as _shared_grant_allows,
+    _resource_scope_allows,
     route_context_matches as _route_context_matches,
     snapshot_rejection as _snapshot_rejection,
     valid_capability as _valid_capability,
@@ -56,6 +57,7 @@ class _AuthorizedStep:
     snapshot: PlanInstanceSnapshot
     capability: CapabilityDescriptor
     grant: PermissionGrant
+    resource_scopes: tuple[str, ...]
 
 
 @dataclass(slots=True)
@@ -84,7 +86,7 @@ class ApplicationStepService:
             return _rejected(
                 command.plan_instance_id, ApplicationStepRejection.PROVIDER_UNAVAILABLE
             )
-        if not _valid_observation(evidence, request):
+        if not _valid_observation(evidence, request, authorized.resource_scopes):
             return _rejected(
                 command.plan_instance_id, ApplicationStepRejection.INVALID_EVIDENCE
             )
@@ -156,7 +158,9 @@ class ApplicationStepService:
             grant, command.routed, capability, authority, command.resource_uri, now
         ):
             return None, ApplicationStepRejection.PERMISSION_DENIED
-        return _AuthorizedStep(snapshot, capability.capability, grant), None
+        return _AuthorizedStep(
+            snapshot, capability.capability, grant, capability.resource_scopes,
+        ), None
 
     def _advance(self, command, evidence, outcome, evidence_kind, capability_id):
         reference_id = (
@@ -187,7 +191,7 @@ def _valid_proposal(evidence, request, capability) -> bool:
     )
 
 
-def _valid_observation(evidence, request) -> bool:
+def _valid_observation(evidence, request, resource_scopes: tuple[str, ...]) -> bool:
     return (
         isinstance(evidence, ObservationResult)
         and isinstance(evidence.status, ObservationStatus)
@@ -196,6 +200,17 @@ def _valid_observation(evidence, request) -> bool:
             evidence.status is not ObservationStatus.OBSERVED
             or request.resource_uri is None
             or evidence.resource_uri == request.resource_uri
+        )
+        and (
+            evidence.status is not ObservationStatus.OBSERVED
+            or not resource_scopes
+            or (
+                evidence.resource_uri is not None
+                and any(
+                    _resource_scope_allows(scope, evidence.resource_uri)
+                    for scope in resource_scopes
+                )
+            )
         )
     )
 

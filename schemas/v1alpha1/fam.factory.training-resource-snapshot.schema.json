@@ -1,0 +1,86 @@
+{
+  "$defs": {
+    "TrainingResourceSnapshot": {
+      "additionalProperties": false,
+      "properties": {
+        "available_ram_bytes": {
+          "type": "integer"
+        },
+        "contract_version": {
+          "const": "fam.factory.resource-admission/v1alpha1"
+        },
+        "free_disk_bytes": {
+          "type": "integer"
+        },
+        "gpu_temperature_celsius": {
+          "type": "integer"
+        },
+        "gpu_total_bytes": {
+          "type": "integer"
+        },
+        "gpu_used_bytes": {
+          "type": "integer"
+        },
+        "gpu_utilization_fraction": {
+          "type": "number"
+        },
+        "inference_conflict": {
+          "type": "boolean"
+        },
+        "load_fraction": {
+          "type": "number"
+        },
+        "logical_cpu_count": {
+          "type": "integer"
+        },
+        "observed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "snapshot_id": {
+          "type": "string"
+        },
+        "snapshot_sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "snapshot_id",
+        "logical_cpu_count",
+        "load_fraction",
+        "available_ram_bytes",
+        "free_disk_bytes",
+        "gpu_total_bytes",
+        "gpu_used_bytes",
+        "gpu_utilization_fraction",
+        "gpu_temperature_celsius",
+        "inference_conflict",
+        "observed_at",
+        "snapshot_sha256",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.factory.training-resource-snapshot/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.factory.resource-admission/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/TrainingResourceSnapshot"
+    },
+    "schema_id": {
+      "const": "fam.factory.training-resource-snapshot/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Live CPU RAM disk and GPU admission evidence",
+  "type": "object"
+}

@@ -1,0 +1,69 @@
+{
+  "$defs": {
+    "TrainingAdmissionDecision": {
+      "additionalProperties": false,
+      "properties": {
+        "admitted": {
+          "type": "boolean"
+        },
+        "approval_id": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.factory.resource-admission/v1alpha1"
+        },
+        "decided_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "decision_id": {
+          "type": "string"
+        },
+        "decision_sha256": {
+          "type": "string"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "snapshot_sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "decision_id",
+        "approval_id",
+        "snapshot_sha256",
+        "admitted",
+        "reason_codes",
+        "decided_at",
+        "decision_sha256",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.factory.training-admission-decision/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.factory.resource-admission/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/TrainingAdmissionDecision"
+    },
+    "schema_id": {
+      "const": "fam.factory.training-admission-decision/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Fail-closed safe training admission decision",
+  "type": "object"
+}

@@ -1,0 +1,157 @@
+{
+  "$defs": {
+    "SealedDatasetPartition": {
+      "additionalProperties": false,
+      "properties": {
+        "blob_id": {
+          "type": "string"
+        },
+        "content_bytes": {
+          "type": "integer"
+        },
+        "contract_version": {
+          "const": "fam.factory.sealed-dataset/v1alpha1"
+        },
+        "ordered_records_sha256": {
+          "type": "string"
+        },
+        "partition": {
+          "enum": [
+            "train",
+            "validation",
+            "held_out"
+          ],
+          "type": "string"
+        },
+        "record_count": {
+          "type": "integer"
+        },
+        "record_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "partition",
+        "blob_id",
+        "record_ids",
+        "record_count",
+        "content_bytes",
+        "ordered_records_sha256",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "SealedFactoryDataset": {
+      "additionalProperties": false,
+      "properties": {
+        "capability_id": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.factory.sealed-dataset/v1alpha1"
+        },
+        "dataset_id": {
+          "type": "string"
+        },
+        "grant_id": {
+          "type": "string"
+        },
+        "immutable": {
+          "type": "boolean"
+        },
+        "leakage_report_id": {
+          "type": "string"
+        },
+        "license_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "manifest_sha256": {
+          "type": "string"
+        },
+        "partitions": {
+          "items": {
+            "$ref": "#/$defs/SealedDatasetPartition"
+          },
+          "type": "array"
+        },
+        "proposal_id": {
+          "type": "string"
+        },
+        "sealed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "sensitivities": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "source_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "split_policy_id": {
+          "type": "string"
+        },
+        "synthetic_example_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "training_ready": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "dataset_id",
+        "proposal_id",
+        "grant_id",
+        "capability_id",
+        "split_policy_id",
+        "partitions",
+        "source_ids",
+        "synthetic_example_ids",
+        "license_ids",
+        "sensitivities",
+        "leakage_report_id",
+        "sealed_at",
+        "manifest_sha256",
+        "immutable",
+        "training_ready",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.factory.sealed-dataset/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.factory.sealed-dataset/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/SealedFactoryDataset"
+    },
+    "schema_id": {
+      "const": "fam.factory.sealed-dataset/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Immutable training-ready dataset manifest",
+  "type": "object"
+}

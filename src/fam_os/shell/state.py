@@ -28,7 +28,9 @@ def accept_snapshot(
 def _stable_plan(previous, incoming) -> None:
     if not previous.steps:
         return
+    if incoming.state is ShellRunState.TERMINAL and not incoming.steps:
+        return
     before = tuple((item.step_id, item.kind, item.description) for item in previous.steps)
     after = tuple((item.step_id, item.kind, item.description) for item in incoming.steps)
-    if before != after:
+    if after[:len(before)] != before:
         raise ValueError("shell plan identity changed")

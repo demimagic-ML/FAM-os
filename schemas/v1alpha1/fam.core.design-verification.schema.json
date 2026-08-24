@@ -1,0 +1,138 @@
+{
+  "$defs": {
+    "DesignVerificationReceipt": {
+      "additionalProperties": false,
+      "properties": {
+        "accessibility_evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "asset_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "brief_id": {
+          "type": "string"
+        },
+        "candidate_id": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "contrast_evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "font_license_evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "format_evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "human_checkpoint_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "metadata_evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "responsive_capture_sha256": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "status": {
+          "enum": [
+            "passed",
+            "failed",
+            "human_review_required"
+          ],
+          "type": "string"
+        },
+        "svg_sanitization_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "verified_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "visual_difference_ratio": {
+          "type": "number"
+        },
+        "visual_threshold": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "receipt_id",
+        "brief_id",
+        "candidate_id",
+        "asset_ids",
+        "format_evidence_ids",
+        "svg_sanitization_ids",
+        "metadata_evidence_ids",
+        "font_license_evidence_ids",
+        "contrast_evidence_ids",
+        "accessibility_evidence_ids",
+        "responsive_capture_sha256",
+        "visual_difference_ratio",
+        "visual_threshold",
+        "human_checkpoint_id",
+        "status",
+        "verified_at",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.design-verification/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/DesignVerificationReceipt"
+    },
+    "schema_id": {
+      "const": "fam.core.design-verification/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Accessibility visual and human-preview evidence",
+  "type": "object"
+}

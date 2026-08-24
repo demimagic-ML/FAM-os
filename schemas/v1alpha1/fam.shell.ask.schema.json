@@ -1,5 +1,54 @@
 {
   "$defs": {
+    "RemoteExecutionAuthority": {
+      "additionalProperties": false,
+      "properties": {
+        "confirmed": {
+          "type": "boolean"
+        },
+        "contract_version": {
+          "const": "fam.fabric.remote-execution/v1alpha1"
+        },
+        "enrollment_id": {
+          "type": "string"
+        },
+        "expected_privacy_revision": {
+          "type": "integer"
+        },
+        "maximum_context_bytes": {
+          "type": "integer"
+        },
+        "maximum_output_bytes": {
+          "type": "integer"
+        },
+        "purpose_id": {
+          "type": "string"
+        },
+        "sensitivity": {
+          "enum": [
+            "public",
+            "private",
+            "restricted"
+          ],
+          "type": "string"
+        },
+        "workspace_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "enrollment_id",
+        "expected_privacy_revision",
+        "purpose_id",
+        "workspace_id",
+        "sensitivity",
+        "maximum_context_bytes",
+        "maximum_output_bytes",
+        "confirmed",
+        "contract_version"
+      ],
+      "type": "object"
+    },
     "ShellAskCommand": {
       "additionalProperties": false,
       "properties": {
@@ -12,8 +61,28 @@
         "contract_version": {
           "const": "fam.shell/v1alpha1"
         },
+        "memory_session_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "prompt": {
           "type": "string"
+        },
+        "remote_authority": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RemoteExecutionAuthority"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "request_id": {
           "type": "string"
@@ -34,7 +103,9 @@
         "contexts",
         "required_capabilities",
         "verification_required",
-        "contract_version"
+        "contract_version",
+        "memory_session_id",
+        "remote_authority"
       ],
       "type": "object"
     },

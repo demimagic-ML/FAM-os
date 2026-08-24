@@ -1,0 +1,83 @@
+{
+  "$defs": {
+    "DatabaseTarget": {
+      "additionalProperties": false,
+      "properties": {
+        "connection_secret_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "database_name": {
+          "type": "string"
+        },
+        "engine": {
+          "enum": [
+            "sqlite",
+            "postgresql",
+            "mysql"
+          ],
+          "type": "string"
+        },
+        "environment": {
+          "enum": [
+            "candidate",
+            "integration",
+            "staging",
+            "production"
+          ],
+          "type": "string"
+        },
+        "exact_host_id": {
+          "type": "string"
+        },
+        "production": {
+          "type": "boolean"
+        },
+        "target_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "target_id",
+        "engine",
+        "environment",
+        "database_name",
+        "connection_secret_ref",
+        "exact_host_id",
+        "production",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.database-target/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/DatabaseTarget"
+    },
+    "schema_id": {
+      "const": "fam.core.database-target/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Exact local or secret-referenced database target",
+  "type": "object"
+}

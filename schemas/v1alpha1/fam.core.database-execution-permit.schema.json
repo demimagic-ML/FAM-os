@@ -1,0 +1,55 @@
+{
+  "$defs": {
+    "DatabaseExecutionPermit": {
+      "additionalProperties": false,
+      "properties": {
+        "approved_changeset_id": {
+          "type": "string"
+        },
+        "exact_host_id": {
+          "type": "string"
+        },
+        "expires_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "issued_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "permit_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "permit_id",
+        "approved_changeset_id",
+        "exact_host_id",
+        "issued_at",
+        "expires_at"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.database-execution-permit/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/DatabaseExecutionPermit"
+    },
+    "schema_id": {
+      "const": "fam.core.database-execution-permit/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Expiring changeset and host bound database permit",
+  "type": "object"
+}

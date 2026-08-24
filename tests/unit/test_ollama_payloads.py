@@ -1,6 +1,11 @@
+import base64
 import unittest
 
-from fam_os.adapters.ollama.payloads import build_chat_payload, build_unload_payload
+from fam_os.adapters.ollama.payloads import (
+    build_chat_payload,
+    build_prewarm_payload,
+    build_unload_payload,
+)
 from fam_os.core.ports.inference import InferenceMessage, InferenceRequest, MessageRole
 
 
@@ -38,8 +43,27 @@ class OllamaPayloadTests(unittest.TestCase):
         )
         self.assertNotIn("seed", build_chat_payload(request)["options"])
 
+    def test_encodes_provider_neutral_message_images(self) -> None:
+        content = b"image-bytes"
+        request = InferenceRequest(
+            "vision:model",
+            (InferenceMessage(MessageRole.USER, "read text", (content,)),),
+            4096,
+            128,
+        )
+        message = build_chat_payload(request)["messages"][0]
+        self.assertEqual(
+            [base64.b64encode(content).decode("ascii")], message["images"],
+        )
+
     def test_builds_prototype_compatible_unload_payload(self) -> None:
         self.assertEqual(build_unload_payload("model"), {"model": "model", "keep_alive": 0})
+
+    def test_builds_content_free_model_prewarm_payload(self) -> None:
+        self.assertEqual(
+            build_prewarm_payload("model", "10m"),
+            {"model": "model", "stream": False, "keep_alive": "10m"},
+        )
 
     def test_translates_explicit_accelerator_layer_placement(self) -> None:
         request = InferenceRequest(

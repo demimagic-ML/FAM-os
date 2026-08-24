@@ -34,6 +34,7 @@ class ApplicationActionExecutionService:
     verifier: object
     audit: object
     replay: object
+    recovery_authority: object | None = None
     clock: Callable[[], datetime] = _utc_now
     operation_id_factory: Callable[[], str] = _identifier
     event_id_factory: Callable[[], str] = _identifier
@@ -42,6 +43,7 @@ class ApplicationActionExecutionService:
         now = self.clock()
         authorized, rejection = authorize_action_execution(
             self.lifecycle, self.provider, self.permissions, command, now,
+            self.recovery_authority,
         )
         operation_id = self.operation_id_factory()
         if rejection is not None:

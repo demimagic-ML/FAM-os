@@ -1,0 +1,120 @@
+{
+  "$defs": {
+    "FactoryCanaryReport": {
+      "additionalProperties": false,
+      "properties": {
+        "approval_id": {
+          "type": "string"
+        },
+        "canary_id": {
+          "type": "string"
+        },
+        "case_count": {
+          "type": "integer"
+        },
+        "contract_version": {
+          "const": "fam.factory.canary/v1alpha1"
+        },
+        "finished_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "outputs_discarded": {
+          "type": "boolean"
+        },
+        "package_receipt_sha256": {
+          "type": "string"
+        },
+        "passed_case_count": {
+          "type": "integer"
+        },
+        "peak_ram_bytes": {
+          "type": "integer"
+        },
+        "peak_vram_bytes": {
+          "type": "integer"
+        },
+        "reason_code": {
+          "type": "string"
+        },
+        "report_id": {
+          "type": "string"
+        },
+        "report_sha256": {
+          "type": "string"
+        },
+        "runtime_manifest_sha256": {
+          "type": "string"
+        },
+        "scheduler_excluded_unrelated_capabilities": {
+          "type": "boolean"
+        },
+        "scheduler_selected_declared_capability": {
+          "type": "boolean"
+        },
+        "started_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "completed",
+            "failed",
+            "cancelled"
+          ],
+          "type": "string"
+        },
+        "suite_sha256": {
+          "type": "string"
+        },
+        "verifier_failure_count": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "report_id",
+        "approval_id",
+        "canary_id",
+        "package_receipt_sha256",
+        "suite_sha256",
+        "runtime_manifest_sha256",
+        "status",
+        "reason_code",
+        "case_count",
+        "passed_case_count",
+        "verifier_failure_count",
+        "scheduler_selected_declared_capability",
+        "scheduler_excluded_unrelated_capabilities",
+        "outputs_discarded",
+        "peak_ram_bytes",
+        "peak_vram_bytes",
+        "started_at",
+        "finished_at",
+        "report_sha256",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.factory.canary-report/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.factory.canary/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/FactoryCanaryReport"
+    },
+    "schema_id": {
+      "const": "fam.factory.canary-report/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Verifier and scheduler specialist canary evidence",
+  "type": "object"
+}

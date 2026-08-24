@@ -1,0 +1,189 @@
+{
+  "$defs": {
+    "EngineeringReviewCheckpoint": {
+      "additionalProperties": false,
+      "properties": {
+        "candidate_id": {
+          "type": "string"
+        },
+        "changeset_sha256": {
+          "type": "string"
+        },
+        "checkpoint_id": {
+          "type": "string"
+        },
+        "completed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "findings": {
+          "items": {
+            "$ref": "#/$defs/EngineeringReviewFinding"
+          },
+          "type": "array"
+        },
+        "producer_id": {
+          "type": "string"
+        },
+        "required_disciplines": {
+          "items": {
+            "enum": [
+              "code",
+              "security",
+              "architecture",
+              "design"
+            ],
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "reviewer_id": {
+          "type": "string"
+        },
+        "reviewer_independence_ref": {
+          "type": "string"
+        },
+        "revision": {
+          "type": "integer"
+        },
+        "status": {
+          "enum": [
+            "blocked",
+            "passed",
+            "waived"
+          ],
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "checkpoint_id",
+        "task_id",
+        "candidate_id",
+        "changeset_sha256",
+        "producer_id",
+        "reviewer_id",
+        "reviewer_independence_ref",
+        "required_disciplines",
+        "findings",
+        "status",
+        "completed_at",
+        "revision",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "EngineeringReviewFinding": {
+      "additionalProperties": false,
+      "properties": {
+        "discipline": {
+          "enum": [
+            "code",
+            "security",
+            "architecture",
+            "design"
+          ],
+          "type": "string"
+        },
+        "disposition": {
+          "enum": [
+            "open",
+            "resolved",
+            "waived"
+          ],
+          "type": "string"
+        },
+        "evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "finding_id": {
+          "type": "string"
+        },
+        "path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "resolution_receipt_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "severity": {
+          "enum": [
+            "information",
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ],
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "waiver_decision_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "finding_id",
+        "discipline",
+        "severity",
+        "title",
+        "path",
+        "evidence_ids",
+        "disposition",
+        "resolution_receipt_id",
+        "waiver_decision_id"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.engineering-review-checkpoint/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/EngineeringReviewCheckpoint"
+    },
+    "schema_id": {
+      "const": "fam.core.engineering-review-checkpoint/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Independent blocking multi-discipline review checkpoint",
+  "type": "object"
+}

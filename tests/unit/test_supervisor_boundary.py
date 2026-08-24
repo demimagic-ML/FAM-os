@@ -33,7 +33,15 @@ class SupervisorBoundaryTests(unittest.TestCase):
         self.assertTrue(
             boundary.implements(SupervisorCapability.SAFE_TERMINATE_OWNED_SERVICE)
         )
-        self.assertEqual((), boundary.planned_capabilities)
+        self.assertEqual(
+            (SupervisorCapability.ENFORCE_ALLOWLISTED_NETWORK,),
+            boundary.planned_capabilities,
+        )
+        self.assertFalse(
+            boundary.implements(
+                SupervisorCapability.ENFORCE_ALLOWLISTED_NETWORK,
+            ),
+        )
 
     def test_non_goals_exclude_intelligence_and_broad_machine_authority(self) -> None:
         non_goals = set(canonical_supervisor_boundary().non_goals)

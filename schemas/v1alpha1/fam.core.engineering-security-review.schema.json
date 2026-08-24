@@ -1,0 +1,87 @@
+{
+  "$defs": {
+    "EngineeringSecurityReview": {
+      "additionalProperties": false,
+      "properties": {
+        "blocking_finding_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "completed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "finding_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "release_id": {
+          "type": "string"
+        },
+        "review_document_sha256": {
+          "type": "string"
+        },
+        "review_id": {
+          "type": "string"
+        },
+        "reviewed_areas": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "reviewer_id": {
+          "type": "string"
+        },
+        "reviewer_independent": {
+          "type": "boolean"
+        },
+        "reviewer_signature_sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "review_id",
+        "release_id",
+        "reviewer_id",
+        "reviewer_independent",
+        "reviewed_areas",
+        "finding_ids",
+        "blocking_finding_ids",
+        "review_document_sha256",
+        "reviewer_signature_sha256",
+        "completed_at",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.engineering-security-review/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/EngineeringSecurityReview"
+    },
+    "schema_id": {
+      "const": "fam.core.engineering-security-review/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Independent signed engineering security review",
+  "type": "object"
+}

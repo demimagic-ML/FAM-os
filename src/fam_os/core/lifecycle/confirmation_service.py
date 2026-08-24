@@ -43,6 +43,7 @@ class ConfirmationTransitionService:
     lifecycle: PlanLifecycleService
     permissions: ApplicationPermissionRegistry
     replay: ConfirmationReplayRegistry
+    recovery_authority: object | None = None
     clock: Callable[[], datetime] = _utc_now
     evidence_id_factory: Callable[[], str] = _identifier
 
@@ -85,6 +86,45 @@ class ConfirmationTransitionService:
             return _rejected(command.plan_instance_id, ConfirmationRejection.NOT_EXPIRED)
         return self._expire(command, step, proposal)
 
+    def record_reapproval(
+        self, command: ConfirmationCommand,
+    ) -> ConfirmationTransitionResult:
+        """Record fresh authority after restart without replaying the action step."""
+        context, rejection = self._reapproval_context(command)
+        if rejection is not None:
+            return _rejected(command.plan_instance_id, rejection)
+        snapshot, step, proposal, proposal_time, grant = context
+        now = self.clock()
+        if _permission_inactive(snapshot, grant, now):
+            return _rejected(
+                command.plan_instance_id, ConfirmationRejection.PERMISSION_DENIED,
+            )
+        confirmation = command.confirmation
+        if (
+            not confirmation.confirmation_id.startswith("confirmation-recovery-")
+            or not _valid_confirmation(
+                confirmation, command, proposal, proposal_time, grant, now,
+            )
+        ):
+            return _rejected(
+                command.plan_instance_id, ConfirmationRejection.INVALID_CONFIRMATION,
+            )
+        if not self.replay.reserve(confirmation.confirmation_id):
+            return _rejected(command.plan_instance_id, ConfirmationRejection.REPLAYED)
+        if confirmation.decision is ConfirmationDecision.APPROVED:
+            return ConfirmationTransitionResult(
+                command.plan_instance_id, ConfirmationDisposition.APPROVED,
+                snapshot, confirmation,
+            )
+        reference = PlanEvidenceReference(
+            confirmation.confirmation_id, PlanEvidenceKind.CANCELLATION,
+            step.capability_ids[0], None,
+        )
+        return self._advance(
+            command, StepOutcome.CANCELLED, ConfirmationDisposition.DENIED,
+            reference, confirmation,
+        )
+
     def _context(self, command):
         snapshot = self.lifecycle.repository.get(command.plan_instance_id)
         rejection = _snapshot_rejection(snapshot, command.expected_revision)
@@ -107,6 +147,37 @@ class ConfirmationTransitionService:
         return (
             snapshot, step, proposal, snapshot.events[-1].occurred_at, grant
         ), None
+
+    def _reapproval_context(self, command):
+        snapshot = self.lifecycle.repository.get(command.plan_instance_id)
+        rejection = _snapshot_rejection(snapshot, command.expected_revision)
+        if rejection is not None:
+            return None, rejection
+        if not _route_context_matches(snapshot, command.routed):
+            return None, ConfirmationRejection.INVALID_CONTEXT
+        step = _step(snapshot.plan, snapshot.current_step_id)
+        if step.kind is not PlanStepKind.EXECUTE_ACTION or len(step.capability_ids) != 1:
+            return None, ConfirmationRejection.INVALID_STEP
+        proposal, proposal_time = _proposal_reference_any(
+            snapshot, step.capability_ids[0], command.confirmation.proposal_id,
+        )
+        if proposal is None or self.recovery_authority is None:
+            return None, ConfirmationRejection.INVALID_STEP
+        try:
+            awaiting = self.recovery_authority.awaiting_reapproval(
+                command.confirmation.proposal_id,
+            )
+        except Exception:
+            awaiting = False
+        if not awaiting:
+            return None, ConfirmationRejection.INVALID_STEP
+        try:
+            grant = self.permissions.get(proposal.permission_grant_id)
+        except Exception:
+            grant = None
+        if grant is not None and not _grant_identity_matches(grant, command.routed):
+            return None, ConfirmationRejection.PERMISSION_DENIED
+        return (snapshot, step, proposal, proposal_time, grant), None
 
     def _expire(self, command, step, proposal):
         if not _has_transition(
@@ -161,6 +232,18 @@ def _proposal_reference(snapshot, capability_id):
         and reference.capability_id == capability_id
     )
     return matches[0] if len(matches) == 1 else None
+
+
+def _proposal_reference_any(snapshot, capability_id, proposal_id):
+    matches = tuple(
+        (reference, event.occurred_at)
+        for event in snapshot.events
+        for reference in event.evidence_refs
+        if reference.kind is PlanEvidenceKind.ACTION_PROPOSAL
+        and reference.reference_id == proposal_id
+        and reference.capability_id == capability_id
+    )
+    return matches[0] if len(matches) == 1 else (None, None)
 
 
 def _grant_identity_matches(grant, routed) -> bool:

@@ -30,7 +30,14 @@
           "type": "number"
         },
         "thermal_celsius": {
-          "type": "number"
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [

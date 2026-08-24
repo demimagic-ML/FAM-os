@@ -27,6 +27,10 @@ class SupervisorAuditOperation(StrEnum):
     REVOKE_ACCESS = "revoke_access"
     RECOVER_SERVICE = "recover_service"
     TERMINATE_SERVICE = "terminate_service"
+    NETWORK_OPEN = "network_open"
+    NETWORK_OBSERVE = "network_observe"
+    NETWORK_CLOSE = "network_close"
+    NETWORK_RECOVER = "network_recover"
 
 
 class SupervisorAuditOutcome(StrEnum):

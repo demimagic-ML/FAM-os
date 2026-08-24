@@ -40,7 +40,10 @@ def render_snapshot(snapshot: ShellSessionSnapshot) -> str:
         ))
     if snapshot.result is not None:
         result = snapshot.result
-        lines.extend(("", f"Result: {result.status.value}"))
+        lines.extend((
+            "", f"Result: {result.status.value}",
+            f"Result type: {result.result_kind.value}",
+        ))
         if result.content is not None:
             lines.append(_safe(result.content, multiline=True))
         else:
@@ -48,6 +51,16 @@ def render_snapshot(snapshot: ShellSessionSnapshot) -> str:
         if result.verified:
             evidence = ", ".join(_safe(item) for item in result.evidence_ids)
             lines.append(f"Verified evidence: {evidence}")
+        if result.citations:
+            lines.extend(("", "Exact citations:"))
+            for citation in result.citations:
+                lines.extend((
+                    f"  [{_safe(citation.citation_id)}] "
+                    f"{_safe(citation.source_locator)} "
+                    f"characters {citation.start_character}-{citation.end_character}",
+                    f"    Claim: {_safe(citation.claim_text, multiline=True)}",
+                    f"    Quote: {_safe(citation.quoted_text, multiline=True)}",
+                ))
     return "\n".join(lines)
 
 

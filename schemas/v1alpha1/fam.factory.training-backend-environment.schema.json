@@ -1,0 +1,127 @@
+{
+  "$defs": {
+    "TrainingBackendEnvironment": {
+      "additionalProperties": false,
+      "properties": {
+        "bfloat16_supported": {
+          "type": "boolean"
+        },
+        "bitsandbytes_cuda_available": {
+          "type": "boolean"
+        },
+        "compute_capability": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.factory.training-backend/v1alpha1"
+        },
+        "cuda_available": {
+          "type": "boolean"
+        },
+        "device_index": {
+          "type": "integer"
+        },
+        "device_name": {
+          "type": "string"
+        },
+        "environment_id": {
+          "type": "string"
+        },
+        "incompatibility_reasons": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "manifest_sha256": {
+          "type": "string"
+        },
+        "nvidia_driver_version": {
+          "type": "string"
+        },
+        "observed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "package_versions": {
+          "items": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "type": "array"
+        },
+        "platform": {
+          "type": "string"
+        },
+        "python_executable_sha256": {
+          "type": "string"
+        },
+        "python_version": {
+          "type": "string"
+        },
+        "qlora_compatible": {
+          "type": "boolean"
+        },
+        "torch_cuda_version": {
+          "type": "string"
+        },
+        "total_vram_bytes": {
+          "type": "integer"
+        },
+        "wheelhouse_manifest_sha256": {
+          "type": "string"
+        },
+        "worker_script_sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "environment_id",
+        "python_version",
+        "python_executable_sha256",
+        "platform",
+        "package_versions",
+        "wheelhouse_manifest_sha256",
+        "worker_script_sha256",
+        "torch_cuda_version",
+        "nvidia_driver_version",
+        "device_index",
+        "device_name",
+        "compute_capability",
+        "total_vram_bytes",
+        "cuda_available",
+        "bfloat16_supported",
+        "bitsandbytes_cuda_available",
+        "qlora_compatible",
+        "incompatibility_reasons",
+        "manifest_sha256",
+        "observed_at",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.factory.training-backend-environment/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.factory.training-backend/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/TrainingBackendEnvironment"
+    },
+    "schema_id": {
+      "const": "fam.factory.training-backend-environment/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Probed pinned CUDA training environment",
+  "type": "object"
+}

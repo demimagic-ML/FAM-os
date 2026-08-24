@@ -1,18 +1,269 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>FAM Console</title><link rel="stylesheet" href="/styles.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>FAM Console</title>
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/memory.css">
+  <link rel="stylesheet" href="/adaptation.css">
+  <link rel="stylesheet" href="/peers.css">
+  <link rel="stylesheet" href="/workspace.css">
 </head>
 <body>
-  <header><div><p class="eyebrow">For All Mankind / local fabric</p><h1>Your machine, thinking in public.</h1></div>
-    <div class="pulse" aria-label="Runtime connection"><i></i><span id="connection">Connecting</span></div></header>
+  <a class="skip" href="#workbench">Skip to workbench</a>
+  <header class="masthead">
+    <a class="wordmark" href="/" aria-label="FAM Console home">
+      <span class="mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      <span>FAM<span>_OS</span></span>
+    </a>
+    <div class="runtime"><i></i><span id="connection">Securing local session</span></div>
+    <button class="quiet" id="refresh" type="button">Refresh machine</button>
+  </header>
+
   <main>
-    <aside><p class="rail-label">Fabric map</p><nav id="rail" aria-label="Console sections"></nav>
-      <div class="ownership"><span>OWNER</span><strong id="owner">—</strong><small id="release">—</small></div></aside>
-    <section class="workspace"><div class="workspace-head"><div><p class="eyebrow" id="section-kicker">Live state</p><h2 id="section-title">Resources</h2></div>
-      <button id="refresh">Refresh state</button></div><div id="cards" class="cards" aria-live="polite"></div></section>
+    <aside class="rail">
+      <p class="rail-title">Work surfaces</p>
+      <nav aria-label="Console sections">
+        <button class="nav-item active" data-view="work" type="button"><b>Weave</b><span>Tasks and approvals</span></button>
+        <button class="nav-item" data-view="integrations" type="button"><b>Applications</b><span>Connectors and fallbacks</span></button>
+        <button class="nav-item" data-view="machine" type="button"><b>Machine</b><span>Resources and experts</span></button>
+        <button class="nav-item" data-view="adaptation" type="button"><b>Adaptation</b><span>Learning and rollback</span></button>
+        <button class="nav-item" data-view="peers" type="button"><b>Devices</b><span>Trusted peer fabric</span></button>
+        <button class="nav-item" data-view="control" type="button"><b>Control</b><span>Permissions and recovery</span></button>
+      </nav>
+      <div class="identity">
+        <small>LOCAL OWNER</small><strong id="owner">—</strong><span id="release">—</span>
+      </div>
+    </aside>
+
+    <section class="workbench" id="workbench" data-panel="work">
+      <aside class="work-tools" aria-label="Selected workspace and tool terminal">
+        <header class="work-tools-head">
+          <div><p class="kicker">Work surface</p><h2>Your workspace</h2></div>
+          <button class="quiet" id="open-workspace" type="button">Open folder</button>
+        </header>
+        <section class="workspace-authority" id="workspace-authority">
+          <p class="workspace-state">No folder selected</p>
+          <strong id="workspace-name">Choose where FAM may work</strong>
+          <span id="workspace-path">Folder access is explicit and task-scoped.</span>
+          <button class="quiet hidden" id="use-workspace-root" type="button">Use folder</button>
+        </section>
+        <section class="workspace-files" aria-labelledby="workspace-files-heading">
+          <div class="tool-section-head"><h3 id="workspace-files-heading">Files</h3><span id="workspace-file-count">—</span></div>
+          <div class="workspace-file-list" id="workspace-file-list">
+            <p>Open a folder to inspect its bounded local contents.</p>
+          </div>
+        </section>
+        <section class="tool-terminal" aria-labelledby="tool-terminal-heading">
+          <div class="tool-section-head"><h3 id="tool-terminal-heading">Tool terminal</h3><span>Real evidence</span></div>
+          <ol id="tool-activity">
+            <li class="terminal-empty"><span>fam:</span><p>No tool has run. Model text is never treated as a command.</p></li>
+          </ol>
+        </section>
+      </aside>
+
+      <div class="conversation-shell">
+        <header class="conversation-head">
+          <div>
+            <p class="kicker">Local work session</p>
+            <h1>Work with your machine</h1>
+          </div>
+          <p>Ask for an outcome. FAM shows what it used, where it worked, and what it could verify.</p>
+        </header>
+
+        <div class="transcript" id="transcript" tabindex="0" aria-label="Task conversation">
+          <div class="empty" id="empty-task">
+            <div class="empty-weave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+            <h2>Start with the result you want.</h2>
+            <p>Try “Explain this project,” “Run the focused tests,” or “Review the active file and show me what needs attention.”</p>
+          </div>
+        </div>
+
+        <form class="composer" id="task-form">
+          <details class="composer-scope" id="task-scope">
+            <summary><span>Task scope</span><strong id="scope-summary">Local machine</strong><i aria-hidden="true">⌄</i></summary>
+            <div class="task-options">
+              <label class="context-field" for="context"><span>Work in</span><select id="context"><option value="">No application context</option></select></label>
+              <label class="context-field" for="resource"><span>Specific file or URI (optional)</span><input id="resource" type="text" placeholder="file:///home/you/project/README.md"></label>
+              <label class="verify"><input id="verify" type="checkbox"><span>Require deterministic verification</span></label>
+            </div>
+          </details>
+          <div class="composer-row">
+            <label class="sr-only" for="prompt">Describe the outcome</label>
+            <textarea id="prompt" name="prompt" rows="2" required placeholder="What should FAM do?" aria-describedby="composer-hint"></textarea>
+            <button class="primary composer-send" id="send-task" type="submit"><span>Send task</span><span aria-hidden="true">↑</span></button>
+          </div>
+          <p class="composer-hint" id="composer-hint"><kbd>Ctrl</kbd><span>+</span><kbd>Enter</kbd> to send · actions still require approval</p>
+        </form>
+      </div>
+
+      <aside class="execution" aria-live="polite" aria-label="Live task activity">
+        <div class="execution-head">
+          <div><p class="kicker">Live activity</p><h2 id="task-title">Waiting for a task</h2></div>
+          <button class="danger quiet hidden" id="cancel" type="button">Cancel task</button>
+        </div>
+        <div class="activity-empty" id="empty-activity">
+          <span aria-hidden="true">01</span>
+          <p>The plan, expert, application access, approvals, and verification will appear here.</p>
+        </div>
+        <ol class="spine hidden" id="spine"></ol>
+        <section class="approval hidden" id="approval">
+          <p class="kicker">Your decision</p><h3 id="approval-summary"></h3>
+          <p id="approval-scope"></p>
+          <div><button class="primary" id="approve" type="button">Approve action</button><button class="quiet" id="deny" type="button">Deny</button></div>
+        </section>
+        <button class="quiet hidden" id="undo" type="button">Undo verified action</button>
+      </aside>
+    </section>
+
+    <section class="peer-workspace hidden" data-panel="peers" aria-labelledby="peer-heading">
+      <div class="section-heading"><p class="kicker">Explicit trust, measured locally</p><h1 id="peer-heading">Device fabric</h1><p>Only devices you paired appear here. Probe signed model capabilities, inspect measured latency and privacy scope, or revoke trust immediately.</p></div>
+      <div class="peer-toolbar"><div><strong id="peer-count">0 trusted devices</strong><span>Discovery never enrolls a machine.</span></div><button class="quiet" id="peer-refresh" type="button">Refresh devices</button></div>
+      <div class="peer-grid" id="peer-list"></div>
+      <section class="peer-ledger" aria-labelledby="peer-ledger-heading"><div class="peer-ledger-head"><div><p class="kicker">Local control evidence</p><h2 id="peer-ledger-heading">Trust receipts</h2></div><span>Encrypted and durable</span></div><ol id="peer-receipts"></ol></section>
+      <p class="peer-message" id="peer-message" role="status" aria-live="polite"></p>
+      <dialog id="peer-privacy-dialog" aria-labelledby="peer-privacy-heading">
+        <form method="dialog" id="peer-privacy-form">
+          <div class="peer-dialog-head"><div><p class="kicker">Per-device disclosure boundary</p><h2 id="peer-privacy-heading">Privacy policy</h2><p id="peer-privacy-device"></p></div><button class="quiet" value="cancel" type="submit" aria-label="Close privacy policy">Close</button></div>
+          <label>Maximum context bytes<input id="peer-privacy-bytes" type="number" min="1" required></label>
+          <label>Allowed purposes<input id="peer-privacy-purposes" type="text" placeholder="assist,code-review" required></label>
+          <label>Allowed workspaces<input id="peer-privacy-workspaces" type="text" placeholder="workspace:project" required></label>
+          <fieldset><legend>Allowed sensitivity</legend><label><input name="peer-sensitivity" type="checkbox" value="public">Public</label><label><input name="peer-sensitivity" type="checkbox" value="private">Private</label><label><input name="peer-sensitivity" type="checkbox" value="restricted">Restricted</label></fieldset>
+          <label class="peer-check"><input id="peer-privacy-raw" type="checkbox"><span>Allow raw content, not only minimized derived context.</span></label>
+          <label class="peer-check"><input id="peer-privacy-confirm" type="checkbox"><span>I approve this exact device, purpose, workspace, sensitivity, and byte scope.</span></label>
+          <div class="peer-dialog-actions"><button class="primary" id="peer-privacy-save" type="button">Save privacy policy</button></div>
+        </form>
+      </dialog>
+      <dialog id="peer-execute-dialog" aria-labelledby="peer-execute-heading">
+        <form method="dialog" id="peer-execute-form">
+          <div class="peer-dialog-head"><div><p class="kicker">One confirmed remote route</p><h2 id="peer-execute-heading">Run on a trusted device</h2><p id="peer-execute-device"></p></div><button class="quiet" value="cancel" type="submit" aria-label="Close remote task">Close</button></div>
+          <div class="peer-route-ticket"><span>Mutual TLS</span><span>Signed expert</span><span>Local verification</span><p>The remote device generates one candidate. This machine keeps the plan, budget, verifier, and final release decision.</p></div>
+          <label>Purpose<input id="peer-execute-purpose" type="text" required></label>
+          <label>Workspace<input id="peer-execute-workspace" type="text" required></label>
+          <label>Sensitivity<select id="peer-execute-sensitivity"><option value="public">Public</option><option value="private">Private</option><option value="restricted">Restricted</option></select></label>
+          <label>Maximum context bytes<input id="peer-execute-context" type="number" min="1" required></label>
+          <label>Maximum result bytes<input id="peer-execute-output" type="number" min="1" required></label>
+          <label class="peer-task-prompt">Task<textarea id="peer-execute-prompt" rows="5" required placeholder="Describe the exact result this device should generate."></textarea></label>
+          <label class="peer-check"><input id="peer-execute-verify" type="checkbox"><span>Require this machine to verify the returned candidate before release.</span></label>
+          <label class="peer-check"><input id="peer-execute-confirm" type="checkbox"><span>I approve sending this prompt under the displayed device, policy revision, purpose, workspace, sensitivity, and byte limits.</span></label>
+          <div class="peer-dialog-actions"><button class="primary" id="peer-execute-start" type="button">Run confirmed remote task</button></div>
+        </form>
+      </dialog>
+    </section>
+
+    <section class="catalog hidden" data-panel="integrations">
+      <div class="section-heading"><p class="kicker">Explicit application reach</p><h1>Application fabric</h1><p>See which privacy-sensitive fallbacks are disabled, observation-only, or allowed to request a confirmed action.</p></div>
+      <div class="cards" id="integration-cards"></div>
+    </section>
+
+    <section class="catalog hidden" data-panel="machine">
+      <div class="section-heading"><p class="kicker">Observed, not assumed</p><h1>Machine fabric</h1><p>Live capacity, active experts, applications, and the pressure shaping each routing decision.</p></div>
+      <div class="section-tabs" id="machine-tabs"></div><div class="cards" id="machine-cards"></div>
+    </section>
+
+    <section class="adaptation-workspace hidden" data-panel="adaptation" aria-labelledby="adaptation-heading">
+      <div class="section-heading"><p class="kicker">Verified learning, under owner control</p><h1 id="adaptation-heading">Resident intelligence</h1><p>See which local predictions are active, how they affect resources, and whether quality, temperature, latency, or policy triggered rollback.</p></div>
+      <section class="adaptation-command" aria-labelledby="adaptation-state-heading">
+        <div>
+          <p class="kicker">Live control state</p>
+          <h2 id="adaptation-state-heading">Loading adaptation…</h2>
+          <p id="adaptation-state-detail">Reading encrypted owner state.</p>
+        </div>
+        <div class="adaptation-actions">
+          <button class="quiet" id="adaptation-refresh" type="button">Refresh evidence</button>
+          <button class="quiet" id="adaptation-toggle" type="button" disabled>Disable adaptation</button>
+          <button class="adaptation-reset" id="adaptation-reset" type="button" disabled>Reset learned behavior</button>
+        </div>
+      </section>
+      <div class="adaptation-summary" id="adaptation-summary"></div>
+      <section class="adaptation-workflows" aria-labelledby="adaptation-workflows-heading">
+        <div class="adaptation-section-head"><div><p class="kicker">Active routing choices</p><h2 id="adaptation-workflows-heading">Workflow snapshots</h2></div><span id="adaptation-workflow-count">0 active</span></div>
+        <div id="adaptation-workflows"></div>
+      </section>
+      <section class="adaptation-ledger" aria-labelledby="adaptation-ledger-heading">
+        <div class="adaptation-section-head"><div><p class="kicker">Inspectable local evidence</p><h2 id="adaptation-ledger-heading">Adaptation ledger</h2></div></div>
+        <div class="adaptation-tabs" id="adaptation-tabs" role="tablist" aria-label="Adaptation evidence"></div>
+        <div class="adaptation-records" id="adaptation-records"></div>
+      </section>
+      <p class="adaptation-message" id="adaptation-message" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="catalog hidden" data-panel="control">
+      <div class="section-heading"><p class="kicker">Owner authority</p><h1>Control room</h1><p>See what FAM may retain or change, review its audit trail, and recover without hiding state.</p></div>
+      <div class="section-tabs" id="control-tabs"></div><div class="cards" id="control-cards"></div>
+      <section class="memory-workspace hidden" id="memory-workspace" aria-labelledby="memory-heading">
+        <div class="memory-ledger-head">
+          <div><p class="kicker">Retained by permission</p><h2 id="memory-heading">Memory ledger</h2><p>Inspect every persistent source, correct its retained copy, export it, or remove its authority.</p></div>
+          <button class="quiet" id="memory-refresh" type="button">Refresh ledger</button>
+        </div>
+        <div class="memory-layout">
+          <section class="memory-documents" aria-labelledby="memory-documents-heading">
+            <div class="memory-column-head"><h3 id="memory-documents-heading">Approved documents</h3><span id="memory-count">0 retained</span></div>
+            <div class="memory-list" id="memory-documents"></div>
+            <section class="memory-editor hidden" id="memory-editor" aria-labelledby="memory-editor-heading">
+              <p class="kicker">Digest-bound correction</p><h3 id="memory-editor-heading">Correct retained copy</h3>
+              <p id="memory-editor-source"></p>
+              <label for="memory-replacement">Replacement content</label>
+              <textarea id="memory-replacement" rows="12"></textarea>
+              <label class="memory-confirm"><input id="memory-correction-confirm" type="checkbox"><span>I understand this replaces the retained copy and creates a durable receipt.</span></label>
+              <div class="memory-editor-actions"><button class="primary" id="memory-save-correction" type="button">Replace retained copy</button><button class="quiet" id="memory-cancel-correction" type="button">Cancel</button></div>
+            </section>
+          </section>
+          <aside class="memory-receipts" aria-labelledby="memory-receipts-heading">
+            <div class="memory-column-head"><h3 id="memory-receipts-heading">Change receipts</h3><span>Durable</span></div>
+            <ol id="memory-receipts"></ol>
+          </aside>
+        </div>
+        <p class="memory-message" id="memory-message" role="status" aria-live="polite"></p>
+      </section>
+    </section>
   </main>
-  <template id="card"><article><div class="card-head"><span class="status"></span><small></small></div><h3></h3><strong></strong><p></p></article></template>
+
+  <dialog class="workspace-dialog" id="workspace-dialog" aria-labelledby="workspace-dialog-heading">
+    <form id="workspace-form">
+      <header>
+        <div><p class="kicker">Owner-local authority</p><h2 id="workspace-dialog-heading">Open a folder</h2><p>FAM can list and read only the folder or file attached to a task. Changes still require approval.</p></div>
+        <button class="quiet" id="close-workspace" type="button">Close</button>
+      </header>
+      <div class="workspace-location">
+        <label for="workspace-location"><span>Absolute path</span><input id="workspace-location" type="text" autocomplete="off" spellcheck="false"></label>
+        <button class="quiet" id="browse-workspace" type="submit">Go</button>
+      </div>
+      <div class="workspace-browser-head"><button class="quiet" id="workspace-parent" type="button">Parent</button><span id="workspace-browser-path">Loading owner folders…</span></div>
+      <div class="workspace-browser" id="workspace-browser" role="list"></div>
+      <footer><p id="workspace-message" role="status" aria-live="polite"></p><button class="primary" id="select-workspace" type="button">Use this folder</button></footer>
+    </form>
+  </dialog>
+
+  <template id="step-template"><li><div class="thread"><i></i></div><div><small></small><h3></h3><p></p></div></li></template>
+  <template id="turn-template">
+    <article class="turn user-turn">
+      <div class="turn-rail"><span>You</span></div>
+      <div class="turn-body"><p class="turn-context"></p><p class="user-message"></p></div>
+    </article>
+    <article class="turn fam-turn">
+      <div class="turn-rail"><span>FAM</span></div>
+      <div class="turn-body">
+        <header class="turn-head"><strong>FAM_OS</strong><span class="turn-state">Working locally</span></header>
+        <div class="answer-shell">
+          <pre class="answer-text" aria-hidden="true"></pre>
+          <p class="sr-only answer-accessible" aria-live="polite"></p>
+          <span class="typing-caret" aria-hidden="true"></span>
+        </div>
+        <div class="result-meta hidden"><span class="turn-assurance"></span><span class="turn-evidence"></span></div>
+        <div class="citations hidden"><p class="kicker">Exact citations</p><ol></ol></div>
+      </div>
+    </article>
+  </template>
+  <template id="card-template"><article><div><span class="status"></span><small></small></div><h3></h3><strong></strong><p></p></article></template>
+  <script src="/memory.js"></script>
+  <script src="/adaptation.js"></script>
+  <script src="/peers.js"></script>
+  <script src="/task_updates.js"></script>
+  <script src="/conversation.js"></script>
+  <script src="/workspace.js"></script>
+  <script src="/natural_engineering.js"></script>
   <script src="/app.js"></script>
-</body></html>
+</body>
+</html>

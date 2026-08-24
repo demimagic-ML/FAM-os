@@ -125,6 +125,7 @@
             "lease_acquired",
             "lease_released",
             "leases_expired",
+            "process_leases_recovered",
             "eviction_started",
             "eviction_confirmed",
             "eviction_aborted"

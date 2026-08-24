@@ -28,6 +28,36 @@ from fam_os.adaptation.drift import (
     AdaptationSnapshot,
 )
 from fam_os.adaptation.phase11_exit import PHASE11_EXIT_CONTRACT_VERSION, Phase11ExitEvidence
+from fam_os.adaptation.verified_learning import (
+    VERIFIED_LEARNING_CONTRACT_VERSION,
+    VerifiedLearningOutcome,
+    context_token_bucket,
+)
+from fam_os.adaptation.live_prediction import (
+    LIVE_ADAPTATION_CONTRACT_VERSION,
+    LiveAdaptationSnapshot,
+    ModelPrewarmReceipt,
+    ModelPrewarmSource,
+    ModelPrewarmStatus,
+)
+from fam_os.adaptation.control_contracts import (
+    LIVE_ADAPTATION_CONTROL_VERSION,
+    AdaptationControlOperation,
+    AdaptationControlStatus,
+    LiveAdaptationControlRequest,
+    LiveAdaptationControlReceipt,
+    LiveAdaptationControlState,
+    WorkflowAdaptationSelection,
+    replace_selection,
+    selection_for,
+)
+from fam_os.adaptation.health_contracts import (
+    AdaptationHealthSample,
+    AdaptationHealthSummary,
+    AdaptationInferenceObservation,
+    AdaptationRuntimeHealth,
+    LiveAdaptationDriftReport,
+)
 
 __all__ = [
     "OUTCOME_PREDICTION_CONTRACT_VERSION",
@@ -51,4 +81,26 @@ __all__ = [
     "AdaptationSnapshot",
     "PHASE11_EXIT_CONTRACT_VERSION",
     "Phase11ExitEvidence",
+    "VERIFIED_LEARNING_CONTRACT_VERSION",
+    "VerifiedLearningOutcome",
+    "context_token_bucket",
+    "LIVE_ADAPTATION_CONTRACT_VERSION",
+    "LiveAdaptationSnapshot",
+    "ModelPrewarmReceipt",
+    "ModelPrewarmSource",
+    "ModelPrewarmStatus",
+    "LIVE_ADAPTATION_CONTROL_VERSION",
+    "AdaptationControlOperation",
+    "AdaptationControlStatus",
+    "LiveAdaptationControlRequest",
+    "LiveAdaptationControlReceipt",
+    "LiveAdaptationControlState",
+    "WorkflowAdaptationSelection",
+    "replace_selection",
+    "selection_for",
+    "AdaptationHealthSample",
+    "AdaptationHealthSummary",
+    "AdaptationInferenceObservation",
+    "AdaptationRuntimeHealth",
+    "LiveAdaptationDriftReport",
 ]

@@ -1,0 +1,144 @@
+{
+  "$defs": {
+    "VerificationFact": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "value"
+      ],
+      "type": "object"
+    },
+    "VerificationRunRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "acceptance_id": {
+          "type": "string"
+        },
+        "candidate_id": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.verifier.run/v1alpha1"
+        },
+        "created_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "declaration_id": {
+          "type": "string"
+        },
+        "effective_trust": {
+          "type": "string"
+        },
+        "facts": {
+          "items": {
+            "$ref": "#/$defs/VerificationFact"
+          },
+          "type": "array"
+        },
+        "feedback": {
+          "type": "string"
+        },
+        "package_id": {
+          "type": "string"
+        },
+        "package_version": {
+          "type": "string"
+        },
+        "release_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "runtime_adapter_id": {
+          "type": "string"
+        },
+        "signer_key_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "status": {
+          "enum": [
+            "passed",
+            "failed",
+            "error"
+          ],
+          "type": "string"
+        },
+        "verification_id": {
+          "type": "string"
+        },
+        "verified_artifact_sha256": {
+          "type": "string"
+        },
+        "verifier_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "verification_id",
+        "request_id",
+        "candidate_id",
+        "declaration_id",
+        "verifier_id",
+        "acceptance_id",
+        "package_id",
+        "package_version",
+        "runtime_adapter_id",
+        "verified_artifact_sha256",
+        "status",
+        "feedback",
+        "facts",
+        "effective_trust",
+        "release_id",
+        "signer_key_id",
+        "created_at",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.verifier.run/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.verifier.run/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/VerificationRunRecord"
+    },
+    "schema_id": {
+      "const": "fam.verifier.run/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Durable production verifier execution",
+  "type": "object"
+}

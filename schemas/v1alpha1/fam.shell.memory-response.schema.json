@@ -1,0 +1,338 @@
+{
+  "$defs": {
+    "DocumentIndexApproval": {
+      "additionalProperties": false,
+      "properties": {
+        "approved_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "approved_by": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.memory.document-index/v1alpha1"
+        },
+        "document_id": {
+          "type": "string"
+        },
+        "embedding_artifact_sha256": {
+          "type": "string"
+        },
+        "embedding_model_ref": {
+          "type": "string"
+        },
+        "expires_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "grant_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "scope": {
+          "$ref": "#/$defs/MemoryScope"
+        },
+        "source_locator": {
+          "type": "string"
+        },
+        "source_sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "document_id",
+        "source_locator",
+        "source_sha256",
+        "scope",
+        "approved_by",
+        "approved_at",
+        "embedding_model_ref",
+        "embedding_artifact_sha256",
+        "contract_version",
+        "grant_id",
+        "expires_at"
+      ],
+      "type": "object"
+    },
+    "DocumentInspection": {
+      "additionalProperties": false,
+      "properties": {
+        "approval": {
+          "$ref": "#/$defs/DocumentIndexApproval"
+        },
+        "chunk_count": {
+          "type": "integer"
+        },
+        "content_bytes": {
+          "type": "integer"
+        },
+        "content_sha256": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.memory.management/v1alpha1"
+        }
+      },
+      "required": [
+        "approval",
+        "chunk_count",
+        "content_bytes",
+        "content_sha256",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "DocumentManagementReceipt": {
+      "additionalProperties": false,
+      "properties": {
+        "affected_document_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "contract_version": {
+          "const": "fam.memory.management/v1alpha1"
+        },
+        "operation": {
+          "enum": [
+            "correct",
+            "expire",
+            "delete"
+          ],
+          "type": "string"
+        },
+        "owner_id": {
+          "type": "string"
+        },
+        "payload_removed": {
+          "type": "boolean"
+        },
+        "performed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "performed_by": {
+          "type": "string"
+        },
+        "previous_content_sha256": {
+          "type": "string"
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "resulting_content_sha256": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "target_id": {
+          "type": "string"
+        },
+        "tombstone_sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "receipt_id",
+        "request_id",
+        "operation",
+        "target_id",
+        "owner_id",
+        "performed_by",
+        "performed_at",
+        "previous_content_sha256",
+        "resulting_content_sha256",
+        "affected_document_ids",
+        "tombstone_sha256",
+        "payload_removed",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "MemoryDocumentExport": {
+      "additionalProperties": false,
+      "properties": {
+        "approval": {
+          "$ref": "#/$defs/DocumentIndexApproval"
+        },
+        "content": {
+          "type": "string"
+        },
+        "content_sha256": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.memory.management/v1alpha1"
+        }
+      },
+      "required": [
+        "approval",
+        "content",
+        "content_sha256",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "MemoryScope": {
+      "additionalProperties": false,
+      "properties": {
+        "application_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "owner_id": {
+          "type": "string"
+        },
+        "purpose_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "session_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "workspace_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "owner_id",
+        "purpose_ids",
+        "application_ids",
+        "workspace_ids",
+        "session_id"
+      ],
+      "type": "object"
+    },
+    "ShellMemoryResponse": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.shell.memory/v1alpha1"
+        },
+        "documents": {
+          "items": {
+            "$ref": "#/$defs/DocumentInspection"
+          },
+          "type": "array"
+        },
+        "exported_document": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MemoryDocumentExport"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "offset": {
+          "type": "integer"
+        },
+        "operation": {
+          "enum": [
+            "list",
+            "inspect",
+            "export",
+            "correct",
+            "expire",
+            "delete",
+            "receipts"
+          ],
+          "type": "string"
+        },
+        "receipt": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DocumentManagementReceipt"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "receipts": {
+          "items": {
+            "$ref": "#/$defs/DocumentManagementReceipt"
+          },
+          "type": "array"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "total_count": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "request_id",
+        "operation",
+        "offset",
+        "total_count",
+        "documents",
+        "exported_document",
+        "receipt",
+        "receipts",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.shell.memory-response/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.shell.memory/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/ShellMemoryResponse"
+    },
+    "schema_id": {
+      "const": "fam.shell.memory-response/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Bounded Shell memory response",
+  "type": "object"
+}

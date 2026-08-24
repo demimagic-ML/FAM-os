@@ -7,7 +7,13 @@ from fam_os.adapters.systemd.commands import (
     build_stop_command,
 )
 from fam_os.adapters.systemd.settings import SystemdUserSettings
-from fam_os.supervisor import BlockIoBandwidthLimit, ResourceLimits, ServiceDefinition
+from fam_os.supervisor import (
+    BlockIoBandwidthLimit,
+    ResourceLimits,
+    ServiceDefinition,
+    ServiceRestartMode,
+    ServiceRestartPolicy,
+)
 
 
 class SystemdCommandTests(unittest.TestCase):
@@ -62,6 +68,30 @@ class SystemdCommandTests(unittest.TestCase):
             ServiceDefinition("fam-test", ("/usr/bin/true",)), settings
         )
         self.assertIn("--property=AppArmorProfile=fam-os-supervisor", command)
+
+    def test_applies_bounded_on_failure_restart_policy(self) -> None:
+        restart = ServiceRestartPolicy(
+            ServiceRestartMode.ON_FAILURE,
+            delay_seconds=2.5,
+            maximum_attempts=4,
+            window_seconds=45.0,
+        )
+        command = build_start_command(
+            ServiceDefinition(
+                "fam-test", ("/usr/bin/true",), restart_policy=restart,
+            ),
+            self.settings,
+        )
+        self.assertIn("--property=Restart=on-failure", command)
+        self.assertIn("--property=RestartSec=2.5s", command)
+        self.assertIn("--property=StartLimitBurst=4", command)
+        self.assertIn("--property=StartLimitIntervalSec=45s", command)
+
+    def test_default_policy_does_not_enable_restarts(self) -> None:
+        command = build_start_command(
+            ServiceDefinition("fam-test", ("/usr/bin/true",)), self.settings,
+        )
+        self.assertFalse(any(item.startswith("--property=Restart=") for item in command))
 
     def test_can_retain_failed_state_until_recovery(self) -> None:
         settings = SystemdUserSettings(retain_failed_state=True)

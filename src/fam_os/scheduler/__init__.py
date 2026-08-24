@@ -67,6 +67,7 @@ from fam_os.scheduler.residency_repository import InMemoryExpertResidencyReposit
 from fam_os.scheduler.residency_service import (
     ExpertResidencyService,
     ResidencyEvictionCoordinator,
+    initial_observed_residency_catalog,
 )
 from fam_os.scheduler.admission_contracts import (
     ADMISSION_CONTRACT_VERSION,
@@ -254,6 +255,7 @@ __all__ = [
     "ResidencyLease",
     "ResidencyTransitionReason",
     "initial_cold_residency_catalog",
+    "initial_observed_residency_catalog",
     "ADMISSION_CONTRACT_VERSION",
     "AdmissionDecision",
     "AdmissionRequest",

@@ -62,9 +62,16 @@ creation through AppArmor, the transient user service must run under a named,
 locally installed profile that authorizes `userns`. `SystemdUserSettings` accepts
 that profile explicitly and emits `AppArmorProfile=` on the transient unit.
 
-FAM_OS does not disable the host-wide user-namespace restriction. Packaging and
-installation of a dedicated FAM profile belongs to Phase 14; until then a live
-deployment must supply an already installed profile.
+FAM_OS does not disable the host-wide user-namespace restriction. Signed
+releases now contain the dedicated `fam-os-userns` profile. The owner or host
+administrator loads it explicitly as described in
+`docs/operations/APPARMOR_VERIFIER_PROFILE.md`.
+
+The main product service retains `NoNewPrivileges=true`. Because that flag also
+prevents a later AppArmor transition, declared verifiers run in a short-lived
+manager-created transient service carrying only the named profile, then
+immediately enter the normal Bubblewrap namespace. `fam-os host-security
+diagnose` proves the effective installed boundary.
 
 ## Revocation boundary
 

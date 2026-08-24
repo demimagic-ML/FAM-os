@@ -13,6 +13,7 @@ from fam_os.adapters.shell import (
     UnixShellServer,
     UnixShellServerConfiguration,
 )
+from fam_os.core.production.grounding_port import GroundedRetrievalUnavailable
 from fam_os.applications.transport.auth import PeerAuthorizationPolicy
 from fam_os.core.contracts import ResultStatus
 from fam_os.schemas import decode_document, encode_document
@@ -25,7 +26,10 @@ from fam_os.shell import (
     ShellRunState,
     ShellSessionSnapshot,
     ShellSnapshotQuery,
+    ShellVerifiedAskCommand,
 )
+from fam_os.verification import ExactTextVerification, VerificationDeclaration, contract_for_kind
+from fam_os.schemas import dumps_document
 from fam_os.shell.wire import (
     ShellWireKind,
     ShellWireMessage,
@@ -41,7 +45,10 @@ from fam_os.shell.wire import (
 class ShellWireTests(unittest.TestCase):
     def test_registered_shell_documents_round_trip_strictly(self):
         values = (
-            ShellAskCommand("request-1", "Help"),
+            ShellAskCommand(
+                "request-1", "Help", memory_session_id="conversation-1",
+            ),
+            verified_ask(),
             ShellSnapshotQuery("session-1"),
             ShellDecisionCommand("session-1", 1, "approval-1", ShellDecision.APPROVE),
             ShellCancelCommand("session-1", 1),
@@ -64,7 +71,7 @@ class ShellWireTests(unittest.TestCase):
             message_from_document(document)
         left, right = socket.socketpair()
         try:
-            left.sendall(struct.pack("!I", 2_000_000))
+            left.sendall(struct.pack("!I", 9_000_000))
             with self.assertRaisesRegex(ValueError, "size"):
                 receive_frame(right)
         finally:
@@ -102,6 +109,9 @@ class UnixShellTransportTests(unittest.TestCase):
             self.assertEqual(ShellRunState.ACCEPTED, serve(server, lambda: client.ask(
                 ShellAskCommand("request-1", "Help")
             )).state)
+            self.assertEqual(ShellRunState.ACCEPTED, serve(
+                server, lambda: client.ask_verified(verified_ask()),
+            ).state)
             self.assertEqual(ShellRunState.RUNNING, serve(
                 server, lambda: client.snapshot("session-1")
             ).state)
@@ -132,6 +142,24 @@ class UnixShellTransportTests(unittest.TestCase):
                 serve(server, lambda: client.ask(ShellAskCommand("request-1", "Help")))
             self.assertNotIn("secret", str(caught.exception))
 
+    def test_grounding_unavailable_has_one_safe_stable_error_code(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            os.chmod(root, 0o700)
+            path = root / "shell.sock"
+            server = UnixShellServer(
+                UnixShellServerConfiguration(path),
+                PeerAuthorizationPolicy(os.geteuid()),
+                ShellRequestDispatcher(GroundingUnavailableGateway()),
+            )
+            server.open()
+            self.addCleanup(server.close)
+            client = UnixShellCoreClient(UnixShellClientConfiguration(path))
+            with self.assertRaisesRegex(RuntimeError, "shell.grounding_unavailable"):
+                serve(server, lambda: client.ask(ShellAskCommand(
+                    "request-1", "Explain this project",
+                )))
+
 
 class Gateway:
     def __init__(self):
@@ -139,6 +167,9 @@ class Gateway:
 
     def ask(self, command):
         return accepted(command.request_id)
+
+    def ask_verified(self, command):
+        return accepted(command.command.request_id)
 
     def snapshot(self, session_id):
         return ShellSessionSnapshot(
@@ -167,9 +198,26 @@ class FailingGateway:
         raise RuntimeError("secret provider detail")
 
 
+class GroundingUnavailableGateway:
+    def ask(self, command):
+        raise GroundedRetrievalUnavailable("private source detail")
+
+
 def accepted(request_id="request-1"):
     return ShellSessionSnapshot(
         "session-1", request_id, 0, ShellRunState.ACCEPTED, message="Accepted"
+    )
+
+
+def verified_ask():
+    specification = ExactTextVerification("READY")
+    declaration = VerificationDeclaration(
+        "declaration-request-2", "request-2",
+        contract_for_kind(specification.kind), specification,
+    )
+    return ShellVerifiedAskCommand(
+        ShellAskCommand("request-2", "Return READY", verification_required=True),
+        dumps_document(declaration),
     )
 
 

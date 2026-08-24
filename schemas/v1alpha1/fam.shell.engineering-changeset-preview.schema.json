@@ -1,0 +1,57 @@
+{
+  "$defs": {
+    "ShellEngineeringChangesetPreviewRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "changeset_id": {
+          "type": "string"
+        },
+        "confirmed": {
+          "type": "boolean"
+        },
+        "contract_version": {
+          "const": "fam.shell.engineering-loop/v1alpha1"
+        },
+        "owner_id": {
+          "type": "string"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "owner_id",
+        "task_id",
+        "changeset_id",
+        "confirmed",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.shell.engineering-changeset-preview/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.shell.engineering-loop/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/ShellEngineeringChangesetPreviewRequest"
+    },
+    "schema_id": {
+      "const": "fam.shell.engineering-changeset-preview/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Confirmed candidate changeset preview request",
+  "type": "object"
+}

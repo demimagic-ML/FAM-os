@@ -1,0 +1,76 @@
+{
+  "$defs": {
+    "NaturalIntegrationEnvironmentDeclaration": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "declaration_id": {
+          "type": "string"
+        },
+        "services": {
+          "items": {
+            "$ref": "#/$defs/NaturalIntegrationServiceDeclaration"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "declaration_id",
+        "services",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "NaturalIntegrationServiceDeclaration": {
+      "additionalProperties": false,
+      "properties": {
+        "dependency_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "service_id": {
+          "type": "string"
+        },
+        "template": {
+          "enum": [
+            "python_api",
+            "static_site",
+            "postgresql"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "service_id",
+        "template",
+        "dependency_ids"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.natural-integration-declaration/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/NaturalIntegrationEnvironmentDeclaration"
+    },
+    "schema_id": {
+      "const": "fam.core.natural-integration-declaration/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Fixed-template natural integration service declaration",
+  "type": "object"
+}

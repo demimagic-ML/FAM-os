@@ -1,0 +1,116 @@
+{
+  "$defs": {
+    "EngineeringEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_sha256": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "changed_paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "checkpoint_decision_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "evidence_id": {
+          "type": "string"
+        },
+        "outcome": {
+          "enum": [
+            "succeeded",
+            "failed",
+            "partial",
+            "cancelled"
+          ],
+          "type": "string"
+        },
+        "proposal_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "recorded_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "snapshot_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "task_id": {
+          "type": "string"
+        },
+        "tool_run_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "unresolved_risks": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "verifier_run_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "evidence_id",
+        "task_id",
+        "recorded_at",
+        "outcome",
+        "snapshot_ids",
+        "proposal_ids",
+        "checkpoint_decision_ids",
+        "tool_run_ids",
+        "verifier_run_ids",
+        "artifact_sha256",
+        "changed_paths",
+        "unresolved_risks",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.engineering-evidence/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/EngineeringEvidence"
+    },
+    "schema_id": {
+      "const": "fam.core.engineering-evidence/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Aggregate engineering execution evidence",
+  "type": "object"
+}

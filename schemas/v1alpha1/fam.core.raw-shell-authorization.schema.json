@@ -1,0 +1,118 @@
+{
+  "$defs": {
+    "RawShellAuthorization": {
+      "additionalProperties": false,
+      "properties": {
+        "authorization_id": {
+          "type": "string"
+        },
+        "command_sha256": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "environment": {
+          "items": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "type": "array"
+        },
+        "expires_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "grant_id": {
+          "type": "string"
+        },
+        "issued_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "principal_id": {
+          "type": "string"
+        },
+        "privilege_tier": {
+          "enum": [
+            "unprivileged_candidate",
+            "host_user",
+            "host_admin"
+          ],
+          "type": "string"
+        },
+        "required_authority": {
+          "enum": [
+            "observe",
+            "propose",
+            "modify",
+            "execute",
+            "network",
+            "publish",
+            "raw_shell",
+            "host_admin",
+            "secret_use",
+            "global_install",
+            "production_mutate",
+            "policy_change",
+            "protected_ref_write",
+            "self_update"
+          ],
+          "type": "string"
+        },
+        "shell_executable": {
+          "type": "string"
+        },
+        "single_use": {
+          "type": "boolean"
+        },
+        "task_id": {
+          "type": "string"
+        },
+        "workspace_root": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "authorization_id",
+        "grant_id",
+        "task_id",
+        "principal_id",
+        "workspace_root",
+        "shell_executable",
+        "command_sha256",
+        "environment",
+        "privilege_tier",
+        "issued_at",
+        "expires_at",
+        "single_use",
+        "required_authority",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.raw-shell-authorization/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/RawShellAuthorization"
+    },
+    "schema_id": {
+      "const": "fam.core.raw-shell-authorization/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Exact single-use raw-shell authorization",
+  "type": "object"
+}

@@ -1,0 +1,82 @@
+{
+  "$defs": {
+    "HeldOutAccessReceipt": {
+      "additionalProperties": false,
+      "properties": {
+        "accessed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "approval_id": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.factory.evaluation/v1alpha1"
+        },
+        "dataset_id": {
+          "type": "string"
+        },
+        "evaluation_id": {
+          "type": "string"
+        },
+        "evaluator_environment_sha256": {
+          "type": "string"
+        },
+        "held_out_blob_id": {
+          "type": "string"
+        },
+        "held_out_blob_sha256": {
+          "type": "string"
+        },
+        "plaintext_bytes": {
+          "type": "integer"
+        },
+        "plaintext_discarded": {
+          "type": "boolean"
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "receipt_sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "receipt_id",
+        "approval_id",
+        "evaluation_id",
+        "dataset_id",
+        "held_out_blob_id",
+        "held_out_blob_sha256",
+        "evaluator_environment_sha256",
+        "plaintext_bytes",
+        "plaintext_discarded",
+        "accessed_at",
+        "receipt_sha256",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.factory.held-out-access-receipt/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.factory.evaluation/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/HeldOutAccessReceipt"
+    },
+    "schema_id": {
+      "const": "fam.factory.held-out-access-receipt/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Content-free held-out plaintext disposal receipt",
+  "type": "object"
+}

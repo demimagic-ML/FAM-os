@@ -1,0 +1,652 @@
+{
+  "$defs": {
+    "AdaptationHealthSample": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.adaptation.live-control/v1alpha1"
+        },
+        "latency_seconds": {
+          "type": "number"
+        },
+        "local_only": {
+          "type": "boolean"
+        },
+        "model_ref": {
+          "type": "string"
+        },
+        "observation_id": {
+          "type": "string"
+        },
+        "observed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "peak_temperature_c": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "policy_conformant": {
+          "type": "boolean"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "request_id_sha256": {
+          "type": "string"
+        },
+        "sample_id": {
+          "type": "string"
+        },
+        "snapshot_id": {
+          "type": "string"
+        },
+        "verification_quality": {
+          "type": "number"
+        },
+        "workflow_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "sample_id",
+        "observation_id",
+        "request_id_sha256",
+        "snapshot_id",
+        "workflow_id",
+        "model_ref",
+        "observed_at",
+        "verification_quality",
+        "latency_seconds",
+        "peak_temperature_c",
+        "policy_conformant",
+        "reason_codes",
+        "local_only",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "AdaptationHealthSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.adaptation.live-control/v1alpha1"
+        },
+        "max_temperature_c": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "p95_latency_seconds": {
+          "type": "number"
+        },
+        "policy_violation_count": {
+          "type": "integer"
+        },
+        "sample_count": {
+          "type": "integer"
+        },
+        "snapshot_id": {
+          "type": "string"
+        },
+        "source_evidence_sha256": {
+          "type": "string"
+        },
+        "source_sample_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "thermal_sample_count": {
+          "type": "integer"
+        },
+        "verification_quality": {
+          "type": "number"
+        },
+        "workflow_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "snapshot_id",
+        "workflow_id",
+        "sample_count",
+        "verification_quality",
+        "p95_latency_seconds",
+        "max_temperature_c",
+        "thermal_sample_count",
+        "policy_violation_count",
+        "source_sample_ids",
+        "source_evidence_sha256",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "LiveAdaptationControlReceipt": {
+      "additionalProperties": false,
+      "properties": {
+        "before_revision": {
+          "type": "integer"
+        },
+        "contract_version": {
+          "const": "fam.adaptation.live-control/v1alpha1"
+        },
+        "created_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "local_only": {
+          "type": "boolean"
+        },
+        "operation": {
+          "enum": [
+            "enable",
+            "disable",
+            "reset",
+            "evaluate",
+            "rollback"
+          ],
+          "type": "string"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "removed_learning_count": {
+          "type": "integer"
+        },
+        "removed_prewarm_count": {
+          "type": "integer"
+        },
+        "removed_snapshot_count": {
+          "type": "integer"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "state": {
+          "$ref": "#/$defs/LiveAdaptationControlState"
+        },
+        "status": {
+          "enum": [
+            "applied",
+            "no_change",
+            "rejected"
+          ],
+          "type": "string"
+        },
+        "target_workflow_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "receipt_id",
+        "request_id",
+        "operation",
+        "status",
+        "created_at",
+        "before_revision",
+        "state",
+        "target_workflow_id",
+        "removed_learning_count",
+        "removed_snapshot_count",
+        "removed_prewarm_count",
+        "reason_codes",
+        "local_only",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "LiveAdaptationControlState": {
+      "additionalProperties": false,
+      "properties": {
+        "active_selections": {
+          "items": {
+            "$ref": "#/$defs/WorkflowAdaptationSelection"
+          },
+          "type": "array"
+        },
+        "contract_version": {
+          "const": "fam.adaptation.live-control/v1alpha1"
+        },
+        "drifted_snapshot_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "known_good_selections": {
+          "items": {
+            "$ref": "#/$defs/WorkflowAdaptationSelection"
+          },
+          "type": "array"
+        },
+        "last_operation": {
+          "anyOf": [
+            {
+              "enum": [
+                "enable",
+                "disable",
+                "reset",
+                "evaluate",
+                "rollback"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "local_only": {
+          "type": "boolean"
+        },
+        "revision": {
+          "type": "integer"
+        },
+        "updated_at": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "revision",
+        "enabled",
+        "active_selections",
+        "known_good_selections",
+        "drifted_snapshot_ids",
+        "updated_at",
+        "last_operation",
+        "local_only",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "LiveAdaptationDriftReport": {
+      "additionalProperties": false,
+      "properties": {
+        "baseline": {
+          "$ref": "#/$defs/AdaptationHealthSummary"
+        },
+        "candidate": {
+          "$ref": "#/$defs/AdaptationHealthSummary"
+        },
+        "contract_version": {
+          "const": "fam.adaptation.live-control/v1alpha1"
+        },
+        "drifted": {
+          "type": "boolean"
+        },
+        "evaluated_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "evaluated_dimensions": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "local_only": {
+          "type": "boolean"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "report_id": {
+          "type": "string"
+        },
+        "unavailable_dimensions": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "workflow_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "report_id",
+        "workflow_id",
+        "baseline",
+        "candidate",
+        "evaluated_dimensions",
+        "unavailable_dimensions",
+        "reason_codes",
+        "drifted",
+        "evaluated_at",
+        "local_only",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "LiveAdaptationSnapshot": {
+      "additionalProperties": false,
+      "properties": {
+        "advisory_only": {
+          "type": "boolean"
+        },
+        "contract_version": {
+          "const": "fam.adaptation.live-prediction/v1alpha1"
+        },
+        "created_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "escalation_probability": {
+          "type": "number"
+        },
+        "frequency_model_refs": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "local_only": {
+          "type": "boolean"
+        },
+        "observation_count": {
+          "type": "integer"
+        },
+        "predicted_context_tokens": {
+          "type": "integer"
+        },
+        "prewarm_escalation": {
+          "type": "boolean"
+        },
+        "snapshot_id": {
+          "type": "string"
+        },
+        "source_evidence_sha256": {
+          "type": "string"
+        },
+        "source_learning_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "transition_confidence": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "transition_model_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "workflow_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "snapshot_id",
+        "workflow_id",
+        "created_at",
+        "observation_count",
+        "predicted_context_tokens",
+        "escalation_probability",
+        "prewarm_escalation",
+        "frequency_model_refs",
+        "transition_model_ref",
+        "transition_confidence",
+        "source_learning_ids",
+        "source_evidence_sha256",
+        "local_only",
+        "advisory_only",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "ModelPrewarmReceipt": {
+      "additionalProperties": false,
+      "properties": {
+        "candidate_model_ref": {
+          "type": "string"
+        },
+        "completed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.adaptation.live-prediction/v1alpha1"
+        },
+        "evicted_model_refs": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "latency_ms": {
+          "type": "number"
+        },
+        "loaded_after": {
+          "type": "boolean"
+        },
+        "loaded_before": {
+          "type": "boolean"
+        },
+        "local_only": {
+          "type": "boolean"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "reserved_bytes": {
+          "type": "integer"
+        },
+        "snapshot_id": {
+          "type": "string"
+        },
+        "source": {
+          "enum": [
+            "escalation",
+            "transition",
+            "frequency"
+          ],
+          "type": "string"
+        },
+        "started_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "rejected",
+            "completed",
+            "failed"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "receipt_id",
+        "snapshot_id",
+        "candidate_model_ref",
+        "source",
+        "status",
+        "started_at",
+        "completed_at",
+        "reserved_bytes",
+        "loaded_before",
+        "loaded_after",
+        "latency_ms",
+        "reason_codes",
+        "evicted_model_refs",
+        "local_only",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "ShellAdaptationResponse": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.shell.adaptation/v1alpha1"
+        },
+        "control_receipts": {
+          "items": {
+            "$ref": "#/$defs/LiveAdaptationControlReceipt"
+          },
+          "type": "array"
+        },
+        "drift_reports": {
+          "items": {
+            "$ref": "#/$defs/LiveAdaptationDriftReport"
+          },
+          "type": "array"
+        },
+        "health": {
+          "items": {
+            "$ref": "#/$defs/AdaptationHealthSample"
+          },
+          "type": "array"
+        },
+        "offset": {
+          "type": "integer"
+        },
+        "operation": {
+          "enum": [
+            "status",
+            "snapshots",
+            "prewarms",
+            "health",
+            "drift",
+            "receipts"
+          ],
+          "type": "string"
+        },
+        "prewarms": {
+          "items": {
+            "$ref": "#/$defs/ModelPrewarmReceipt"
+          },
+          "type": "array"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "snapshots": {
+          "items": {
+            "$ref": "#/$defs/LiveAdaptationSnapshot"
+          },
+          "type": "array"
+        },
+        "state": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LiveAdaptationControlState"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "total_count": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "request_id",
+        "operation",
+        "offset",
+        "total_count",
+        "state",
+        "snapshots",
+        "prewarms",
+        "health",
+        "drift_reports",
+        "control_receipts",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "WorkflowAdaptationSelection": {
+      "additionalProperties": false,
+      "properties": {
+        "snapshot_id": {
+          "type": "string"
+        },
+        "workflow_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "workflow_id",
+        "snapshot_id"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.shell.adaptation-response/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.shell.adaptation/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/ShellAdaptationResponse"
+    },
+    "schema_id": {
+      "const": "fam.shell.adaptation-response/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Bounded Shell adaptation response",
+  "type": "object"
+}

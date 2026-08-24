@@ -1,0 +1,88 @@
+{
+  "$defs": {
+    "EngineeringReviewResolutionReceipt": {
+      "additionalProperties": false,
+      "properties": {
+        "candidate_id": {
+          "type": "string"
+        },
+        "changeset_sha256": {
+          "type": "string"
+        },
+        "checkpoint_id": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "finding_id": {
+          "type": "string"
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "remediation_evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "resolved_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "reviewer_id": {
+          "type": "string"
+        },
+        "reviewer_independence_ref": {
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        },
+        "verification_evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "receipt_id",
+        "task_id",
+        "candidate_id",
+        "changeset_sha256",
+        "checkpoint_id",
+        "finding_id",
+        "remediation_evidence_ids",
+        "verification_evidence_ids",
+        "reviewer_id",
+        "reviewer_independence_ref",
+        "resolved_at",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.engineering-review-resolution/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/EngineeringReviewResolutionReceipt"
+    },
+    "schema_id": {
+      "const": "fam.core.engineering-review-resolution/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Typed remediation and verification evidence resolving one finding",
+  "type": "object"
+}

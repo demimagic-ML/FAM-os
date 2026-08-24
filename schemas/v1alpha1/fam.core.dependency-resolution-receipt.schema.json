@@ -1,0 +1,236 @@
+{
+  "$defs": {
+    "DependencyResolutionReceipt": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_digests": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "candidate_id": {
+          "type": "string"
+        },
+        "completed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "components": {
+          "items": {
+            "$ref": "#/$defs/SbomComponent"
+          },
+          "type": "array"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "downloaded_bytes": {
+          "type": "integer"
+        },
+        "environment_path": {
+          "type": "string"
+        },
+        "global_state_unchanged": {
+          "type": "boolean"
+        },
+        "installed_bytes": {
+          "type": "integer"
+        },
+        "license_result_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "lockfile_after_sha256": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "lockfile_before_sha256": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "manifest_after_sha256": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "manifest_before_sha256": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "network_destinations": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "rejection_reasons": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "started_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "accepted",
+            "rejected",
+            "unavailable"
+          ],
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        },
+        "vulnerability_findings": {
+          "items": {
+            "$ref": "#/$defs/DependencyVulnerabilityFinding"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "receipt_id",
+        "request_id",
+        "task_id",
+        "candidate_id",
+        "started_at",
+        "completed_at",
+        "status",
+        "manifest_before_sha256",
+        "manifest_after_sha256",
+        "lockfile_before_sha256",
+        "lockfile_after_sha256",
+        "components",
+        "vulnerability_findings",
+        "license_result_ids",
+        "network_destinations",
+        "downloaded_bytes",
+        "installed_bytes",
+        "environment_path",
+        "artifact_digests",
+        "rejection_reasons",
+        "global_state_unchanged",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "DependencyVulnerabilityFinding": {
+      "additionalProperties": false,
+      "properties": {
+        "advisory_id": {
+          "type": "string"
+        },
+        "affected_version": {
+          "type": "string"
+        },
+        "finding_id": {
+          "type": "string"
+        },
+        "fixed_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "package_url": {
+          "type": "string"
+        },
+        "severity": {
+          "enum": [
+            "informational",
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "finding_id",
+        "package_url",
+        "advisory_id",
+        "severity",
+        "affected_version",
+        "fixed_version"
+      ],
+      "type": "object"
+    },
+    "SbomComponent": {
+      "additionalProperties": false,
+      "properties": {
+        "direct": {
+          "type": "boolean"
+        },
+        "license_expression": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "package_url": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "package_url",
+        "name",
+        "version",
+        "sha256",
+        "license_expression",
+        "direct"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.dependency-resolution-receipt/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/DependencyResolutionReceipt"
+    },
+    "schema_id": {
+      "const": "fam.core.dependency-resolution-receipt/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Dependency SBOM and supply-chain receipt",
+  "type": "object"
+}

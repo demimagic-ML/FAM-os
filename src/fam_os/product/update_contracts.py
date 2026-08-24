@@ -14,6 +14,9 @@ class ComponentKind(StrEnum):
     SCHEMA = "schema"
     EXPERT = "expert"
     CONNECTOR = "connector"
+    CONSOLE = "console"
+    SERVICE_UNIT = "service_unit"
+    MIGRATION = "migration"
 
 
 @dataclass(frozen=True, slots=True)

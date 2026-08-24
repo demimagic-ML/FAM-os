@@ -7,6 +7,12 @@ from fam_os.adapters.bubblewrap.service_access import (
     BubblewrapServiceAccessSettings,
 )
 from fam_os.adapters.bubblewrap.settings import BubblewrapSettings
+from fam_os.adapters.bubblewrap.diagnostics import (
+    BubblewrapRuntimeDiagnosticAdapter,
+    CandidateDiagnosticArtifactStore,
+    DeterministicDiagnosticTextSanitizer,
+    PosixTimeMetricParser,
+)
 
 __all__ = [
     "BubblewrapAccessResource",
@@ -14,4 +20,8 @@ __all__ = [
     "BubblewrapServiceAccessAdapter",
     "BubblewrapServiceAccessSettings",
     "BubblewrapSettings",
+    "BubblewrapRuntimeDiagnosticAdapter",
+    "CandidateDiagnosticArtifactStore",
+    "DeterministicDiagnosticTextSanitizer",
+    "PosixTimeMetricParser",
 ]

@@ -35,7 +35,10 @@ class SubprocessProcessLauncher:
     def run(self, command, limits, environment, isolation) -> SandboxResult:
         started = self.clock()
         child_environment = dict(environment)
-        if command and Path(command[0]).name == "systemd-run":
+        cgroup_memory_managed = bool(
+            command and Path(command[0]).name == "systemd-run"
+        )
+        if cgroup_memory_managed:
             for name in ("XDG_RUNTIME_DIR", "DBUS_SESSION_BUS_ADDRESS"):
                 if name in os.environ:
                     child_environment[name] = os.environ[name]
@@ -45,7 +48,9 @@ class SubprocessProcessLauncher:
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 env=child_environment,
-                preexec_fn=lambda: apply_resource_limits(limits),
+                preexec_fn=lambda: apply_resource_limits(
+                    limits, cgroup_memory_managed=cgroup_memory_managed,
+                ),
                 start_new_session=True,
             )
         except (OSError, subprocess.SubprocessError) as error:
@@ -54,7 +59,7 @@ class SubprocessProcessLauncher:
                 self.clock() - started,
                 reason=f"sandbox process could not start: {error}",
             )
-        stdout, stderr, timed_out = _capture_bounded(
+        stdout, stderr, timed_out, output_limited = _capture_bounded(
             process, limits.output_bytes, started, limits.wall_seconds, self.clock
         )
         elapsed = self.clock() - started
@@ -62,6 +67,11 @@ class SubprocessProcessLauncher:
             return SandboxResult(
                 SandboxStatus.TIMED_OUT, isolation, elapsed, stdout, stderr,
                 reason=f"sandbox exceeded {limits.wall_seconds:.1f}s wall-time limit",
+            )
+        if output_limited:
+            return SandboxResult(
+                SandboxStatus.OUTPUT_LIMIT, isolation, elapsed, stdout, stderr,
+                reason=f"sandbox exceeded {limits.output_bytes} output bytes",
             )
         return SandboxResult(
             SandboxStatus.COMPLETED, isolation, elapsed, stdout, stderr,
@@ -76,6 +86,7 @@ def _capture_bounded(process, limit, started, wall_seconds, clock):
         os.set_blocking(stream.fileno(), False)
         selector.register(stream, selectors.EVENT_READ)
     timed_out = False
+    output_limited = False
     while selector.get_map():
         remaining = wall_seconds - (clock() - started)
         if remaining <= 0 and not timed_out:
@@ -87,14 +98,21 @@ def _capture_bounded(process, limit, started, wall_seconds, clock):
                 selector.unregister(key.fileobj)
             elif len(streams[key.fileobj]) < limit:
                 target = streams[key.fileobj]
-                target.extend(chunk[: limit - len(target)])
+                remaining_capacity = limit - len(target)
+                target.extend(chunk[:remaining_capacity])
+                if len(chunk) > remaining_capacity:
+                    output_limited = True
+                    _terminate_group(process)
+            else:
+                output_limited = True
+                _terminate_group(process)
     process.wait()
     captured = tuple(
         bytes(streams[stream]).decode("utf-8", "replace") for stream in streams
     )
     for stream in streams:
         stream.close()
-    return (*captured, timed_out)
+    return (*captured, timed_out, output_limited)
 
 
 def _terminate_group(process) -> None:

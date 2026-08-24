@@ -1,0 +1,100 @@
+{
+  "$defs": {
+    "WorkspaceEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "content_sha256": {
+          "type": "string"
+        },
+        "executable": {
+          "type": "boolean"
+        },
+        "path": {
+          "type": "string"
+        },
+        "size_bytes": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "path",
+        "content_sha256",
+        "size_bytes",
+        "executable"
+      ],
+      "type": "object"
+    },
+    "WorkspaceSnapshot": {
+      "additionalProperties": false,
+      "properties": {
+        "captured_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "entries": {
+          "items": {
+            "$ref": "#/$defs/WorkspaceEntry"
+          },
+          "type": "array"
+        },
+        "revision": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "snapshot_id": {
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        },
+        "tree_sha256": {
+          "type": "string"
+        },
+        "workspace_root": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "snapshot_id",
+        "task_id",
+        "captured_at",
+        "workspace_root",
+        "revision",
+        "entries",
+        "tree_sha256",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.workspace-snapshot/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/WorkspaceSnapshot"
+    },
+    "schema_id": {
+      "const": "fam.core.workspace-snapshot/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Immutable engineering workspace snapshot",
+  "type": "object"
+}

@@ -42,13 +42,24 @@ class BubblewrapSandboxRunner:
                 bubblewrap, python, request.script, self.settings
             )
             if systemd_run is not None:
-                command = build_systemd_sandbox_command(systemd_run, command, request.limits)
+                command = build_systemd_sandbox_command(
+                    systemd_run, command, request.limits,
+                    self.settings.apparmor_profile,
+                )
             isolation = IsolationLevel.BUBBLEWRAP
         result = self.launcher.run(
             command, request.limits, self.settings.environment, isolation
         )
-        if isolation is IsolationLevel.BUBBLEWRAP and _bubblewrap_failed_to_start(result):
-            return _unavailable("Bubblewrap could not establish the required namespaces")
+        if isolation is IsolationLevel.BUBBLEWRAP and _sandbox_failed_to_start(
+            result, self.settings.apparmor_profile,
+        ):
+            reason = "Bubblewrap could not establish the required namespaces"
+            if self.settings.apparmor_profile is not None and result.exit_code == 231:
+                reason = (
+                    "Required AppArmor verifier profile could not be applied: "
+                    + self.settings.apparmor_profile
+                )
+            return _unavailable(reason)
         return result
 
 
@@ -61,9 +72,14 @@ def _unavailable(reason: str) -> SandboxResult:
     )
 
 
-def _bubblewrap_failed_to_start(result: SandboxResult) -> bool:
+def _sandbox_failed_to_start(
+    result: SandboxResult, apparmor_profile: str | None,
+) -> bool:
     return (
         result.status is SandboxStatus.COMPLETED
         and result.exit_code != 0
-        and result.stderr.lstrip().startswith("bwrap:")
+        and (
+            result.stderr.lstrip().startswith("bwrap:")
+            or (apparmor_profile is not None and result.exit_code == 231)
+        )
     )

@@ -1,0 +1,89 @@
+{
+  "$defs": {
+    "ReleaseComponent": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "service",
+            "schema",
+            "expert",
+            "connector",
+            "console",
+            "service_unit",
+            "migration"
+          ],
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "source_path": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "name",
+        "source_path",
+        "sha256"
+      ],
+      "type": "object"
+    },
+    "SignedReleaseManifest": {
+      "additionalProperties": false,
+      "properties": {
+        "components": {
+          "items": {
+            "$ref": "#/$defs/ReleaseComponent"
+          },
+          "type": "array"
+        },
+        "contract_version": {
+          "const": "fam.product.update/v1alpha1"
+        },
+        "release_id": {
+          "type": "string"
+        },
+        "signature_base64": {
+          "type": "string"
+        },
+        "signer_key_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "release_id",
+        "components",
+        "signer_key_id",
+        "signature_base64",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.product.release-manifest/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.product.update/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/SignedReleaseManifest"
+    },
+    "schema_id": {
+      "const": "fam.product.release-manifest/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Signed complete release manifest",
+  "type": "object"
+}

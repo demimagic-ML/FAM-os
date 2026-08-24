@@ -1,0 +1,155 @@
+{
+  "$defs": {
+    "ImplementationPathStep": {
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "qualified_name": {
+          "type": "string"
+        },
+        "relation_from_previous": {
+          "anyOf": [
+            {
+              "enum": [
+                "calls",
+                "imports",
+                "implements",
+                "extends",
+                "references",
+                "tests"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sequence": {
+          "type": "integer"
+        },
+        "symbol_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "sequence",
+        "symbol_id",
+        "qualified_name",
+        "path",
+        "relation_from_previous"
+      ],
+      "type": "object"
+    },
+    "RepositoryAnalysis": {
+      "additionalProperties": false,
+      "properties": {
+        "affected_test_paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "analysis_id": {
+          "type": "string"
+        },
+        "bundle_id": {
+          "type": "string"
+        },
+        "completed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "diagnostic_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "evidence_sha256": {
+          "type": "string"
+        },
+        "implementation_path": {
+          "items": {
+            "$ref": "#/$defs/ImplementationPathStep"
+          },
+          "type": "array"
+        },
+        "manifest_paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "mutation_performed": {
+          "type": "boolean"
+        },
+        "relevant_paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        },
+        "truncated": {
+          "type": "boolean"
+        },
+        "untrusted_context_record_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "analysis_id",
+        "request_id",
+        "task_id",
+        "bundle_id",
+        "completed_at",
+        "relevant_paths",
+        "implementation_path",
+        "affected_test_paths",
+        "diagnostic_ids",
+        "manifest_paths",
+        "untrusted_context_record_ids",
+        "evidence_sha256",
+        "truncated",
+        "mutation_performed",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.repository-analysis/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/RepositoryAnalysis"
+    },
+    "schema_id": {
+      "const": "fam.core.repository-analysis/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Evidence-bound repository analysis",
+  "type": "object"
+}

@@ -1,0 +1,69 @@
+{
+  "$defs": {
+    "SealedDatasetPartition": {
+      "additionalProperties": false,
+      "properties": {
+        "blob_id": {
+          "type": "string"
+        },
+        "content_bytes": {
+          "type": "integer"
+        },
+        "contract_version": {
+          "const": "fam.factory.sealed-dataset/v1alpha1"
+        },
+        "ordered_records_sha256": {
+          "type": "string"
+        },
+        "partition": {
+          "enum": [
+            "train",
+            "validation",
+            "held_out"
+          ],
+          "type": "string"
+        },
+        "record_count": {
+          "type": "integer"
+        },
+        "record_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "partition",
+        "blob_id",
+        "record_ids",
+        "record_count",
+        "content_bytes",
+        "ordered_records_sha256",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.factory.sealed-dataset-partition/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.factory.sealed-dataset/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/SealedDatasetPartition"
+    },
+    "schema_id": {
+      "const": "fam.factory.sealed-dataset-partition/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Immutable content-bound dataset partition",
+  "type": "object"
+}

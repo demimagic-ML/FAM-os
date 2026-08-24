@@ -1,0 +1,74 @@
+{
+  "$defs": {
+    "RequestAuthorityGrant": {
+      "additionalProperties": false,
+      "properties": {
+        "authority_ref": {
+          "type": "string"
+        },
+        "expires_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "granted_capabilities": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "issued_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "principal_id": {
+          "type": "string"
+        },
+        "revoked_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "session_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "authority_ref",
+        "principal_id",
+        "session_id",
+        "granted_capabilities",
+        "issued_at",
+        "expires_at",
+        "revoked_at"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.request-authority/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/RequestAuthorityGrant"
+    },
+    "schema_id": {
+      "const": "fam.core.request-authority/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Request authority grant",
+  "type": "object"
+}

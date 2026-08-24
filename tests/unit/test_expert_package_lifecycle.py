@@ -83,6 +83,43 @@ class ExpertPackageLifecycleTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "not currently activatable"):
             self.lifecycle.rollback(self.coordinate(second))
 
+    def test_factory_install_stays_disabled_until_separate_activation(self) -> None:
+        manifest = self.manifest("1.0.0")
+        state = self.lifecycle.install_disabled(
+            manifest, str(self.source), self.validation(manifest),
+            self.compatibility(manifest),
+        )
+        self.assertEqual(1, state.revision)
+        self.assertEqual(1, len(state.packages))
+        self.assertFalse(state.packages[0].enabled)
+        restarted = ExpertPackageLifecycle(self.state_store, self.artifact_store)
+        self.assertFalse(restarted.state_store.load().packages[0].enabled)
+        activated = restarted.activate(self.coordinate(manifest))
+        self.assertTrue(activated.packages[0].enabled)
+        self.assertEqual("activate", activated.events[-1].action.value)
+
+    def test_factory_update_stays_disabled_and_preserves_known_good(self) -> None:
+        first = self.manifest("1.0.0")
+        state = self.lifecycle.install(
+            first, str(self.source), self.validation(first),
+            self.compatibility(first),
+        )
+        second = self.manifest("2.0.0")
+        state = self.lifecycle.update_disabled(
+            second, str(self.source), self.validation(second),
+            self.compatibility(second),
+        )
+        self.assertEqual(self.coordinate(first), self.active(state))
+        candidate = next(
+            item for item in state.packages
+            if item.coordinate == self.coordinate(second)
+        )
+        self.assertFalse(candidate.enabled)
+        activated = self.lifecycle.activate(self.coordinate(second))
+        self.assertEqual(self.coordinate(second), self.active(activated))
+        rolled_back = self.lifecycle.rollback(self.coordinate(first))
+        self.assertEqual(self.coordinate(first), self.active(rolled_back))
+
     def test_rejects_untrusted_mismatched_and_incompatible_evidence_before_copy(self) -> None:
         manifest = self.manifest("1.0.0")
         rejected = replace(

@@ -5,11 +5,17 @@ import { JsonObject, ObservationRequest } from "../sdk/types";
 export async function observeEditor(
   request: ObservationRequest,
   maximumCharacters: number,
+  workspaceUris: string[],
   signal: AbortSignal,
 ): Promise<JsonObject> {
   if (signal.aborted) return cancelled(request.request_id);
   const editor = vscode.window.activeTextEditor;
   if (editor === undefined) return unavailable(request.request_id);
+  const workspace = vscode.workspace.getWorkspaceFolder(editor.document.uri);
+  if (
+    workspace === undefined
+    || !workspaceUris.includes(directoryScope(workspace.uri.toString()))
+  ) return unavailable(request.request_id);
   if (request.resource_uri !== null && request.resource_uri !== editor.document.uri.toString()) {
     return unavailable(request.request_id);
   }
@@ -37,6 +43,10 @@ export async function observeEditor(
     revision,
     error: null,
   };
+}
+
+function directoryScope(uri: string): string {
+  return uri.endsWith("/") ? uri : `${uri}/`;
 }
 
 function requireParameterFields(parameters: JsonObject, allowed: string[]): void {

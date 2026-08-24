@@ -1,0 +1,13 @@
+# FAM_OS applies this profile only to short-lived verifier worker services.
+# The worker immediately enters a Bubblewrap sandbox with all capabilities
+# dropped, network unshared, and only the declared read-only runtime mounted.
+
+abi <abi/4.0>,
+include <tunables/global>
+
+profile fam-os-userns flags=(unconfined) {
+  userns,
+
+  # Site-specific additions and overrides.
+  include if exists <local/fam-os-userns>
+}

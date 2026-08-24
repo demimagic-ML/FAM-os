@@ -1,0 +1,411 @@
+{
+  "$defs": {
+    "CandidateVerificationRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "authorization_decision_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "candidate_id": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "definition_id": {
+          "type": "string"
+        },
+        "evidence": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EngineeringEvidence"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "failure_code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "principal_id": {
+          "type": "string"
+        },
+        "profile": {
+          "$ref": "#/$defs/EngineeringSandboxProfile"
+        },
+        "receipt": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EngineeringToolReceipt"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "recipe_id": {
+          "type": "string"
+        },
+        "recipe_version": {
+          "type": "string"
+        },
+        "recorded_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "revision": {
+          "type": "integer"
+        },
+        "session_id": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "intent_recorded",
+            "completed",
+            "recovery_required"
+          ],
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        },
+        "toolchain": {
+          "type": "string"
+        },
+        "updated_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "verification_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "verification_id",
+        "definition_id",
+        "task_id",
+        "candidate_id",
+        "session_id",
+        "principal_id",
+        "toolchain",
+        "recipe_id",
+        "recipe_version",
+        "profile",
+        "authorization_decision_ids",
+        "status",
+        "revision",
+        "recorded_at",
+        "updated_at",
+        "receipt",
+        "evidence",
+        "passed",
+        "failure_code",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "EngineeringEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_sha256": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "changed_paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "checkpoint_decision_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "evidence_id": {
+          "type": "string"
+        },
+        "outcome": {
+          "enum": [
+            "succeeded",
+            "failed",
+            "partial",
+            "cancelled"
+          ],
+          "type": "string"
+        },
+        "proposal_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "recorded_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "snapshot_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "task_id": {
+          "type": "string"
+        },
+        "tool_run_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "unresolved_risks": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "verifier_run_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "evidence_id",
+        "task_id",
+        "recorded_at",
+        "outcome",
+        "snapshot_ids",
+        "proposal_ids",
+        "checkpoint_decision_ids",
+        "tool_run_ids",
+        "verifier_run_ids",
+        "artifact_sha256",
+        "changed_paths",
+        "unresolved_risks",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "EngineeringSandboxProfile": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_bytes": {
+          "type": "integer"
+        },
+        "cpu_seconds": {
+          "type": "integer"
+        },
+        "git_hooks_enabled": {
+          "type": "boolean"
+        },
+        "host_home_mounted": {
+          "type": "boolean"
+        },
+        "inherited_credentials": {
+          "type": "boolean"
+        },
+        "memory_bytes": {
+          "type": "integer"
+        },
+        "network_hosts": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "network_mode": {
+          "enum": [
+            "denied",
+            "allowlist_proxy"
+          ],
+          "type": "string"
+        },
+        "output_bytes": {
+          "type": "integer"
+        },
+        "process_limit": {
+          "type": "integer"
+        },
+        "profile_id": {
+          "type": "string"
+        },
+        "sanitized_environment": {
+          "items": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "type": "array"
+        },
+        "wall_seconds": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "profile_id",
+        "memory_bytes",
+        "cpu_seconds",
+        "wall_seconds",
+        "process_limit",
+        "output_bytes",
+        "artifact_bytes",
+        "network_mode",
+        "network_hosts",
+        "sanitized_environment",
+        "host_home_mounted",
+        "inherited_credentials",
+        "git_hooks_enabled"
+      ],
+      "type": "object"
+    },
+    "EngineeringToolReceipt": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_digests": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "candidate_id": {
+          "type": "string"
+        },
+        "command_sha256": {
+          "type": "string"
+        },
+        "completed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "diagnostic": {
+          "type": "string"
+        },
+        "exit_code": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "isolation_evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "network_destinations": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "recipe_id": {
+          "type": "string"
+        },
+        "recipe_payload_sha256": {
+          "type": "string"
+        },
+        "sandbox_profile_id": {
+          "type": "string"
+        },
+        "started_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "passed",
+            "failed",
+            "unavailable"
+          ],
+          "type": "string"
+        },
+        "stderr_sha256": {
+          "type": "string"
+        },
+        "stdout_sha256": {
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "receipt_id",
+        "task_id",
+        "candidate_id",
+        "recipe_id",
+        "recipe_payload_sha256",
+        "sandbox_profile_id",
+        "command_sha256",
+        "started_at",
+        "completed_at",
+        "exit_code",
+        "stdout_sha256",
+        "stderr_sha256",
+        "artifact_digests",
+        "network_destinations",
+        "isolation_evidence_ids",
+        "status",
+        "diagnostic",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.candidate-verification/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/CandidateVerificationRecord"
+    },
+    "schema_id": {
+      "const": "fam.core.candidate-verification/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Intent-before-effect signed candidate verification receipt",
+  "type": "object"
+}

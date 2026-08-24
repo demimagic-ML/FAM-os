@@ -1,0 +1,207 @@
+{
+  "$defs": {
+    "RemoteContextDisclosureEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "capability_declaration_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "content_bytes": {
+          "type": "integer"
+        },
+        "content_sha256": {
+          "type": "string"
+        },
+        "context_id": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.fabric.minimum-context/v1alpha1"
+        },
+        "direction": {
+          "enum": [
+            "outbound",
+            "inbound"
+          ],
+          "type": "string"
+        },
+        "enrollment_id": {
+          "type": "string"
+        },
+        "evidence_id": {
+          "type": "string"
+        },
+        "local_only": {
+          "type": "boolean"
+        },
+        "peer_device_id": {
+          "type": "string"
+        },
+        "privacy_policy_revision": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "purpose_id": {
+          "type": "string"
+        },
+        "raw_fragment_sha256": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "receipt": {
+          "$ref": "#/$defs/RemoteContextReceipt"
+        },
+        "recorded_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "request_sha256": {
+          "type": "string"
+        },
+        "sensitivity": {
+          "enum": [
+            "public",
+            "private",
+            "restricted"
+          ],
+          "type": "string"
+        },
+        "target_expert_id": {
+          "type": "string"
+        },
+        "workspace_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "evidence_id",
+        "request_id",
+        "request_sha256",
+        "enrollment_id",
+        "peer_device_id",
+        "direction",
+        "context_id",
+        "target_expert_id",
+        "purpose_id",
+        "workspace_id",
+        "sensitivity",
+        "content_bytes",
+        "content_sha256",
+        "raw_fragment_sha256",
+        "privacy_policy_revision",
+        "capability_declaration_id",
+        "receipt",
+        "reason_codes",
+        "recorded_at",
+        "local_only",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "RemoteContextReceipt": {
+      "additionalProperties": false,
+      "properties": {
+        "accepted_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "content_bytes": {
+          "type": "integer"
+        },
+        "content_sha256": {
+          "type": "string"
+        },
+        "context_id": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.fabric.minimum-context/v1alpha1"
+        },
+        "raw_fragment_count": {
+          "type": "integer"
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "responder_device_id": {
+          "type": "string"
+        },
+        "sender_device_id": {
+          "type": "string"
+        },
+        "signature_base64": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "accepted"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "receipt_id",
+        "request_id",
+        "context_id",
+        "sender_device_id",
+        "responder_device_id",
+        "status",
+        "content_bytes",
+        "content_sha256",
+        "raw_fragment_count",
+        "accepted_at",
+        "signature_base64",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.fabric.context-disclosure-evidence/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.fabric.minimum-context/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/RemoteContextDisclosureEvidence"
+    },
+    "schema_id": {
+      "const": "fam.fabric.context-disclosure-evidence/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Encrypted content-free disclosure evidence",
+  "type": "object"
+}

@@ -13,8 +13,19 @@ JsonObject: TypeAlias = Mapping[str, JsonValue]
 
 
 def freeze_payload(payload: Mapping[str, object] | None = None) -> JsonObject:
-    source = {} if payload is None else payload
+    source: dict[object, object] = (
+        {} if payload is None else {key: value for key, value in payload.items()}
+    )
     return _freeze_mapping(source)
+
+
+def thaw_payload(value: JsonValue) -> object:
+    """Return a mutable JSON tree without weakening boundary validation."""
+    if isinstance(value, Mapping):
+        return {key: thaw_payload(item) for key, item in value.items()}
+    if isinstance(value, tuple):
+        return [thaw_payload(item) for item in value]
+    return value
 
 
 def _freeze_mapping(value: Mapping[object, object]) -> JsonObject:

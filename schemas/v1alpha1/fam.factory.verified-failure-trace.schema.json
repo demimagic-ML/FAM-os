@@ -1,0 +1,106 @@
+{
+  "$defs": {
+    "VerifiedFailureTrace": {
+      "additionalProperties": false,
+      "properties": {
+        "candidate_id": {
+          "type": "string"
+        },
+        "candidate_sha256": {
+          "type": "string"
+        },
+        "capability_id": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.factory.failure-discovery/v1alpha1"
+        },
+        "evidence_sha256": {
+          "type": "string"
+        },
+        "expert_tier": {
+          "type": "string"
+        },
+        "failed_requirement_id": {
+          "type": "string"
+        },
+        "independently_verified": {
+          "type": "boolean"
+        },
+        "model_ref": {
+          "type": "string"
+        },
+        "observed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "release_id": {
+          "type": "string"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "signer_key_id": {
+          "type": "string"
+        },
+        "trace_id": {
+          "type": "string"
+        },
+        "training_authorized": {
+          "type": "boolean"
+        },
+        "verification_id": {
+          "type": "string"
+        },
+        "verifier_artifact_sha256": {
+          "type": "string"
+        },
+        "verifier_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "trace_id",
+        "verification_id",
+        "request_id",
+        "candidate_id",
+        "capability_id",
+        "failed_requirement_id",
+        "verifier_id",
+        "verifier_artifact_sha256",
+        "candidate_sha256",
+        "model_ref",
+        "expert_tier",
+        "release_id",
+        "signer_key_id",
+        "observed_at",
+        "evidence_sha256",
+        "independently_verified",
+        "training_authorized",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.factory.verified-failure-trace/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.factory.failure-discovery/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/VerifiedFailureTrace"
+    },
+    "schema_id": {
+      "const": "fam.factory.verified-failure-trace/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Signed content-free production failure trace",
+  "type": "object"
+}

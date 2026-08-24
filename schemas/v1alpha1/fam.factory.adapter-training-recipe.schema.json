@@ -1,0 +1,123 @@
+{
+  "$defs": {
+    "AdapterTrainingRecipe": {
+      "additionalProperties": false,
+      "properties": {
+        "alpha": {
+          "type": "integer"
+        },
+        "base_weight_bits": {
+          "type": "integer"
+        },
+        "compute_dtype": {
+          "enum": [
+            "bfloat16",
+            "float16"
+          ],
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.factory.training-approval/v1alpha1"
+        },
+        "double_quantization": {
+          "type": "boolean"
+        },
+        "dropout": {
+          "type": "number"
+        },
+        "epochs": {
+          "type": "number"
+        },
+        "gradient_accumulation_steps": {
+          "type": "integer"
+        },
+        "learning_rate": {
+          "type": "number"
+        },
+        "maximum_sequence_tokens": {
+          "type": "integer"
+        },
+        "maximum_steps": {
+          "type": "integer"
+        },
+        "method": {
+          "enum": [
+            "lora",
+            "qlora"
+          ],
+          "type": "string"
+        },
+        "per_device_batch_size": {
+          "type": "integer"
+        },
+        "quantization_type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "rank": {
+          "type": "integer"
+        },
+        "recipe_id": {
+          "type": "string"
+        },
+        "seed": {
+          "type": "integer"
+        },
+        "target_modules": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "recipe_id",
+        "method",
+        "rank",
+        "alpha",
+        "dropout",
+        "target_modules",
+        "base_weight_bits",
+        "quantization_type",
+        "double_quantization",
+        "compute_dtype",
+        "maximum_sequence_tokens",
+        "epochs",
+        "maximum_steps",
+        "per_device_batch_size",
+        "gradient_accumulation_steps",
+        "learning_rate",
+        "seed",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.factory.adapter-training-recipe/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.factory.training-approval/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/AdapterTrainingRecipe"
+    },
+    "schema_id": {
+      "const": "fam.factory.adapter-training-recipe/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Bounded LoRA or QLoRA training recipe",
+  "type": "object"
+}

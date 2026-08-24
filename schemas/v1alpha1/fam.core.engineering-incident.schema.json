@@ -1,0 +1,141 @@
+{
+  "$defs": {
+    "EngineeringIncidentState": {
+      "additionalProperties": false,
+      "properties": {
+        "closure_receipt_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "detected_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "diagnosis_receipt_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "incident_id": {
+          "type": "string"
+        },
+        "last_event_sha256": {
+          "type": "string"
+        },
+        "post_incident_report_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "preservation_receipt_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "recovery_observation_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "remediation_changeset_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "remediation_receipt_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "revision": {
+          "type": "integer"
+        },
+        "rollback_receipt_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "stage": {
+          "enum": [
+            "detected",
+            "evidence_preserved",
+            "diagnosed",
+            "remediation_proposed",
+            "remediated",
+            "recovery_monitored",
+            "rolled_back",
+            "reported",
+            "closed"
+          ],
+          "type": "string"
+        },
+        "symptom_evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "task_id": {
+          "type": "string"
+        },
+        "updated_at": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "incident_id",
+        "task_id",
+        "stage",
+        "revision",
+        "detected_at",
+        "updated_at",
+        "symptom_evidence_ids",
+        "preservation_receipt_ids",
+        "diagnosis_receipt_ids",
+        "remediation_changeset_ids",
+        "remediation_receipt_ids",
+        "recovery_observation_ids",
+        "rollback_receipt_ids",
+        "post_incident_report_ids",
+        "closure_receipt_ids",
+        "last_event_sha256",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.engineering-incident/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/EngineeringIncidentState"
+    },
+    "schema_id": {
+      "const": "fam.core.engineering-incident/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Restart-safe diagnosis remediation recovery rollback and reporting lifecycle",
+  "type": "object"
+}

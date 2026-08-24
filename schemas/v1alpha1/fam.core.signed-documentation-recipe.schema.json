@@ -1,0 +1,88 @@
+{
+  "$defs": {
+    "SignedDocumentationRecipe": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "generator_id": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "diagram",
+            "api_reference",
+            "runbook",
+            "changelog",
+            "generated_code"
+          ],
+          "type": "string"
+        },
+        "maximum_output_bytes": {
+          "type": "integer"
+        },
+        "maximum_source_bytes": {
+          "type": "integer"
+        },
+        "maximum_source_files": {
+          "type": "integer"
+        },
+        "output_media_type": {
+          "type": "string"
+        },
+        "payload_sha256": {
+          "type": "string"
+        },
+        "recipe_id": {
+          "type": "string"
+        },
+        "recipe_version": {
+          "type": "string"
+        },
+        "signature_base64": {
+          "type": "string"
+        },
+        "signer_key_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "recipe_id",
+        "recipe_version",
+        "kind",
+        "generator_id",
+        "output_media_type",
+        "maximum_source_files",
+        "maximum_source_bytes",
+        "maximum_output_bytes",
+        "signer_key_id",
+        "payload_sha256",
+        "signature_base64",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.signed-documentation-recipe/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/SignedDocumentationRecipe"
+    },
+    "schema_id": {
+      "const": "fam.core.signed-documentation-recipe/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Release-signed bounded documentation generator recipe",
+  "type": "object"
+}

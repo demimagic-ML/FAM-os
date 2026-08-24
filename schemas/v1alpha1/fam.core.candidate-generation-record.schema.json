@@ -1,0 +1,209 @@
+{
+  "$defs": {
+    "CandidateGenerationRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "attempt_count": {
+          "type": "integer"
+        },
+        "candidate_id": {
+          "type": "string"
+        },
+        "consumed_tokens": {
+          "type": "integer"
+        },
+        "consumed_wall_seconds": {
+          "type": "integer"
+        },
+        "context_sha256": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "created_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "definition_id": {
+          "type": "string"
+        },
+        "failure_code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "generation_id": {
+          "type": "string"
+        },
+        "model_ref": {
+          "type": "string"
+        },
+        "plan": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GeneratedCandidatePlan"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "principal_id": {
+          "type": "string"
+        },
+        "prompt_sha256": {
+          "type": "string"
+        },
+        "revision": {
+          "type": "integer"
+        },
+        "session_id": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "intent_recorded",
+            "plan_validated",
+            "failed"
+          ],
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        },
+        "updated_at": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "generation_id",
+        "definition_id",
+        "task_id",
+        "candidate_id",
+        "session_id",
+        "principal_id",
+        "prompt_sha256",
+        "context_sha256",
+        "model_ref",
+        "status",
+        "attempt_count",
+        "consumed_tokens",
+        "consumed_wall_seconds",
+        "revision",
+        "created_at",
+        "updated_at",
+        "plan",
+        "failure_code",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "GeneratedCandidateOperation": {
+      "additionalProperties": false,
+      "properties": {
+        "content": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "kind": {
+          "enum": [
+            "create_directory",
+            "create_file",
+            "replace_file",
+            "move",
+            "delete"
+          ],
+          "type": "string"
+        },
+        "media_type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "path": {
+          "type": "string"
+        },
+        "source_path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "kind",
+        "path",
+        "content",
+        "source_path",
+        "media_type"
+      ],
+      "type": "object"
+    },
+    "GeneratedCandidatePlan": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "operations": {
+          "items": {
+            "$ref": "#/$defs/GeneratedCandidateOperation"
+          },
+          "type": "array"
+        },
+        "summary": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "summary",
+        "operations",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.candidate-generation-record/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/CandidateGenerationRecord"
+    },
+    "schema_id": {
+      "const": "fam.core.candidate-generation-record/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Restart-safe pre-effect model generation record",
+  "type": "object"
+}

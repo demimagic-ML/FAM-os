@@ -7,7 +7,10 @@ import argparse
 import json
 from pathlib import Path
 
-from fam_os.schemas import SCHEMA_DESCRIPTORS, build_schema
+from jsonschema import Draft202012Validator
+from jsonschema.exceptions import SchemaError
+
+from fam_os.schemas import SCHEMA_DESCRIPTORS, STATIC_CONFIGURATION_SCHEMAS, build_schema
 
 
 def render(schema_root: Path, *, check: bool) -> tuple[str, ...]:
@@ -26,6 +29,17 @@ def render(schema_root: Path, *, check: bool) -> tuple[str, ...]:
                 mismatches.append(str(relative_path))
         else:
             path.write_text(content, encoding="utf-8")
+    for relative in STATIC_CONFIGURATION_SCHEMAS:
+        relative_path = Path(relative)
+        expected_paths.add(relative_path)
+        path = schema_root / relative_path
+        if not path.is_file():
+            mismatches.append(str(relative_path))
+            continue
+        try:
+            Draft202012Validator.check_schema(json.loads(path.read_text(encoding="utf-8")))
+        except (OSError, ValueError, TypeError, SchemaError):
+            mismatches.append(str(relative_path))
     for path in schema_root.glob("v1alpha*/*.schema.json"):
         relative_path = path.relative_to(schema_root)
         if relative_path not in expected_paths:

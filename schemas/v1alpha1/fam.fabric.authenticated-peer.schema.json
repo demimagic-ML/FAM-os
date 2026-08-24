@@ -1,0 +1,57 @@
+{
+  "$defs": {
+    "AuthenticatedPeer": {
+      "additionalProperties": false,
+      "properties": {
+        "certificate_sha256": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.fabric.mutual-tls/v1alpha1"
+        },
+        "device_id": {
+          "type": "string"
+        },
+        "display_name": {
+          "type": "string"
+        },
+        "owner_id": {
+          "type": "string"
+        },
+        "tls_version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "device_id",
+        "display_name",
+        "owner_id",
+        "certificate_sha256",
+        "tls_version",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.fabric.authenticated-peer/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.fabric.mutual-tls/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/AuthenticatedPeer"
+    },
+    "schema_id": {
+      "const": "fam.fabric.authenticated-peer/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Mutually authenticated TLS peer",
+  "type": "object"
+}

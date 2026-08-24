@@ -1,0 +1,165 @@
+{
+  "$defs": {
+    "CapturedDatasetSource": {
+      "additionalProperties": false,
+      "properties": {
+        "captured_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "content_sha256": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.factory.dataset-provenance/v1alpha1"
+        },
+        "evaluation_kind": {
+          "anyOf": [
+            {
+              "enum": [
+                "quality",
+                "safety",
+                "policy",
+                "unrelated"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evaluation_requirement_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evaluation_verifier": {
+          "anyOf": [
+            {
+              "enum": [
+                "contains",
+                "exact_text",
+                "safe_refusal",
+                "honest_refusal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "grant_id": {
+          "type": "string"
+        },
+        "input_text": {
+          "type": "string"
+        },
+        "license_id": {
+          "type": "string"
+        },
+        "partition": {
+          "enum": [
+            "train",
+            "validation",
+            "held_out"
+          ],
+          "type": "string"
+        },
+        "proposal_id": {
+          "type": "string"
+        },
+        "provenance_sha256": {
+          "type": "string"
+        },
+        "reference_output": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sensitivity": {
+          "enum": [
+            "public",
+            "private",
+            "restricted"
+          ],
+          "type": "string"
+        },
+        "source_family_id": {
+          "type": "string"
+        },
+        "source_id": {
+          "type": "string"
+        },
+        "source_kind": {
+          "enum": [
+            "verified_fixture",
+            "owner_example",
+            "licensed_dataset"
+          ],
+          "type": "string"
+        },
+        "split_policy_id": {
+          "type": "string"
+        },
+        "workspace_scope": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_id",
+        "grant_id",
+        "proposal_id",
+        "source_family_id",
+        "split_policy_id",
+        "partition",
+        "source_kind",
+        "workspace_scope",
+        "sensitivity",
+        "license_id",
+        "input_text",
+        "reference_output",
+        "captured_at",
+        "content_sha256",
+        "provenance_sha256",
+        "evaluation_kind",
+        "evaluation_verifier",
+        "evaluation_requirement_id",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.factory.captured-dataset-source/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.factory.dataset-provenance/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/CapturedDatasetSource"
+    },
+    "schema_id": {
+      "const": "fam.factory.captured-dataset-source/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Encrypted provenance-bound dataset source",
+  "type": "object"
+}

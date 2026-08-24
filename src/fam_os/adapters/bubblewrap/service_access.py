@@ -113,7 +113,11 @@ class BubblewrapServiceAccessAdapter:
         )
         command = _bubblewrap_command(definition.command, grants, self._by_id, self.settings)
         return ServiceDefinition(
-            definition.service_id, command, definition.environment, definition.limits
+            definition.service_id,
+            command,
+            definition.environment,
+            definition.limits,
+            definition.restart_policy,
         )
 
     def _require_mapping(
@@ -208,4 +212,3 @@ def _validate_destination(kind: AccessResourceKind, source: Path, target: Path) 
             raise ValueError("device grants must map device-tree paths")
     if target in {Path("/access"), Path("/dev")}:
         raise ValueError("access grants cannot replace a sandbox root")
-

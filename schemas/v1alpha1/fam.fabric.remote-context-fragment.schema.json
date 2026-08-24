@@ -1,0 +1,59 @@
+{
+  "$defs": {
+    "RemoteRawContextFragment": {
+      "additionalProperties": false,
+      "properties": {
+        "content": {
+          "type": "string"
+        },
+        "content_sha256": {
+          "type": "string"
+        },
+        "fragment_id": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "prompt",
+            "file_excerpt",
+            "memory",
+            "retrieval"
+          ],
+          "type": "string"
+        },
+        "source_sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "fragment_id",
+        "kind",
+        "source_sha256",
+        "content",
+        "content_sha256"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.fabric.remote-context-fragment/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.fabric.minimum-context/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/RemoteRawContextFragment"
+    },
+    "schema_id": {
+      "const": "fam.fabric.remote-context-fragment/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Explicit remote raw context fragment",
+  "type": "object"
+}

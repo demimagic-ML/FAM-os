@@ -35,6 +35,7 @@ class PlanEvidenceKind(StrEnum):
     ACTION_RESULT = "action_result"
     ACTION_AUDIT = "action_audit"
     PERMISSION_EXPIRY = "permission_expiry"
+    FAILURE_REASON = "failure_reason"
     FAILED_ATTEMPT = "failed_attempt"
     REPAIR_ATTEMPT = "repair_attempt"
     ESCALATION_ATTEMPT = "escalation_attempt"
@@ -43,6 +44,8 @@ class PlanEvidenceKind(StrEnum):
     DEGRADATION = "degradation"
     RELEASE_CANDIDATE = "release_candidate"
     VERIFICATION_PASS = "verification_pass"
+    REMOTE_EXECUTION = "remote_execution"
+    REMOTE_RECOVERY = "remote_recovery"
 
 
 @dataclass(frozen=True, slots=True)
@@ -67,6 +70,8 @@ class PlanEvidenceReference:
         if self.kind in application_kinds:
             _require_text(self.capability_id, "capability_id")
             _require_text(self.permission_grant_id, "permission_grant_id")
+        elif self.kind is PlanEvidenceKind.FAILURE_REASON:
+            _require_text(self.capability_id, "capability_id")
         elif self.kind in {
             PlanEvidenceKind.FAILED_ATTEMPT,
             PlanEvidenceKind.REPAIR_ATTEMPT,
@@ -233,6 +238,25 @@ def _require_event_evidence(plan, event) -> None:
                 if reference.capability_id not in plan.route.required_capabilities:
                     raise ValueError("control evidence capability must be routed")
             continue
+        if reference.kind is PlanEvidenceKind.FAILURE_REASON:
+            target = _step(plan, event.target_step_id)
+            if target.terminal_disposition is not TerminalDisposition.FAIL:
+                raise ValueError("failure reason evidence must target failure")
+            if reference.capability_id not in source.capability_ids:
+                raise ValueError("failure reason capability must belong to source step")
+            continue
+        if reference.kind in {
+            PlanEvidenceKind.REMOTE_EXECUTION,
+            PlanEvidenceKind.REMOTE_RECOVERY,
+        }:
+            if (
+                reference.capability_id is not None
+                or source.kind not in {PlanStepKind.INFERENCE, PlanStepKind.VERIFY}
+            ):
+                raise ValueError(
+                    "remote execution evidence must leave inference or verification",
+                )
+            continue
         if reference.kind in {
             PlanEvidenceKind.RELEASE_CANDIDATE,
             PlanEvidenceKind.VERIFICATION_PASS,
@@ -278,7 +302,7 @@ def _require_rejection(rejection) -> None:
         raise ValueError("result rejection must be a PlanRejection")
 
 
-def _require_text(value: str, field_name: str) -> None:
+def _require_text(value: str | None, field_name: str) -> None:
     if not isinstance(value, str) or not value.strip() or "\x00" in value:
         raise ValueError(f"{field_name} must be strict nonempty text")
 

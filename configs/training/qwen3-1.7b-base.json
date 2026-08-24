@@ -1,0 +1,9 @@
+{
+  "contract_version": "fam.factory.base-model-source/v1alpha1",
+  "files_manifest_sha256": "1579816840e7f7a694ef449c4d3d3d9a6e83001452e69a38b225df67e5851b7e",
+  "license_id": "Apache-2.0",
+  "repository_id": "Qwen/Qwen3-1.7B",
+  "revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+  "tokenizer_id": "Qwen/Qwen3-1.7B",
+  "tokenizer_revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e"
+}

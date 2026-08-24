@@ -48,8 +48,9 @@ function declarations(): JsonObject[] {
     observation("vscode.editor.active", "Observe active editor", "active"),
     observation("vscode.editor.selection", "Observe selected editor text", "selection"),
     observation("vscode.diagnostics.active", "Observe active editor diagnostics", "diagnostics"),
-    action("vscode.workspace_edit.apply", "Apply reversible workspace edit"),
-    action("vscode.workspace_edit.undo", "Reverse an applied workspace edit"),
+    editAction("vscode.workspace_edit.apply", "Apply reversible workspace edit"),
+    editAction("vscode.workspace_edit.undo", "Reverse an applied workspace edit"),
+    saveAction(),
   ];
 }
 
@@ -68,7 +69,7 @@ function observation(capabilityId: string, name: string, schema: string): JsonOb
   };
 }
 
-function action(capabilityId: string, name: string): JsonObject {
+function editAction(capabilityId: string, name: string): JsonObject {
   return {
     capability_id: capabilityId,
     display_name: name,
@@ -80,5 +81,20 @@ function action(capabilityId: string, name: string): JsonObject {
     reversibility: "reversible",
     confirmation: "always",
     postcondition_ids: ["document.hash", "document.version"],
+  };
+}
+
+function saveAction(): JsonObject {
+  return {
+    capability_id: "vscode.document.save",
+    display_name: "Save active document",
+    description: "Save the approved active document and verify its exact disk bytes.",
+    kind: "action",
+    required_authority: "modify",
+    input_schema_id: "vscode.document.save.input.v1",
+    output_schema_id: "vscode.document.save.output.v1",
+    reversibility: "irreversible",
+    confirmation: "always",
+    postcondition_ids: ["file.sha256", "document.saved"],
   };
 }

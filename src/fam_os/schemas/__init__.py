@@ -1,6 +1,11 @@
 """Public serialized-schema, compatibility, and reference-validation boundary."""
 
-from fam_os.schemas.catalog import SCHEMA_DESCRIPTORS, descriptor_for_schema, descriptor_for_type
+from fam_os.schemas.catalog import (
+    SCHEMA_DESCRIPTORS,
+    STATIC_CONFIGURATION_SCHEMAS,
+    descriptor_for_schema,
+    descriptor_for_type,
+)
 from fam_os.schemas.codec import decode_document, dumps_document, encode_document, loads_document
 from fam_os.schemas.compatibility import CompatibilityReport, compatibility_report, require_compatible
 from fam_os.schemas.descriptor import CompatibilityPolicy, SchemaDescriptor
@@ -23,6 +28,7 @@ from fam_os.schemas.schema_builder import build_schema
 
 __all__ = [
     "SCHEMA_DESCRIPTORS",
+    "STATIC_CONFIGURATION_SCHEMAS",
     "CompatibilityPolicy",
     "CompatibilityReport",
     "ContractReferenceSet",

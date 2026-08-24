@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "fam.product.mcp-ingress-config.schema.json",
+  "title": "FAM product MCP ingress configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "enabled", "clients"],
+  "properties": {
+    "contract_version": {
+      "const": "fam.product.mcp-ingress/v1alpha1"
+    },
+    "enabled": {
+      "type": "boolean"
+    },
+    "clients": {
+      "type": "array",
+      "maxItems": 32,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "client_id",
+          "principal_id",
+          "capabilities",
+          "session_ttl_seconds"
+        ],
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:@/-]{0,127}$"
+          },
+          "principal_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:@/-]{0,127}$"
+          },
+          "capabilities": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 2,
+            "uniqueItems": true,
+            "items": {
+              "enum": ["fam.ask", "fam.ask.verified"]
+            }
+          },
+          "session_ttl_seconds": {
+            "type": "integer",
+            "minimum": 60,
+            "maximum": 86400
+          }
+        }
+      }
+    }
+  }
+}

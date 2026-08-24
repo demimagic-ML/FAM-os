@@ -32,7 +32,17 @@ from fam_os.memory.document_contracts import (
     IndexedDocumentChunk,
 )
 from fam_os.memory.document_index import ApprovedDocumentIndex
-from fam_os.memory.document_repository import SqliteDocumentIndexRepository
+from fam_os.memory.document_repository import (
+    DocumentIndexRecord,
+    DocumentIndexRepository,
+    SqliteDocumentIndexRepository,
+)
+from fam_os.memory.grant_contracts import (
+    DOCUMENT_INDEX_GRANT_VERSION,
+    DocumentIndexGrant,
+    DocumentIndexGrantKind,
+    DocumentIndexReceipt,
+)
 from fam_os.memory.relevance import (
     MEMORY_RELEVANCE_CONTRACT_VERSION,
     MemoryRejection,
@@ -41,7 +51,14 @@ from fam_os.memory.relevance import (
     MemoryRetrievalCandidate,
 )
 from fam_os.memory.management import (
+    MAX_MANAGED_DOCUMENT_BYTES,
     MEMORY_MANAGEMENT_CONTRACT_VERSION,
+    DocumentCorrectionRequest,
+    DocumentDeletionRequest,
+    DocumentExpirationRequest,
+    DocumentInspection,
+    DocumentManagementOperation,
+    DocumentManagementReceipt,
     DocumentMemoryManager,
     MemoryDocumentExport,
     MemoryManagementEvidence,
@@ -58,6 +75,8 @@ from fam_os.memory.quality_evidence import (
     MemoryQualityPrivacyReport,
 )
 from fam_os.memory.phase10_exit import PHASE10_EXIT_CONTRACT_VERSION, Phase10ExitEvidence
+from fam_os.memory.session_memory import ProductionSessionMemory, SessionMemoryLimits
+from fam_os.memory.document_ingestion import document_chunks
 
 __all__ = [
     "MEMORY_RECORD_MANIFEST_CONTRACT_VERSION",
@@ -85,13 +104,26 @@ __all__ = [
     "DocumentRetrievalHit",
     "IndexedDocumentChunk",
     "ApprovedDocumentIndex",
+    "DocumentIndexRecord",
+    "DocumentIndexRepository",
     "SqliteDocumentIndexRepository",
+    "DOCUMENT_INDEX_GRANT_VERSION",
+    "DocumentIndexGrant",
+    "DocumentIndexGrantKind",
+    "DocumentIndexReceipt",
     "MEMORY_RELEVANCE_CONTRACT_VERSION",
     "MemoryRejection",
     "MemoryRelevanceDecision",
     "MemoryRelevancePolicy",
     "MemoryRetrievalCandidate",
     "MEMORY_MANAGEMENT_CONTRACT_VERSION",
+    "MAX_MANAGED_DOCUMENT_BYTES",
+    "DocumentCorrectionRequest",
+    "DocumentDeletionRequest",
+    "DocumentExpirationRequest",
+    "DocumentInspection",
+    "DocumentManagementOperation",
+    "DocumentManagementReceipt",
     "DocumentMemoryManager",
     "MemoryDocumentExport",
     "MemoryManagementEvidence",
@@ -104,4 +136,7 @@ __all__ = [
     "MemoryQualityPrivacyReport",
     "PHASE10_EXIT_CONTRACT_VERSION",
     "Phase10ExitEvidence",
+    "ProductionSessionMemory",
+    "SessionMemoryLimits",
+    "document_chunks",
 ]

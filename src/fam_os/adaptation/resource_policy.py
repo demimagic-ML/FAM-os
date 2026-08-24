@@ -11,14 +11,16 @@ RESOURCE_ADAPTATION_CONTRACT_VERSION = "fam.adaptation.resource-policy/v1alpha1"
 class OperatingState:
     battery_percent: float | None
     charging: bool | None
-    thermal_celsius: float
+    thermal_celsius: float | None
     foreground_load: float
     idle_seconds: float
 
     def __post_init__(self) -> None:
         if self.battery_percent is not None and not 0 <= self.battery_percent <= 100:
             raise ValueError("battery percent must be normalized")
-        if self.thermal_celsius < -20 or not 0 <= self.foreground_load <= 1 or self.idle_seconds < 0:
+        if (
+            self.thermal_celsius is not None and self.thermal_celsius < -20
+        ) or not 0 <= self.foreground_load <= 1 or self.idle_seconds < 0:
             raise ValueError("operating-state values are invalid")
 
 
@@ -37,7 +39,10 @@ class OperatingStatePolicy:
         if state.battery_percent is not None and state.battery_percent < 20 and not state.charging:
             tier, prefetch = ExpertTier.ECONOMICAL, False
             reasons.append("battery.conserve")
-        if state.thermal_celsius >= 85:
+        if state.thermal_celsius is None:
+            prefetch = False
+            reasons.append("thermal.unknown")
+        elif state.thermal_celsius >= 85:
             tier, prefetch = ExpertTier.MICRO, False
             reasons.append("thermal.protect")
         if state.foreground_load >= .8:

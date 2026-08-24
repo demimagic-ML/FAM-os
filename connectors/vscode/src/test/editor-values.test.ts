@@ -14,13 +14,14 @@ test("registration exposes only bounded semantic editor capabilities", () => {
   });
   const capabilities = value.capabilities;
   assert.ok(Array.isArray(capabilities));
-  assert.equal(capabilities.length, 5);
+  assert.equal(capabilities.length, 6);
   assert.deepEqual(capabilities.map((item) => (item as { capability: { capability_id: string } }).capability.capability_id), [
     "vscode.editor.active",
     "vscode.editor.selection",
     "vscode.diagnostics.active",
     "vscode.workspace_edit.apply",
     "vscode.workspace_edit.undo",
+    "vscode.document.save",
   ]);
 });
 

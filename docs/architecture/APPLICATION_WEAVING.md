@@ -159,3 +159,24 @@ application, deterministic file/test adapters, official-SDK MCP, the live VS
 Code extension, explicit edit approval, trusted verification, and an
 MCP-unavailable successful rerun. See
 `docs/operations/CROSS_APPLICATION_ACCEPTANCE.md` and ADRs 0043-0050.
+
+Phase 19.7 now composes the AT-SPI and screen/input bridges into the installed
+Application Fabric only through an owner-private exact-target policy. Both are
+disabled when configuration is absent; observation and action are separate;
+actions are always confirmed; Core independently re-observes every fallback
+postcondition. FAM Console exposes mechanism state, privacy impact, scopes,
+primitives, and degradation without granting authority. See
+`docs/operations/DESKTOP_FALLBACKS.md` and ADR 0122.
+
+Phase 19.12 adds the owner-workspace workbench. Selecting a local folder or file
+is an explicit permission act that contributes the exact resource URI to the
+task scope. The owner filesystem provider can inspect/list a directory and read
+a bounded explicit file without following symlinks. Console projects the
+resulting Core records into a Tool terminal containing evidence and receipts;
+it does not expose a raw shell, and model Markdown is never execution input.
+Simple directory listings are formatted directly from observations to preserve
+names exactly. See `docs/operations/WORKSPACE_TOOL_TERMINAL.md` and ADR 0161.
+
+This is the authority and evidence foundation for Phase 19.13, not a claim of
+full autonomous repository operation. Recursive discovery, retrieval, tool
+choice, and re-observation must remain bounded Core plan steps.

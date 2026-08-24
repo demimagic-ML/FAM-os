@@ -139,6 +139,7 @@
         "action": {
           "enum": [
             "install",
+            "activate",
             "update",
             "disable",
             "rollback",

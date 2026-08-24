@@ -9,7 +9,7 @@ from typing import Protocol
 from fam_os.core.ports.embedding import EmbeddingRequest, EmbeddingRuntime
 from fam_os.verification.retrieval import (
     RetrievalCitation, RetrievalCitationVerifier, RetrievalClaim,
-    RetrievalVerificationReport, RetrievedSource,
+    RetrievalVerificationReport, RetrievedSource, retrieval_query_obligation,
 )
 
 RETRIEVAL_TIERS_CONTRACT_VERSION = "fam.expert.retrieval-tiers/v1alpha1"
@@ -77,8 +77,10 @@ class VerifiedRetrievalPipeline:
             raise ValueError("embedding runtime returned the wrong vector count")
         ranked = self._rank(query, sources, response.vectors)[:min(top_k, len(sources))]
         synthesis = self.synthesizer.synthesize(query, ranked)
+        ranked_sources = tuple(item.source for item in ranked)
         report = self.verifier.verify(
-            "retrieval-release", sources, synthesis.citations, synthesis.claims,
+            "retrieval-release", ranked_sources, synthesis.citations, synthesis.claims,
+            retrieval_query_obligation(query),
         )
         return VerifiedRetrievalResult(
             query, ranked, synthesis, report, report.passed,

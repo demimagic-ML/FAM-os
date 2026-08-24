@@ -105,7 +105,6 @@ export class WorkspaceActionProvider {
     const proposalId = randomUUID();
     const proposal = proposalPayload(request, proposalId, {
       document_uri: record.documentUri,
-      reversal_token: token,
       restore_hash: record.restoreHash,
     });
     return {

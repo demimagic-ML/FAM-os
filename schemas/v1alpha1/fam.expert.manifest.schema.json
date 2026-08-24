@@ -59,6 +59,7 @@
           "enum": [
             "micro",
             "economical",
+            "specialist",
             "escalation",
             "remote"
           ],

@@ -1,0 +1,44 @@
+{
+  "contract_version": "fam.expert.manifest/v1alpha2",
+  "payload": {
+    "artifact_ids": ["ollama.model"],
+    "capabilities": [
+      "language.generate",
+      "routing.classify",
+      "math.reason.advisory",
+      "retrieval.synthesize.cited"
+    ],
+    "contract_version": "fam.expert.manifest/v1alpha2",
+    "display_name": "Qwen3 1.7B economical language expert",
+    "expert_id": "expert.language.qwen3-1.7b",
+    "package": {
+      "artifact_digest": {
+        "algorithm": "sha256",
+        "value": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7"
+      },
+      "license_id": "Apache-2.0",
+      "package_id": "fam.expert.language.qwen3-1.7b",
+      "package_version": "1.0.0",
+      "publisher_id": "fam-local-workstation",
+      "signature_key_id": null,
+      "trust_level": "local_unverified"
+    },
+    "required_verifier_ids": [
+      "verifier.text.exact-v1",
+      "retrieval.citations.v1",
+      "math.sympy-equivalence.v1"
+    ],
+    "resources": {
+      "accelerator_optional": true,
+      "estimated_resident_bytes": 1600000000,
+      "max_context_tokens": 32768,
+      "minimum_accelerator_memory_bytes": 0,
+      "minimum_system_memory_bytes": 4294967296,
+      "storage_bytes": 1359293444,
+      "supported_architectures": ["x86_64", "aarch64"]
+    },
+    "runtime_contract_id": "fam.inference.chat/v1",
+    "tier": "economical"
+  },
+  "schema_id": "fam.expert.manifest/v1alpha2"
+}

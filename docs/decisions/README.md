@@ -17,5 +17,6 @@ Each ADR contains:
 - Evidence
 - Superseded decisions, if applicable
 
-Do not delete an accepted ADR. A later ADR may supersede it.
+Latest record: `0232-repository-manifests-dominate-engineering-toolchain-selection.md`.
 
+Do not delete an accepted ADR. A later ADR may supersede it.

@@ -1,0 +1,798 @@
+{
+  "$defs": {
+    "ActionConfirmation": {
+      "additionalProperties": false,
+      "properties": {
+        "confirmation_id": {
+          "type": "string"
+        },
+        "decided_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "decided_by": {
+          "type": "string"
+        },
+        "decision": {
+          "enum": [
+            "approved",
+            "denied"
+          ],
+          "type": "string"
+        },
+        "permission_grant_id": {
+          "type": "string"
+        },
+        "proposal_id": {
+          "type": "string"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "confirmation_id",
+        "proposal_id",
+        "permission_grant_id",
+        "decision",
+        "decided_by",
+        "decided_at",
+        "reason"
+      ],
+      "type": "object"
+    },
+    "ActionPreparationRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "capability_id": {
+          "type": "string"
+        },
+        "expected_revision": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "instance_id": {
+          "type": "string"
+        },
+        "parameters": {
+          "additionalProperties": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "type": "object"
+        },
+        "permission_grant_id": {
+          "type": "string"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "resource_uri": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "summary": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "instance_id",
+        "capability_id",
+        "permission_grant_id",
+        "summary",
+        "parameters",
+        "resource_uri",
+        "expected_revision"
+      ],
+      "type": "object"
+    },
+    "ActionProposal": {
+      "additionalProperties": false,
+      "properties": {
+        "confirmation": {
+          "enum": [
+            "not_required",
+            "when_required",
+            "always"
+          ],
+          "type": "string"
+        },
+        "postconditions": {
+          "items": {
+            "$ref": "#/$defs/ConditionRequirement"
+          },
+          "type": "array"
+        },
+        "preconditions": {
+          "items": {
+            "$ref": "#/$defs/ConditionRequirement"
+          },
+          "type": "array"
+        },
+        "preview": {
+          "additionalProperties": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "type": "object"
+        },
+        "proposal_id": {
+          "type": "string"
+        },
+        "request": {
+          "$ref": "#/$defs/ActionPreparationRequest"
+        },
+        "reversal_capability_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reversibility": {
+          "enum": [
+            "not_applicable",
+            "reversible",
+            "compensatable",
+            "irreversible"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "proposal_id",
+        "request",
+        "preview",
+        "reversibility",
+        "confirmation",
+        "postconditions",
+        "preconditions",
+        "reversal_capability_id"
+      ],
+      "type": "object"
+    },
+    "ActionResult": {
+      "additionalProperties": false,
+      "properties": {
+        "after_revision": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "before_revision": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "completed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "error": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ApplicationFailure"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "output": {
+          "additionalProperties": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "type": "object"
+        },
+        "postcondition_evidence": {
+          "items": {
+            "$ref": "#/$defs/ConditionEvidence"
+          },
+          "type": "array"
+        },
+        "proposal_id": {
+          "type": "string"
+        },
+        "reversal_token": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "status": {
+          "enum": [
+            "verified",
+            "denied",
+            "precondition_failed",
+            "execution_failed",
+            "postcondition_failed",
+            "cancelled"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "proposal_id",
+        "status",
+        "completed_at",
+        "postcondition_evidence",
+        "output",
+        "before_revision",
+        "after_revision",
+        "reversal_token",
+        "error"
+      ],
+      "type": "object"
+    },
+    "AdmittedTaskRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "admission_id": {
+          "type": "string"
+        },
+        "admitted_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "permission": {
+          "$ref": "#/$defs/RequestPermissionContext"
+        },
+        "request": {
+          "$ref": "#/$defs/TaskRequest"
+        }
+      },
+      "required": [
+        "admission_id",
+        "request",
+        "permission",
+        "admitted_at"
+      ],
+      "type": "object"
+    },
+    "ApplicationExecutionRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "action_result": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ActionResult"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "application_instance_id": {
+          "type": "string"
+        },
+        "confirmation": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ActionConfirmation"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "contract_version": {
+          "const": "fam.core.application-execution/v1alpha1"
+        },
+        "instance_id": {
+          "type": "string"
+        },
+        "observations": {
+          "items": {
+            "$ref": "#/$defs/ObservationResult"
+          },
+          "type": "array"
+        },
+        "permission_grant_id": {
+          "type": "string"
+        },
+        "proposal": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ActionProposal"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "resource_uri": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reversal_session_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reversal_source_session_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "revision": {
+          "type": "integer"
+        },
+        "routed": {
+          "$ref": "#/$defs/RoutedTaskRequest"
+        },
+        "state": {
+          "enum": [
+            "active",
+            "waiting_approval",
+            "recovery_required",
+            "terminal"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "instance_id",
+        "request_id",
+        "routed",
+        "application_instance_id",
+        "resource_uri",
+        "permission_grant_id",
+        "state",
+        "revision",
+        "observations",
+        "proposal",
+        "confirmation",
+        "action_result",
+        "reversal_source_session_id",
+        "reversal_session_id",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "ApplicationFailure": {
+      "additionalProperties": false,
+      "properties": {
+        "category": {
+          "enum": [
+            "permission_denied",
+            "unavailable",
+            "precondition_failed",
+            "execution_failed",
+            "postcondition_failed",
+            "cancelled"
+          ],
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.application.failure/v1alpha1"
+        },
+        "evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "retry": {
+          "enum": [
+            "never",
+            "immediate",
+            "with_backoff",
+            "after_user_action",
+            "after_state_change"
+          ],
+          "type": "string"
+        },
+        "safe_message": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "category",
+        "code",
+        "safe_message",
+        "retry",
+        "evidence_ids",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "ConditionEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "condition_id": {
+          "type": "string"
+        },
+        "details": {
+          "type": "string"
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "verifier_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "condition_id",
+        "verifier_id",
+        "passed",
+        "details"
+      ],
+      "type": "object"
+    },
+    "ConditionRequirement": {
+      "additionalProperties": false,
+      "properties": {
+        "condition_id": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "verifier_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "condition_id",
+        "verifier_id",
+        "description"
+      ],
+      "type": "object"
+    },
+    "InferenceMetrics": {
+      "additionalProperties": false,
+      "properties": {
+        "generation_tokens_per_second": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "load_seconds": {
+          "type": "number"
+        },
+        "model_ref": {
+          "type": "string"
+        },
+        "output_tokens": {
+          "type": "integer"
+        },
+        "prompt_tokens": {
+          "type": "integer"
+        },
+        "wall_seconds": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "model_ref",
+        "wall_seconds",
+        "load_seconds",
+        "prompt_tokens",
+        "output_tokens",
+        "generation_tokens_per_second"
+      ],
+      "type": "object"
+    },
+    "JsonValue": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "integer"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "items": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "type": "array"
+        },
+        {
+          "additionalProperties": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "type": "object"
+        }
+      ]
+    },
+    "ObservationResult": {
+      "additionalProperties": false,
+      "properties": {
+        "error": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ApplicationFailure"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "observed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "payload": {
+          "additionalProperties": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "type": "object"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "resource_uri": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "revision": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "status": {
+          "enum": [
+            "observed",
+            "denied",
+            "unavailable",
+            "failed"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "status",
+        "observed_at",
+        "payload",
+        "resource_uri",
+        "revision",
+        "error"
+      ],
+      "type": "object"
+    },
+    "RequestPermissionContext": {
+      "additionalProperties": false,
+      "properties": {
+        "authority_ref": {
+          "type": "string"
+        },
+        "authorized_capabilities": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "principal_id": {
+          "type": "string"
+        },
+        "session_id": {
+          "type": "string"
+        },
+        "valid_until": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "principal_id",
+        "session_id",
+        "authority_ref",
+        "authorized_capabilities",
+        "valid_until"
+      ],
+      "type": "object"
+    },
+    "RouteDecision": {
+      "additionalProperties": false,
+      "properties": {
+        "confidence": {
+          "type": "number"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "required_capabilities": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "route": {
+          "enum": [
+            "kernel",
+            "code",
+            "math",
+            "retrieval"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "route",
+        "confidence",
+        "reason",
+        "required_capabilities"
+      ],
+      "type": "object"
+    },
+    "RoutedTaskRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "admitted": {
+          "$ref": "#/$defs/AdmittedTaskRequest"
+        },
+        "routing": {
+          "$ref": "#/$defs/RoutingResult"
+        }
+      },
+      "required": [
+        "admitted",
+        "routing"
+      ],
+      "type": "object"
+    },
+    "RoutingResult": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.routing/v1alpha1"
+        },
+        "decision": {
+          "$ref": "#/$defs/RouteDecision"
+        },
+        "metrics": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/InferenceMetrics"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "decision",
+        "metrics",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "TaskRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.core/v1alpha1"
+        },
+        "prompt": {
+          "type": "string"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "required_capabilities": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "verification_required": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "request_id",
+        "prompt",
+        "required_capabilities",
+        "verification_required",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.application-execution/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.application-execution/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/ApplicationExecutionRecord"
+    },
+    "schema_id": {
+      "const": "fam.core.application-execution/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Restart-safe application execution",
+  "type": "object"
+}

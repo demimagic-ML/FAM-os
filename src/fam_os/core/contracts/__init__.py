@@ -20,11 +20,25 @@ from fam_os.core.contracts.plan import (
     TerminalDisposition,
 )
 from fam_os.core.contracts.request import TaskRequest
-from fam_os.core.contracts.result import ResultStatus, TaskResult
+from fam_os.core.contracts.result import (
+    TASK_RESULT_CONTRACT_VERSION,
+    ResultAssurance,
+    ResultCitation,
+    ResultKind,
+    ResultStatus,
+    TaskResult,
+)
+from fam_os.core.contracts.legacy_result import (
+    LEGACY_TASK_RESULT_VERSION,
+    TaskResult as TaskResultV1Alpha1,
+    migrate_task_result_v1alpha1,
+)
 from fam_os.core.contracts.version import CORE_CONTRACT_VERSION
 
 __all__ = [
     "CORE_CONTRACT_VERSION",
+    "TASK_RESULT_CONTRACT_VERSION",
+    "LEGACY_TASK_RESULT_VERSION",
     "FAILURE_CONTRACT_VERSION",
     "DegradationDisposition",
     "DegradationImpact",
@@ -38,9 +52,14 @@ __all__ = [
     "PlanStepKind",
     "PlanTransition",
     "ResultStatus",
+    "ResultAssurance",
+    "ResultCitation",
+    "ResultKind",
     "RetryDisposition",
     "StepOutcome",
     "TaskRequest",
     "TaskResult",
+    "TaskResultV1Alpha1",
+    "migrate_task_result_v1alpha1",
     "TerminalDisposition",
 ]

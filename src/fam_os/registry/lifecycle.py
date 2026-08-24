@@ -64,6 +64,40 @@ class ExpertPackageLifecycle:
             coordinate, manifest.expert_id,
         )
 
+    def install_disabled(
+        self,
+        manifest: ExpertManifest,
+        source_locator: str,
+        validation: PackageValidationReport,
+        compatibility: ExpertCompatibilityReport,
+    ) -> ExpertPackageInstallationState:
+        """Install a validated package without making it schedulable."""
+        state = self.state_store.load()
+        coordinate = self._admit(manifest, validation, compatibility)
+        existing = _find(state, coordinate)
+        if existing is not None:
+            _require_idempotent_match(existing, manifest, validation)
+            self.artifact_store.verify(
+                existing.artifact_locator, existing.artifact_digest,
+            )
+            if existing.enabled:
+                raise ValueError("disabled install cannot accept an active package")
+            return state
+        if any(item.expert_id == manifest.expert_id for item in state.packages):
+            raise ValueError(
+                "use a canary update to install another expert version",
+            )
+        locator = self.artifact_store.install(
+            coordinate, source_locator, validation.observed_artifact_digest,
+        )
+        package = _installed(
+            manifest, locator, validation, compatibility, self.clock(), False,
+        )
+        return self._commit(
+            state, (*state.packages, package), PackageLifecycleAction.INSTALL,
+            coordinate, manifest.expert_id,
+        )
+
     def update(
         self,
         manifest: ExpertManifest,
@@ -95,6 +129,44 @@ class ExpertPackageLifecycle:
             coordinate, manifest.expert_id,
         )
 
+    def update_disabled(
+        self,
+        manifest: ExpertManifest,
+        source_locator: str,
+        validation: PackageValidationReport,
+        compatibility: ExpertCompatibilityReport,
+    ) -> ExpertPackageInstallationState:
+        """Retain the known-good version while installing an update disabled."""
+        state = self.state_store.load()
+        coordinate = self._admit(manifest, validation, compatibility)
+        existing = _find(state, coordinate)
+        if existing is not None:
+            _require_idempotent_match(existing, manifest, validation)
+            self.artifact_store.verify(
+                existing.artifact_locator, existing.artifact_digest,
+            )
+            if existing.enabled:
+                raise ValueError("disabled update cannot accept an active package")
+            return state
+        versions = tuple(
+            item for item in state.packages
+            if item.expert_id == manifest.expert_id
+        )
+        if not versions:
+            raise ValueError(
+                "disabled update requires an installed version of the same expert",
+            )
+        locator = self.artifact_store.install(
+            coordinate, source_locator, validation.observed_artifact_digest,
+        )
+        package = _installed(
+            manifest, locator, validation, compatibility, self.clock(), False,
+        )
+        return self._commit(
+            state, (*state.packages, package), PackageLifecycleAction.UPDATE,
+            coordinate, manifest.expert_id,
+        )
+
     def disable(self, coordinate: ExpertPackageCoordinate) -> ExpertPackageInstallationState:
         state = self.state_store.load()
         package = _require_installed(state, coordinate)
@@ -103,6 +175,28 @@ class ExpertPackageLifecycle:
         packages = tuple(replace(item, enabled=False) if item.coordinate == coordinate else item for item in state.packages)
         return self._commit(
             state, packages, PackageLifecycleAction.DISABLE, coordinate, package.expert_id
+        )
+
+    def activate(
+        self, coordinate: ExpertPackageCoordinate,
+    ) -> ExpertPackageInstallationState:
+        state = self.state_store.load()
+        target = _require_installed(state, coordinate)
+        if not _can_activate(target.compatibility_status):
+            raise ValueError("activation target is not currently activatable")
+        self.artifact_store.verify(
+            target.artifact_locator, target.artifact_digest,
+        )
+        if target.enabled:
+            return state
+        packages = tuple(
+            replace(item, enabled=item.coordinate == coordinate)
+            if item.expert_id == target.expert_id else item
+            for item in state.packages
+        )
+        return self._commit(
+            state, packages, PackageLifecycleAction.ACTIVATE,
+            coordinate, target.expert_id,
         )
 
     def rollback(self, coordinate: ExpertPackageCoordinate) -> ExpertPackageInstallationState:

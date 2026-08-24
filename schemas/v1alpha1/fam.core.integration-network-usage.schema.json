@@ -1,0 +1,81 @@
+{
+  "$defs": {
+    "IntegrationNetworkUsage": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "destinations": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "enforcement_id": {
+          "type": "string"
+        },
+        "environment_id": {
+          "type": "string"
+        },
+        "evidence_sha256": {
+          "type": "string"
+        },
+        "finalized": {
+          "type": "boolean"
+        },
+        "maximum_network_bytes": {
+          "type": "integer"
+        },
+        "observed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "quota_exceeded": {
+          "type": "boolean"
+        },
+        "received_bytes": {
+          "type": "integer"
+        },
+        "transmitted_bytes": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "enforcement_id",
+        "environment_id",
+        "destinations",
+        "transmitted_bytes",
+        "received_bytes",
+        "maximum_network_bytes",
+        "quota_exceeded",
+        "finalized",
+        "observed_at",
+        "evidence_sha256",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.integration-network-usage/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/IntegrationNetworkUsage"
+    },
+    "schema_id": {
+      "const": "fam.core.integration-network-usage/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Destination and byte-accounted allowlisted egress evidence",
+  "type": "object"
+}

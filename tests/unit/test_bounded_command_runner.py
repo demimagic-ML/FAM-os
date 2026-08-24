@@ -16,6 +16,19 @@ class BoundedCommandRunnerTests(unittest.TestCase):
         self.assertTrue(result.succeeded)
         self.assertEqual("$(touch never)\n", result.stdout)
 
+    def test_streams_bounded_private_stdin_without_a_command_argument(self):
+        runner = BoundedSubprocessRunner(BoundedCommandPolicy(
+            maximum_stdin_bytes=8,
+        ))
+        result = runner.run(
+            (sys.executable, "-c", "import sys; print(sys.stdin.read())"),
+            input_bytes=b"private",
+        )
+        self.assertTrue(result.succeeded)
+        self.assertEqual("private\n", result.stdout)
+        with self.assertRaisesRegex(ValueError, "input"):
+            runner.run((sys.executable, "-V"), input_bytes=b"too-large")
+
     def test_output_limit_and_timeout_terminate_process(self):
         limited = BoundedSubprocessRunner(BoundedCommandPolicy(
             timeout_seconds=1, maximum_stdout_bytes=10, maximum_stderr_bytes=10

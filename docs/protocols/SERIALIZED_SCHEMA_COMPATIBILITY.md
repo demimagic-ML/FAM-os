@@ -97,6 +97,12 @@ All registered schemas use `CompatibilityPolicy.EXACT`.
 
 Any future version requires a new descriptor, generated artifact, fixed fixtures, compatibility tests, and an explicit migration registered by a later ADR. Alpha status does not permit silent wire changes inside an existing version. Expert manifest `v1alpha1` and `v1alpha2` are the first side-by-side exact versions; ADR 0051 owns that migration.
 
+Task result and Shell snapshot also have side-by-side exact roots. Their original
+`v1alpha1` schemas remain unchanged; typed assurance, citations, and result-kind
+semantics are carried by `fam.core.task-result/v1alpha2` and
+`fam.shell.snapshot/v1alpha2`. ADR 0147 owns the explicit conservative
+migrations, which never infer action authority from a legacy result.
+
 ## Generated artifacts
 
 Checked artifacts live in version-owned `schemas/v1alpha*/` directories. They

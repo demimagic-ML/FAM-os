@@ -1,0 +1,88 @@
+{
+  "$defs": {
+    "RequirementTraceabilityRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "implementation_paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "recorded_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "requirement_id": {
+          "type": "string"
+        },
+        "requirement_source_path": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "satisfied",
+            "partial",
+            "unsatisfied"
+          ],
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        },
+        "test_paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "trace_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "trace_id",
+        "task_id",
+        "requirement_id",
+        "requirement_source_path",
+        "implementation_paths",
+        "test_paths",
+        "evidence_ids",
+        "status",
+        "recorded_at",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.requirement-traceability/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/RequirementTraceabilityRecord"
+    },
+    "schema_id": {
+      "const": "fam.core.requirement-traceability/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Requirement implementation test and evidence trace",
+  "type": "object"
+}

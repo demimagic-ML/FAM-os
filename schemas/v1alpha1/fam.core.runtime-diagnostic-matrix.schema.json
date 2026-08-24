@@ -1,0 +1,154 @@
+{
+  "$defs": {
+    "RuntimeDiagnosticQualification": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "diagnostic": {
+          "type": "string"
+        },
+        "installed_release_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "kind": {
+          "enum": [
+            "stack_trace",
+            "crash_dump",
+            "trace",
+            "cpu_profile",
+            "memory_profile",
+            "race_detection",
+            "leak_detection",
+            "performance_regression"
+          ],
+          "type": "string"
+        },
+        "negative_receipt_id": {
+          "type": "string"
+        },
+        "physically_executed": {
+          "type": "boolean"
+        },
+        "positive_receipt_id": {
+          "type": "string"
+        },
+        "qualification_id": {
+          "type": "string"
+        },
+        "qualified_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "signed_recipe_id": {
+          "type": "string"
+        },
+        "signed_recipe_version": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "passed",
+            "failed",
+            "unavailable"
+          ],
+          "type": "string"
+        },
+        "tool_version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "qualification_id",
+        "kind",
+        "signed_recipe_id",
+        "signed_recipe_version",
+        "tool_version",
+        "positive_receipt_id",
+        "negative_receipt_id",
+        "status",
+        "physically_executed",
+        "qualified_at",
+        "installed_release_id",
+        "diagnostic",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "RuntimeDiagnosticQualificationMatrix": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "installed_release_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "matrix_id": {
+          "type": "string"
+        },
+        "qualifications": {
+          "items": {
+            "$ref": "#/$defs/RuntimeDiagnosticQualification"
+          },
+          "type": "array"
+        },
+        "qualified_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "required_profile_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "matrix_id",
+        "qualifications",
+        "required_profile_ids",
+        "installed_release_id",
+        "qualified_at",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.runtime-diagnostic-matrix/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/RuntimeDiagnosticQualificationMatrix"
+    },
+    "schema_id": {
+      "const": "fam.core.runtime-diagnostic-matrix/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Fail-closed complete diagnostic qualification matrix",
+  "type": "object"
+}

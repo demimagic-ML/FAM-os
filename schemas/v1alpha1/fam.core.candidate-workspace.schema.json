@@ -1,0 +1,116 @@
+{
+  "$defs": {
+    "CandidateBaselineEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "content_sha256": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "executable": {
+          "type": "boolean"
+        },
+        "kind": {
+          "enum": [
+            "file",
+            "directory"
+          ],
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "size_bytes": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "path",
+        "kind",
+        "content_sha256",
+        "size_bytes",
+        "executable"
+      ],
+      "type": "object"
+    },
+    "CandidateWorkspace": {
+      "additionalProperties": false,
+      "properties": {
+        "baseline_id": {
+          "type": "string"
+        },
+        "baseline_tree_sha256": {
+          "type": "string"
+        },
+        "candidate_id": {
+          "type": "string"
+        },
+        "candidate_workspace": {
+          "type": "string"
+        },
+        "clone_strategy": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "created_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "entries": {
+          "items": {
+            "$ref": "#/$defs/CandidateBaselineEntry"
+          },
+          "type": "array"
+        },
+        "owner_workspace": {
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "candidate_id",
+        "task_id",
+        "baseline_id",
+        "owner_workspace",
+        "candidate_workspace",
+        "created_at",
+        "clone_strategy",
+        "baseline_tree_sha256",
+        "entries",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.candidate-workspace/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/CandidateWorkspace"
+    },
+    "schema_id": {
+      "const": "fam.core.candidate-workspace/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Isolated candidate workspace baseline",
+  "type": "object"
+}

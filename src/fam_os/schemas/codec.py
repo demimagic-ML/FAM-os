@@ -64,12 +64,25 @@ def decode_document(document: Mapping[str, object]) -> object:
 
 def loads_document(serialized: str) -> object:
     try:
-        document = json.loads(serialized, parse_constant=_reject_json_constant)
+        document = json.loads(
+            serialized,
+            parse_constant=_reject_json_constant,
+            object_pairs_hook=_strict_json_object,
+        )
     except (TypeError, json.JSONDecodeError, ValueError) as error:
         raise SchemaValidationError("document is not strict JSON", keyword="json") from error
     if not isinstance(document, Mapping):
         raise SchemaValidationError("document envelope must be an object", keyword="type")
     return decode_document(document)
+
+
+def _strict_json_object(pairs: list[tuple[str, object]]) -> dict[str, object]:
+    value: dict[str, object] = {}
+    for key, item in pairs:
+        if key in value:
+            raise ValueError(f"duplicate JSON object key: {key}")
+        value[key] = item
+    return value
 
 
 def validate_document(document: Mapping[str, object], descriptor: SchemaDescriptor) -> None:

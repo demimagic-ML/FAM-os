@@ -22,6 +22,27 @@
         "embedding_model_ref": {
           "type": "string"
         },
+        "expires_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "grant_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "scope": {
           "$ref": "#/$defs/MemoryScope"
         },
@@ -41,7 +62,9 @@
         "approved_at",
         "embedding_model_ref",
         "embedding_artifact_sha256",
-        "contract_version"
+        "contract_version",
+        "grant_id",
+        "expires_at"
       ],
       "type": "object"
     },

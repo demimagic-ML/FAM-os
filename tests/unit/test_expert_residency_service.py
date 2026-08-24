@@ -11,6 +11,7 @@ from fam_os.scheduler import (
     ResidencyLease,
     ResidencyTransitionReason,
     initial_cold_residency_catalog,
+    initial_observed_residency_catalog,
 )
 from fam_os.scheduler.residency_ports import (
     ResidencyRevisionConflict,
@@ -68,6 +69,20 @@ class ExpertResidencyServiceTests(unittest.TestCase):
         self.assertEqual(record.transition_reason, ResidencyTransitionReason.PROVIDER_LOADED)
         self.assertEqual((catalog.revision, record.record_revision), (1, 1))
 
+    def test_initial_catalog_uses_observed_provider_state_without_false_cold(self):
+        catalog = initial_observed_residency_catalog(
+            "catalog-initial",
+            (ExpertResidencyIdentity("expert.qwen", "qwen:7b"),),
+            (loaded(),),
+            NOW,
+        )
+
+        record = catalog.require("expert.qwen")
+        self.assertEqual(record.state, ExpertResidencyState.WARM)
+        self.assertEqual(record.record_revision, 0)
+        self.assertEqual(record.transition_reason, ResidencyTransitionReason.PROVIDER_LOADED)
+        self.assertEqual(record.resident_bytes, 6_000)
+
     def test_leases_drive_warm_active_active_warm(self):
         warm = self.warm()
         first = self.service.acquire("expert.qwen", lease(offset=2), warm.revision)
@@ -94,6 +109,22 @@ class ExpertResidencyServiceTests(unittest.TestCase):
         record = expired.require("expert.qwen")
         self.assertEqual(record.state, ExpertResidencyState.WARM)
         self.assertEqual(record.transition_reason, ResidencyTransitionReason.LEASES_EXPIRED)
+
+    def test_process_recovery_releases_unexpired_in_process_lease(self):
+        warm = self.warm()
+        active = self.service.acquire("expert.qwen", lease(offset=2), warm.revision)
+
+        recovered = self.service.recover_process_leases(
+            NOW + timedelta(seconds=3), active.revision,
+        )
+
+        record = recovered.require("expert.qwen")
+        self.assertEqual(record.state, ExpertResidencyState.WARM)
+        self.assertEqual(record.active_leases, ())
+        self.assertEqual(
+            record.transition_reason,
+            ResidencyTransitionReason.PROCESS_LEASES_RECOVERED,
+        )
 
     def test_evicting_blocks_leases_and_confirmed_unload_becomes_cold(self):
         warm = self.warm()
@@ -197,6 +228,33 @@ class ExpertResidencyServiceTests(unittest.TestCase):
         )
         with self.assertRaises(ResidencyRevisionConflict):
             self.repository.compare_and_swap(0, replacement)
+
+    def test_catalog_synchronization_adds_and_safely_retires_identities(self):
+        added = self.service.synchronize(
+            (
+                ExpertResidencyIdentity("expert.qwen", "qwen:7b"),
+                ExpertResidencyIdentity("expert.new", "new:1"),
+            ),
+            NOW + timedelta(seconds=1), 0,
+        )
+        self.assertEqual(
+            tuple(item.identity.expert_id for item in added.records),
+            ("expert.new", "expert.qwen"),
+        )
+
+        retired = self.service.synchronize(
+            (ExpertResidencyIdentity("expert.qwen", "qwen:7b"),),
+            NOW + timedelta(seconds=2), added.revision,
+        )
+        self.assertEqual(len(retired.records), 1)
+
+    def test_catalog_synchronization_cannot_replace_loaded_identity(self):
+        warm = self.warm()
+        with self.assertRaisesRegex(ResidencyTransitionError, "confirmed eviction"):
+            self.service.synchronize(
+                (ExpertResidencyIdentity("expert.qwen", "qwen:new"),),
+                NOW + timedelta(seconds=2), warm.revision,
+            )
 
 
 if __name__ == "__main__":

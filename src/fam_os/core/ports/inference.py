@@ -19,10 +19,15 @@ class MessageRole(StrEnum):
 class InferenceMessage:
     role: MessageRole
     content: str
+    images: tuple[bytes, ...] = ()
 
     def __post_init__(self) -> None:
         if not self.content:
             raise ValueError("message content must not be empty")
+        if len(self.images) > 8 or any(not item for item in self.images):
+            raise ValueError("inference message images are invalid")
+        if sum(len(item) for item in self.images) > 25 * 1024 * 1024:
+            raise ValueError("inference message images exceed their byte bound")
 
 
 @dataclass(frozen=True, slots=True)
@@ -79,13 +84,21 @@ class LoadedModel:
             raise ValueError("loaded-model numeric values cannot be negative")
 
 
-class InferenceRuntime(Protocol):
-    """Boundary that Ollama and future runtimes must implement."""
+class ChatInferenceRuntime(Protocol):
+    """Provider-neutral boundary for text generation without residency control."""
 
     def chat(self, request: InferenceRequest) -> InferenceResponse: ...
 
+
+class InferenceRuntime(ChatInferenceRuntime, Protocol):
+    """Boundary for local runtimes that also expose model residency control."""
+
     def unload(self, model_ref: str) -> None:
         """Return only after the runtime no longer reports the model as loaded."""
+        ...
+
+    def prewarm(self, model_ref: str, keep_alive: str = "10m") -> None:
+        """Load a model without inference content and prove it is resident."""
         ...
 
     def loaded_models(self) -> tuple[LoadedModel, ...]: ...

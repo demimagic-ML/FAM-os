@@ -1,0 +1,860 @@
+{
+  "$defs": {
+    "ArchitectureDecision": {
+      "additionalProperties": false,
+      "properties": {
+        "area": {
+          "enum": [
+            "modules",
+            "interfaces",
+            "schemas",
+            "migrations",
+            "adrs",
+            "dependency_direction",
+            "security_boundaries",
+            "rollout",
+            "acceptance_criteria"
+          ],
+          "type": "string"
+        },
+        "decision": {
+          "type": "string"
+        },
+        "evidence_refs": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "required": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "area",
+        "required",
+        "decision",
+        "evidence_refs"
+      ],
+      "type": "object"
+    },
+    "ArchitectureProposal": {
+      "additionalProperties": false,
+      "properties": {
+        "affected_test_paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "analysis_id": {
+          "type": "string"
+        },
+        "checkpoint_required": {
+          "type": "boolean"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "created_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "decisions": {
+          "items": {
+            "$ref": "#/$defs/ArchitectureDecision"
+          },
+          "type": "array"
+        },
+        "mutation_performed": {
+          "type": "boolean"
+        },
+        "proposal_id": {
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "proposal_id",
+        "task_id",
+        "analysis_id",
+        "created_at",
+        "title",
+        "decisions",
+        "affected_test_paths",
+        "checkpoint_required",
+        "mutation_performed",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "CandidateBaselineEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "content_sha256": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "executable": {
+          "type": "boolean"
+        },
+        "kind": {
+          "enum": [
+            "file",
+            "directory"
+          ],
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "size_bytes": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "path",
+        "kind",
+        "content_sha256",
+        "size_bytes",
+        "executable"
+      ],
+      "type": "object"
+    },
+    "CandidateWorkspace": {
+      "additionalProperties": false,
+      "properties": {
+        "baseline_id": {
+          "type": "string"
+        },
+        "baseline_tree_sha256": {
+          "type": "string"
+        },
+        "candidate_id": {
+          "type": "string"
+        },
+        "candidate_workspace": {
+          "type": "string"
+        },
+        "clone_strategy": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "created_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "entries": {
+          "items": {
+            "$ref": "#/$defs/CandidateBaselineEntry"
+          },
+          "type": "array"
+        },
+        "owner_workspace": {
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "candidate_id",
+        "task_id",
+        "baseline_id",
+        "owner_workspace",
+        "candidate_workspace",
+        "created_at",
+        "clone_strategy",
+        "baseline_tree_sha256",
+        "entries",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "EngineeringPreparationResult": {
+      "additionalProperties": false,
+      "properties": {
+        "analysis": {
+          "$ref": "#/$defs/RepositoryAnalysis"
+        },
+        "candidate": {
+          "$ref": "#/$defs/CandidateWorkspace"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "definition_id": {
+          "type": "string"
+        },
+        "evidence": {
+          "$ref": "#/$defs/RepositoryEvidenceBundle"
+        },
+        "proposal": {
+          "$ref": "#/$defs/ArchitectureProposal"
+        }
+      },
+      "required": [
+        "definition_id",
+        "evidence",
+        "analysis",
+        "proposal",
+        "candidate",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "ImplementationPathStep": {
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "qualified_name": {
+          "type": "string"
+        },
+        "relation_from_previous": {
+          "anyOf": [
+            {
+              "enum": [
+                "calls",
+                "imports",
+                "implements",
+                "extends",
+                "references",
+                "tests"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sequence": {
+          "type": "integer"
+        },
+        "symbol_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "sequence",
+        "symbol_id",
+        "qualified_name",
+        "path",
+        "relation_from_previous"
+      ],
+      "type": "object"
+    },
+    "RepositoryAnalysis": {
+      "additionalProperties": false,
+      "properties": {
+        "affected_test_paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "analysis_id": {
+          "type": "string"
+        },
+        "bundle_id": {
+          "type": "string"
+        },
+        "completed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "diagnostic_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "evidence_sha256": {
+          "type": "string"
+        },
+        "implementation_path": {
+          "items": {
+            "$ref": "#/$defs/ImplementationPathStep"
+          },
+          "type": "array"
+        },
+        "manifest_paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "mutation_performed": {
+          "type": "boolean"
+        },
+        "relevant_paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        },
+        "truncated": {
+          "type": "boolean"
+        },
+        "untrusted_context_record_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "analysis_id",
+        "request_id",
+        "task_id",
+        "bundle_id",
+        "completed_at",
+        "relevant_paths",
+        "implementation_path",
+        "affected_test_paths",
+        "diagnostic_ids",
+        "manifest_paths",
+        "untrusted_context_record_ids",
+        "evidence_sha256",
+        "truncated",
+        "mutation_performed",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "RepositoryArchitectureRule": {
+      "additionalProperties": false,
+      "properties": {
+        "rule_id": {
+          "type": "string"
+        },
+        "source_path": {
+          "type": "string"
+        },
+        "statement": {
+          "type": "string"
+        },
+        "trust": {
+          "enum": [
+            "untrusted_context"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "rule_id",
+        "source_path",
+        "statement",
+        "trust"
+      ],
+      "type": "object"
+    },
+    "RepositoryContextRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "content_sha256": {
+          "type": "string"
+        },
+        "generated": {
+          "type": "boolean"
+        },
+        "path": {
+          "type": "string"
+        },
+        "record_id": {
+          "type": "string"
+        },
+        "source_kind": {
+          "enum": [
+            "workspace_map",
+            "workspace_retrieval",
+            "semantic_search",
+            "lsp",
+            "tree_sitter",
+            "code_graph",
+            "compiler_database",
+            "editor_api",
+            "project_manifest",
+            "dependency_metadata",
+            "git",
+            "repository_instruction"
+          ],
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "trust": {
+          "enum": [
+            "untrusted_context"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "record_id",
+        "source_kind",
+        "path",
+        "content_sha256",
+        "text",
+        "generated",
+        "trust"
+      ],
+      "type": "object"
+    },
+    "RepositoryDependencyEdge": {
+      "additionalProperties": false,
+      "properties": {
+        "development_only": {
+          "type": "boolean"
+        },
+        "direct": {
+          "type": "boolean"
+        },
+        "source": {
+          "type": "string"
+        },
+        "source_kind": {
+          "enum": [
+            "workspace_map",
+            "workspace_retrieval",
+            "semantic_search",
+            "lsp",
+            "tree_sitter",
+            "code_graph",
+            "compiler_database",
+            "editor_api",
+            "project_manifest",
+            "dependency_metadata",
+            "git",
+            "repository_instruction"
+          ],
+          "type": "string"
+        },
+        "target": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "source",
+        "target",
+        "direct",
+        "development_only",
+        "source_kind"
+      ],
+      "type": "object"
+    },
+    "RepositoryDiagnostic": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "diagnostic_id": {
+          "type": "string"
+        },
+        "line": {
+          "type": "integer"
+        },
+        "message": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "severity": {
+          "enum": [
+            "error",
+            "warning",
+            "information"
+          ],
+          "type": "string"
+        },
+        "source_kind": {
+          "enum": [
+            "workspace_map",
+            "workspace_retrieval",
+            "semantic_search",
+            "lsp",
+            "tree_sitter",
+            "code_graph",
+            "compiler_database",
+            "editor_api",
+            "project_manifest",
+            "dependency_metadata",
+            "git",
+            "repository_instruction"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "diagnostic_id",
+        "path",
+        "line",
+        "severity",
+        "code",
+        "message",
+        "source_kind"
+      ],
+      "type": "object"
+    },
+    "RepositoryEvidenceBundle": {
+      "additionalProperties": false,
+      "properties": {
+        "architecture_rules": {
+          "items": {
+            "$ref": "#/$defs/RepositoryArchitectureRule"
+          },
+          "type": "array"
+        },
+        "bounds": {
+          "$ref": "#/$defs/RepositoryObservationBounds"
+        },
+        "bundle_id": {
+          "type": "string"
+        },
+        "captured_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "context_records": {
+          "items": {
+            "$ref": "#/$defs/RepositoryContextRecord"
+          },
+          "type": "array"
+        },
+        "contract_version": {
+          "const": "fam.core.engineering/v1alpha1"
+        },
+        "dependencies": {
+          "items": {
+            "$ref": "#/$defs/RepositoryDependencyEdge"
+          },
+          "type": "array"
+        },
+        "diagnostics": {
+          "items": {
+            "$ref": "#/$defs/RepositoryDiagnostic"
+          },
+          "type": "array"
+        },
+        "files": {
+          "items": {
+            "$ref": "#/$defs/RepositoryFile"
+          },
+          "type": "array"
+        },
+        "git_state": {
+          "$ref": "#/$defs/RepositoryGitState"
+        },
+        "manifests": {
+          "items": {
+            "$ref": "#/$defs/RepositoryManifest"
+          },
+          "type": "array"
+        },
+        "mutation_performed": {
+          "type": "boolean"
+        },
+        "relations": {
+          "items": {
+            "$ref": "#/$defs/RepositorySymbolRelation"
+          },
+          "type": "array"
+        },
+        "symbols": {
+          "items": {
+            "$ref": "#/$defs/RepositorySymbol"
+          },
+          "type": "array"
+        },
+        "task_id": {
+          "type": "string"
+        },
+        "truncated": {
+          "type": "boolean"
+        },
+        "workspace_revision": {
+          "type": "string"
+        },
+        "workspace_root": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "bundle_id",
+        "task_id",
+        "captured_at",
+        "workspace_root",
+        "workspace_revision",
+        "files",
+        "context_records",
+        "symbols",
+        "relations",
+        "diagnostics",
+        "manifests",
+        "dependencies",
+        "git_state",
+        "architecture_rules",
+        "bounds",
+        "truncated",
+        "mutation_performed",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "RepositoryFile": {
+      "additionalProperties": false,
+      "properties": {
+        "content_sha256": {
+          "type": "string"
+        },
+        "language": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "path": {
+          "type": "string"
+        },
+        "role": {
+          "enum": [
+            "source",
+            "test",
+            "configuration",
+            "manifest",
+            "migration",
+            "documentation",
+            "generated",
+            "asset",
+            "unknown"
+          ],
+          "type": "string"
+        },
+        "size_bytes": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "path",
+        "content_sha256",
+        "size_bytes",
+        "role",
+        "language"
+      ],
+      "type": "object"
+    },
+    "RepositoryGitState": {
+      "additionalProperties": false,
+      "properties": {
+        "branch": {
+          "type": "string"
+        },
+        "detached": {
+          "type": "boolean"
+        },
+        "dirty_paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "head_revision": {
+          "type": "string"
+        },
+        "remotes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "branch",
+        "head_revision",
+        "remotes",
+        "dirty_paths",
+        "detached"
+      ],
+      "type": "object"
+    },
+    "RepositoryManifest": {
+      "additionalProperties": false,
+      "properties": {
+        "content_sha256": {
+          "type": "string"
+        },
+        "declared_targets": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "ecosystem": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "project_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "ecosystem",
+        "project_name",
+        "declared_targets",
+        "content_sha256"
+      ],
+      "type": "object"
+    },
+    "RepositoryObservationBounds": {
+      "additionalProperties": false,
+      "properties": {
+        "maximum_context_records": {
+          "type": "integer"
+        },
+        "maximum_diagnostics": {
+          "type": "integer"
+        },
+        "maximum_files": {
+          "type": "integer"
+        },
+        "maximum_relations": {
+          "type": "integer"
+        },
+        "maximum_symbols": {
+          "type": "integer"
+        },
+        "maximum_total_text_bytes": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "maximum_files",
+        "maximum_context_records",
+        "maximum_symbols",
+        "maximum_relations",
+        "maximum_diagnostics",
+        "maximum_total_text_bytes"
+      ],
+      "type": "object"
+    },
+    "RepositorySymbol": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "line": {
+          "type": "integer"
+        },
+        "path": {
+          "type": "string"
+        },
+        "public": {
+          "type": "boolean"
+        },
+        "qualified_name": {
+          "type": "string"
+        },
+        "symbol_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "symbol_id",
+        "qualified_name",
+        "kind",
+        "path",
+        "line",
+        "public"
+      ],
+      "type": "object"
+    },
+    "RepositorySymbolRelation": {
+      "additionalProperties": false,
+      "properties": {
+        "evidence_path": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "calls",
+            "imports",
+            "implements",
+            "extends",
+            "references",
+            "tests"
+          ],
+          "type": "string"
+        },
+        "source_symbol_id": {
+          "type": "string"
+        },
+        "target_symbol_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_symbol_id",
+        "target_symbol_id",
+        "kind",
+        "evidence_path"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.core.engineering-preparation/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.core.engineering/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/EngineeringPreparationResult"
+    },
+    "schema_id": {
+      "const": "fam.core.engineering-preparation/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Durable repository analysis architecture and candidate preparation",
+  "type": "object"
+}

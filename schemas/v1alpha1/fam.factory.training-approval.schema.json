@@ -1,0 +1,307 @@
+{
+  "$defs": {
+    "AdapterTrainingRecipe": {
+      "additionalProperties": false,
+      "properties": {
+        "alpha": {
+          "type": "integer"
+        },
+        "base_weight_bits": {
+          "type": "integer"
+        },
+        "compute_dtype": {
+          "enum": [
+            "bfloat16",
+            "float16"
+          ],
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.factory.training-approval/v1alpha1"
+        },
+        "double_quantization": {
+          "type": "boolean"
+        },
+        "dropout": {
+          "type": "number"
+        },
+        "epochs": {
+          "type": "number"
+        },
+        "gradient_accumulation_steps": {
+          "type": "integer"
+        },
+        "learning_rate": {
+          "type": "number"
+        },
+        "maximum_sequence_tokens": {
+          "type": "integer"
+        },
+        "maximum_steps": {
+          "type": "integer"
+        },
+        "method": {
+          "enum": [
+            "lora",
+            "qlora"
+          ],
+          "type": "string"
+        },
+        "per_device_batch_size": {
+          "type": "integer"
+        },
+        "quantization_type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "rank": {
+          "type": "integer"
+        },
+        "recipe_id": {
+          "type": "string"
+        },
+        "seed": {
+          "type": "integer"
+        },
+        "target_modules": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "recipe_id",
+        "method",
+        "rank",
+        "alpha",
+        "dropout",
+        "target_modules",
+        "base_weight_bits",
+        "quantization_type",
+        "double_quantization",
+        "compute_dtype",
+        "maximum_sequence_tokens",
+        "epochs",
+        "maximum_steps",
+        "per_device_batch_size",
+        "gradient_accumulation_steps",
+        "learning_rate",
+        "seed",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "ApprovedBaseModel": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "fam.factory.training-approval/v1alpha1"
+        },
+        "files_manifest_sha256": {
+          "type": "string"
+        },
+        "license_id": {
+          "type": "string"
+        },
+        "repository_id": {
+          "type": "string"
+        },
+        "revision": {
+          "type": "string"
+        },
+        "tokenizer_id": {
+          "type": "string"
+        },
+        "tokenizer_revision": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "repository_id",
+        "revision",
+        "tokenizer_id",
+        "tokenizer_revision",
+        "license_id",
+        "files_manifest_sha256",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "FactoryTrainingApproval": {
+      "additionalProperties": false,
+      "properties": {
+        "approval_id": {
+          "type": "string"
+        },
+        "approved_dataset_license_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "approved_dataset_sensitivities": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "base_model": {
+          "$ref": "#/$defs/ApprovedBaseModel"
+        },
+        "capability_id": {
+          "type": "string"
+        },
+        "confirmed": {
+          "type": "boolean"
+        },
+        "contract_version": {
+          "const": "fam.factory.training-approval/v1alpha1"
+        },
+        "environment_sha256": {
+          "type": "string"
+        },
+        "expires_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "issued_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "maximum_checkpoint_bytes": {
+          "type": "integer"
+        },
+        "maximum_output_bytes": {
+          "type": "integer"
+        },
+        "maximum_wall_seconds": {
+          "type": "integer"
+        },
+        "network_allowed": {
+          "type": "boolean"
+        },
+        "one_use_job_id": {
+          "type": "string"
+        },
+        "proposal_id": {
+          "type": "string"
+        },
+        "recipe": {
+          "$ref": "#/$defs/AdapterTrainingRecipe"
+        },
+        "resources": {
+          "$ref": "#/$defs/TrainingResourceBudget"
+        },
+        "revision": {
+          "type": "integer"
+        },
+        "sealed_dataset_id": {
+          "type": "string"
+        },
+        "sealed_dataset_sha256": {
+          "type": "string"
+        },
+        "training_authorized": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "approval_id",
+        "proposal_id",
+        "capability_id",
+        "sealed_dataset_id",
+        "sealed_dataset_sha256",
+        "approved_dataset_license_ids",
+        "approved_dataset_sensitivities",
+        "base_model",
+        "recipe",
+        "resources",
+        "environment_sha256",
+        "maximum_wall_seconds",
+        "maximum_checkpoint_bytes",
+        "maximum_output_bytes",
+        "one_use_job_id",
+        "issued_at",
+        "expires_at",
+        "confirmed",
+        "network_allowed",
+        "revision",
+        "training_authorized",
+        "contract_version"
+      ],
+      "type": "object"
+    },
+    "TrainingResourceBudget": {
+      "additionalProperties": false,
+      "properties": {
+        "budget_id": {
+          "type": "string"
+        },
+        "cgroup_policy_id": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "fam.factory.training-approval/v1alpha1"
+        },
+        "maximum_cpu_cores": {
+          "type": "integer"
+        },
+        "maximum_disk_bytes": {
+          "type": "integer"
+        },
+        "maximum_energy_joules": {
+          "type": "integer"
+        },
+        "maximum_ram_bytes": {
+          "type": "integer"
+        },
+        "maximum_temperature_celsius": {
+          "type": "integer"
+        },
+        "maximum_vram_bytes": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "budget_id",
+        "maximum_cpu_cores",
+        "maximum_ram_bytes",
+        "maximum_vram_bytes",
+        "maximum_disk_bytes",
+        "maximum_temperature_celsius",
+        "maximum_energy_joules",
+        "cgroup_policy_id",
+        "contract_version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://schemas.fam-os.local/fam.factory.training-approval/v1alpha1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "fam.factory.training-approval/v1alpha1"
+    },
+    "payload": {
+      "$ref": "#/$defs/FactoryTrainingApproval"
+    },
+    "schema_id": {
+      "const": "fam.factory.training-approval/v1alpha1"
+    }
+  },
+  "required": [
+    "schema_id",
+    "contract_version",
+    "payload"
+  ],
+  "title": "Confirmed one-use training authority",
+  "type": "object"
+}
