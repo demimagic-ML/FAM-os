@@ -183,7 +183,9 @@ function selectedTaskContext() {
 function updateScopeSummary() {
   const selected = selectedTaskContext();
   const resource = $("#resource").value.trim();
-  const parts = [selected ? selected.display_name : "Local machine"];
+  const mode = $("#task-mode").value;
+  const parts = [mode === "engineering" ? "Repository change" : "General task"];
+  parts.push(selected ? selected.display_name : "Local machine");
   if (resource) parts.push("specific resource");
   if ($("#verify").checked) parts.push("verified");
   $("#scope-summary").textContent = parts.join(" · ");
@@ -253,7 +255,10 @@ async function createTask(event) {
   if (!prompt || $("#send-task").disabled) return;
   const selected = selectedTaskContext();
   const workspacePath = FamWorkspace.selectedPath();
-  if (workspacePath) {
+  if ($("#task-mode").value === "engineering") {
+    if (!workspacePath) {
+      throw new Error("Choose a folder inside the Git repository for a repository change.");
+    }
     stopTaskWatch();
     state.task = null;
     setComposerBusy(true);
@@ -594,6 +599,7 @@ $("#cancel").onclick = () => cancelTask().catch(fail);
 $("#undo").onclick = () => undoTask().catch(fail);
 $("#refresh").onclick = () => refresh().catch(fail);
 $("#context").onchange = updateScopeSummary;
+$("#task-mode").onchange = updateScopeSummary;
 $("#resource").oninput = updateScopeSummary;
 $("#verify").onchange = updateScopeSummary;
 $("#prompt").oninput = resizePrompt;

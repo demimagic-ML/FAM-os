@@ -391,6 +391,8 @@ class ConsoleHttpTests(unittest.TestCase):
                 self.assertIn(b"Exact citations", page)
                 self.assertIn(b"Memory ledger", page)
                 self.assertIn(b"Open folder", page)
+                self.assertIn(b"General task", page)
+                self.assertIn(b"Repository change", page)
                 self.assertIn(b"Tool terminal", page)
                 application = urllib.request.urlopen(base + "/app.js").read()
                 self.assertIn(b"citation.source_locator", application)
@@ -401,6 +403,7 @@ class ConsoleHttpTests(unittest.TestCase):
                 self.assertIn(b"FamConversation.revealText", application)
                 self.assertIn(b"scrollToTurn(turn, reducedMotion)", application)
                 self.assertIn(b"selected?.workspace_resource_ref", application)
+                self.assertIn(b'$("#task-mode").value === "engineering"', application)
                 self.assertIn(b'kind: "uri"', application)
                 self.assertIn(
                     b"capability_ids: selected.capability_ids", application,
