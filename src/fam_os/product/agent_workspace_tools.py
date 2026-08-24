@@ -1,0 +1,292 @@
+"""Workspace-scoped file and Git tools for the iterative agent runtime."""
+
+from __future__ import annotations
+
+import hashlib
+import os
+import subprocess
+from pathlib import Path, PurePosixPath
+
+from fam_os.core.agent import (
+    AgentToolDescriptor,
+    AgentToolEffect,
+    AgentToolRegistry,
+)
+
+
+class WorkspaceAgentTools:
+    def __init__(
+        self,
+        workspace_root: Path,
+        *,
+        maximum_read_bytes: int = 262_144,
+        maximum_result_bytes: int = 262_144,
+    ) -> None:
+        root = workspace_root.resolve(strict=True)
+        if not root.is_dir() or root.is_symlink():
+            raise PermissionError("agent workspace must be a real directory")
+        self.root = root
+        self.maximum_read_bytes = maximum_read_bytes
+        self.maximum_result_bytes = maximum_result_bytes
+
+    def register(self, registry: AgentToolRegistry) -> None:
+        registry.register(_descriptor(
+            "list_directory", "List one workspace directory.",
+            AgentToolEffect.OBSERVE,
+            {"path": {"type": "string"}},
+        ), self.list_directory)
+        registry.register(_descriptor(
+            "read_file", "Read one UTF-8 workspace file with its SHA-256 digest.",
+            AgentToolEffect.OBSERVE,
+            {"path": {"type": "string"}},
+        ), self.read_file)
+        registry.register(_descriptor(
+            "search_text", "Search workspace text files for a literal string.",
+            AgentToolEffect.OBSERVE,
+            {"query": {"type": "string"}, "path": {"type": "string"}},
+        ), self.search_text)
+        registry.register(_descriptor(
+            "write_file", "Create or replace one UTF-8 workspace file.",
+            AgentToolEffect.WORKSPACE_WRITE,
+            {
+                "path": {"type": "string"},
+                "content": {"type": "string"},
+                "expected_sha256": {"type": ["string", "null"]},
+            },
+        ), self.write_file)
+        registry.register(_descriptor(
+            "apply_patch", "Apply a unified Git patch inside the workspace.",
+            AgentToolEffect.WORKSPACE_WRITE,
+            {"patch": {"type": "string"}},
+        ), self.apply_patch)
+        registry.register(_descriptor(
+            "delete_path", "Delete one workspace file or empty directory.",
+            AgentToolEffect.WORKSPACE_WRITE,
+            {"path": {"type": "string"}},
+        ), self.delete_path)
+        registry.register(_descriptor(
+            "move_path", "Move a file or directory inside the workspace.",
+            AgentToolEffect.WORKSPACE_WRITE,
+            {"source": {"type": "string"}, "destination": {"type": "string"}},
+        ), self.move_path)
+        registry.register(_descriptor(
+            "git_status", "Show the workspace Git status.", AgentToolEffect.OBSERVE, {},
+        ), self.git_status)
+        registry.register(_descriptor(
+            "git_diff", "Show the current workspace Git diff.",
+            AgentToolEffect.OBSERVE,
+            {"staged": {"type": "boolean"}},
+        ), self.git_diff)
+
+    def list_directory(self, arguments: dict[str, object]) -> str:
+        path = self._path(_text(arguments, "path", default="."), must_exist=True)
+        if not path.is_dir():
+            raise ValueError("list_directory path is not a directory")
+        rows = []
+        for item in sorted(path.iterdir(), key=lambda value: value.name):
+            if item.is_symlink():
+                kind = "symlink"
+            elif item.is_dir():
+                kind = "directory"
+            elif item.is_file():
+                kind = "file"
+            else:
+                kind = "other"
+            rows.append(f"{kind}\t{item.name}")
+        return _bounded("\n".join(rows), self.maximum_result_bytes)
+
+    def read_file(self, arguments: dict[str, object]) -> str:
+        path = self._path(_text(arguments, "path"), must_exist=True)
+        if not path.is_file() or path.is_symlink():
+            raise ValueError("read_file path is not a regular file")
+        content = path.read_bytes()
+        if len(content) > self.maximum_read_bytes:
+            raise ValueError("read_file content exceeds its bound")
+        text = content.decode("utf-8")
+        digest = hashlib.sha256(content).hexdigest()
+        return f"sha256={digest}\n{text}"
+
+    def search_text(self, arguments: dict[str, object]) -> str:
+        query = _text(arguments, "query")
+        start = self._path(_text(arguments, "path", default="."), must_exist=True)
+        files = (start,) if start.is_file() else self._walk_files(start)
+        rows: list[str] = []
+        used = 0
+        for path in files:
+            try:
+                content = path.read_bytes()
+                if len(content) > self.maximum_read_bytes or b"\0" in content:
+                    continue
+                lines = content.decode("utf-8").splitlines()
+            except (OSError, UnicodeDecodeError):
+                continue
+            relative = path.relative_to(self.root).as_posix()
+            for number, line in enumerate(lines, 1):
+                if query in line:
+                    row = f"{relative}:{number}:{line}"
+                    encoded = len(row.encode("utf-8")) + 1
+                    if used + encoded > self.maximum_result_bytes:
+                        return "\n".join((*rows, "[results truncated]"))
+                    rows.append(row)
+                    used += encoded
+        return "\n".join(rows) or "No matches."
+
+    def write_file(self, arguments: dict[str, object]) -> str:
+        path = self._path(_text(arguments, "path"), must_exist=False)
+        content = _text(arguments, "content", allow_empty=True).encode("utf-8")
+        expected = arguments.get("expected_sha256")
+        if expected is not None and not isinstance(expected, str):
+            raise ValueError("expected_sha256 must be text or null")
+        if path.exists():
+            if not path.is_file() or path.is_symlink():
+                raise ValueError("write_file target is not a regular file")
+            actual = hashlib.sha256(path.read_bytes()).hexdigest()
+            if expected is not None and actual != expected:
+                raise RuntimeError("write_file precondition changed")
+        elif expected is not None:
+            raise RuntimeError("write_file expected an existing file")
+        self._ensure_parent(path)
+        temporary = path.with_name(f".{path.name}.fam-agent-{os.getpid()}")
+        try:
+            temporary.write_bytes(content)
+            os.replace(temporary, path)
+        finally:
+            temporary.unlink(missing_ok=True)
+        return f"wrote {path.relative_to(self.root).as_posix()} ({len(content)} bytes)"
+
+    def apply_patch(self, arguments: dict[str, object]) -> str:
+        patch = _text(arguments, "patch").encode("utf-8")
+        if len(patch) > self.maximum_result_bytes:
+            raise ValueError("patch exceeds its bound")
+        process = subprocess.run(
+            ("git", "apply", "--whitespace=nowarn", "-"),
+            cwd=self.root, input=patch, stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE, timeout=30, check=False,
+        )
+        output = (process.stdout + process.stderr).decode("utf-8", "replace")
+        if process.returncode != 0:
+            raise RuntimeError(_bounded(output or "git apply failed", 16_384))
+        return _bounded(output or "patch applied", self.maximum_result_bytes)
+
+    def delete_path(self, arguments: dict[str, object]) -> str:
+        path = self._path(_text(arguments, "path"), must_exist=True)
+        relative = path.relative_to(self.root).as_posix()
+        if path.is_symlink() or path.is_file():
+            path.unlink()
+        elif path.is_dir():
+            path.rmdir()
+        else:
+            raise ValueError("delete_path target is unsupported")
+        return f"deleted {relative}"
+
+    def move_path(self, arguments: dict[str, object]) -> str:
+        source = self._path(_text(arguments, "source"), must_exist=True)
+        destination = self._path(_text(arguments, "destination"), must_exist=False)
+        if destination.exists():
+            raise FileExistsError("move destination already exists")
+        self._ensure_parent(destination)
+        source.rename(destination)
+        return (
+            f"moved {source.relative_to(self.root).as_posix()} to "
+            f"{destination.relative_to(self.root).as_posix()}"
+        )
+
+    def git_status(self, arguments: dict[str, object]) -> str:
+        _exact(arguments, set())
+        return self._git("status", "--short")
+
+    def git_diff(self, arguments: dict[str, object]) -> str:
+        _exact(arguments, {"staged"}, optional=True)
+        staged = arguments.get("staged", False)
+        if not isinstance(staged, bool):
+            raise ValueError("git_diff staged must be boolean")
+        command = ("diff", "--cached") if staged else ("diff",)
+        return self._git(*command)
+
+    def _git(self, *arguments: str) -> str:
+        process = subprocess.run(
+            ("git", *arguments), cwd=self.root, stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE, timeout=30, check=False,
+        )
+        output = (process.stdout + process.stderr).decode("utf-8", "replace")
+        if process.returncode != 0:
+            raise RuntimeError(_bounded(output, 16_384))
+        return _bounded(output or "No output.", self.maximum_result_bytes)
+
+    def _path(self, relative: str, *, must_exist: bool) -> Path:
+        if relative == ".":
+            return self.root
+        value = PurePosixPath(relative)
+        if value.is_absolute() or ".." in value.parts or not value.parts:
+            raise PermissionError("agent path must stay inside the workspace")
+        path = self.root.joinpath(*value.parts)
+        parent = path if path.exists() and path.is_dir() else path.parent
+        self._reject_symlink_chain(parent)
+        if must_exist and not path.exists():
+            raise FileNotFoundError(relative)
+        return path
+
+    def _ensure_parent(self, path: Path) -> None:
+        relative = path.parent.relative_to(self.root)
+        current = self.root
+        for part in relative.parts:
+            current = current / part
+            if current.exists() and current.is_symlink():
+                raise PermissionError("agent path traverses a symlink")
+            current.mkdir(exist_ok=True)
+
+    def _reject_symlink_chain(self, path: Path) -> None:
+        try:
+            relative = path.relative_to(self.root)
+        except ValueError as error:
+            raise PermissionError("agent path escapes workspace") from error
+        current = self.root
+        for part in relative.parts:
+            current = current / part
+            if current.is_symlink():
+                raise PermissionError("agent path traverses a symlink")
+            if not current.exists():
+                break
+
+    def _walk_files(self, start: Path):
+        for current, directories, files in os.walk(start, followlinks=False):
+            directories[:] = sorted(
+                name for name in directories
+                if name not in {".git", ".fam", "node_modules", "__pycache__"}
+                and not (Path(current) / name).is_symlink()
+            )
+            for name in sorted(files):
+                path = Path(current) / name
+                if not path.is_symlink():
+                    yield path
+
+
+def _descriptor(tool_id, description, effect, properties):
+    return AgentToolDescriptor(tool_id, description, effect, {
+        "type": "object", "properties": properties,
+    })
+
+
+def _text(arguments, name, *, default=None, allow_empty=False):
+    _exact(arguments, set(arguments), optional=True)
+    value = arguments.get(name, default)
+    if not isinstance(value, str) or (not allow_empty and not value.strip()):
+        raise ValueError(f"{name} must be text")
+    return value
+
+
+def _exact(arguments, allowed, *, optional=False):
+    if not isinstance(arguments, dict):
+        raise ValueError("tool arguments must be an object")
+    if optional:
+        if not set(arguments).issubset(allowed):
+            raise ValueError("tool arguments contain unsupported fields")
+    elif set(arguments) != allowed:
+        raise ValueError("tool arguments fields are invalid")
+
+
+def _bounded(value: str, maximum: int) -> str:
+    payload = value.encode("utf-8")
+    if len(payload) <= maximum:
+        return value
+    return payload[:maximum - 16].decode("utf-8", "ignore") + "\n[truncated]"

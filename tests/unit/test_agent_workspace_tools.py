@@ -1,0 +1,72 @@
+import tempfile
+import unittest
+from pathlib import Path
+from subprocess import run
+
+from fam_os.core.agent import AgentAuthorityProfile, AgentToolCall, AgentToolRegistry
+from fam_os.product.agent_workspace_tools import WorkspaceAgentTools
+
+
+class AgentWorkspaceToolsTests(unittest.TestCase):
+    def test_agent_can_discover_create_patch_move_and_delete_without_file_count_cap(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "src").mkdir()
+            (root / "src/app.py").write_text("value = 1\n")
+            run(("git", "init", "-q"), cwd=root, check=True)
+            registry = AgentToolRegistry()
+            WorkspaceAgentTools(root).register(registry)
+
+            read = _invoke(registry, "read_file", {"path": "src/app.py"})
+            self.assertTrue(read.succeeded)
+            self.assertIn("value = 1", read.output)
+            created = _invoke(registry, "write_file", {
+                "path": "src/new.py", "content": "created = True\n",
+                "expected_sha256": None,
+            })
+            self.assertTrue(created.succeeded)
+            patched = _invoke(registry, "apply_patch", {"patch": (
+                "diff --git a/src/app.py b/src/app.py\n"
+                "--- a/src/app.py\n+++ b/src/app.py\n"
+                "@@ -1 +1 @@\n-value = 1\n+value = 2\n"
+            )})
+            self.assertTrue(patched.succeeded, patched.output)
+            moved = _invoke(registry, "move_path", {
+                "source": "src/new.py", "destination": "lib/new.py",
+            })
+            self.assertTrue(moved.succeeded)
+            deleted = _invoke(registry, "delete_path", {"path": "lib/new.py"})
+            self.assertTrue(deleted.succeeded)
+            self.assertEqual("value = 2\n", (root / "src/app.py").read_text())
+
+    def test_workspace_profile_blocks_escape_and_symlink_traversal(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "workspace"
+            outside = Path(directory) / "outside"
+            root.mkdir()
+            outside.mkdir()
+            (root / "link").symlink_to(outside, target_is_directory=True)
+            registry = AgentToolRegistry()
+            WorkspaceAgentTools(root).register(registry)
+
+            escaped = _invoke(registry, "write_file", {
+                "path": "../outside/x", "content": "x", "expected_sha256": None,
+            })
+            linked = _invoke(registry, "write_file", {
+                "path": "link/x", "content": "x", "expected_sha256": None,
+            })
+
+            self.assertFalse(escaped.succeeded)
+            self.assertFalse(linked.succeeded)
+            self.assertFalse((outside / "x").exists())
+
+
+def _invoke(registry, tool, arguments):
+    return registry.invoke(
+        AgentToolCall("call", tool, arguments, "test"),
+        AgentAuthorityProfile.WORKSPACE,
+    )
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -6,7 +6,18 @@ from collections.abc import Iterable
 from hashlib import sha256
 from urllib.parse import unquote, urlsplit
 
-from fam_os.applications import CapabilityKind, CapabilityRegistryEntry
+from fam_os.applications import (
+    CapabilityKind,
+    CapabilityRegistryEntry,
+    WORKSPACE_PATCH_CAPABILITY,
+    WORKSPACE_RESTORE_CAPABILITY,
+)
+
+
+_REPOSITORY_AGENT_CAPABILITIES = {
+    WORKSPACE_PATCH_CAPABILITY,
+    WORKSPACE_RESTORE_CAPABILITY,
+}
 
 
 def application_contexts(
@@ -57,10 +68,18 @@ def _context(
     resource_scope: str | None,
 ) -> dict[str, object]:
     application_id = entries[0].application_id
-    capabilities = sorted({entry.capability_id for entry in entries})
+    # Repository mutation belongs to the conversational engineering agent. The
+    # bounded workspace-patch adapter remains available to non-Console clients
+    # for small document automations, but advertising it here creates a second,
+    # weaker coding path that competes with the agent runtime.
+    visible_entries = [
+        entry for entry in entries
+        if entry.capability_id not in _REPOSITORY_AGENT_CAPABILITIES
+    ]
+    capabilities = sorted({entry.capability_id for entry in visible_entries})
     observations = sorted({
         entry.capability_id
-        for entry in entries
+        for entry in visible_entries
         if entry.capability.kind is CapabilityKind.OBSERVATION
     })
     actions = sorted(set(capabilities) - set(observations))
