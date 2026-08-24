@@ -19,8 +19,8 @@ class WorkspaceAgentTools:
         self,
         workspace_root: Path,
         *,
-        maximum_read_bytes: int = 262_144,
-        maximum_result_bytes: int = 262_144,
+        maximum_read_bytes: int = 24_576,
+        maximum_result_bytes: int = 16_384,
     ) -> None:
         root = workspace_root.resolve(strict=True)
         if not root.is_dir() or root.is_symlink():

@@ -14,6 +14,7 @@ from fam_os.core.agent.contracts import (
     AgentToolCall,
     AgentToolDescriptor,
     AgentToolEffect,
+    AgentToolExecution,
     AgentToolResult,
     AgentTurnOutcome,
 )
@@ -96,10 +97,15 @@ class AgentToolRegistry:
                 call.call_id, call.tool_id, False,
                 f"{type(error).__name__}: {str(error)[:2_000]}",
             )
+        postcondition = None
+        if isinstance(output, AgentToolExecution):
+            postcondition = output.postcondition
+            output = output.output
         if not isinstance(output, str):
-            raise TypeError("agent tool implementation must return text")
+            raise TypeError("agent tool implementation must return text or execution")
         return AgentToolResult(
             call.call_id, call.tool_id, True, _bounded_tool_output(output),
+            postcondition,
         )
 
 
@@ -109,9 +115,14 @@ class IterativeAgentSettings:
     maximum_steps: int = 64
     context_tokens: int = 32_768
     maximum_output_tokens: int = 4_096
+    maximum_tool_message_bytes: int = 16_384
 
     def __post_init__(self) -> None:
-        if not self.model_ref.strip() or not 1 <= self.maximum_steps <= 256:
+        if (
+            not self.model_ref.strip() or not 1 <= self.maximum_steps <= 256
+            or not 1_024 <= self.context_tokens
+            or not 1_024 <= self.maximum_tool_message_bytes <= 65_536
+        ):
             raise ValueError("iterative agent settings are invalid")
 
 
@@ -195,19 +206,27 @@ class IterativeModelAgent:
                             "priority": "Apply this guidance to the current objective.",
                         }, sort_keys=True, separators=(",", ":")),
                     ))
+            descriptors = _phase_tools(self._tools.descriptors(), results)
+            phase = _agent_phase(results)
+            request_messages = _budgeted_messages(
+                _messages_with_phase(messages, phase),
+                context_tokens=self._settings.context_tokens,
+                maximum_output_tokens=self._settings.maximum_output_tokens,
+                descriptors=descriptors,
+            )
             response = self._runtime.chat(InferenceRequest(
                 model_ref=self._settings.model_ref,
-                messages=tuple(messages),
+                messages=request_messages,
                 context_tokens=self._settings.context_tokens,
                 max_output_tokens=self._settings.maximum_output_tokens,
                 json_output=not native_tools,
                 temperature=0.0,
                 seed=42,
                 tools=(
-                    _native_tools(self._tools.descriptors())
+                    _native_tools(descriptors)
                     if native_tools else ()
                 ),
-                tool_choice="auto" if native_tools else None,
+                tool_choice="auto" if native_tools and descriptors else None,
             ))
             if native_tools and response.tool_calls:
                 messages.append(InferenceMessage(
@@ -225,7 +244,9 @@ class IterativeModelAgent:
                     )
                     results.append(result)
                     messages.append(InferenceMessage(
-                        MessageRole.TOOL, result.output,
+                        MessageRole.TOOL, _tool_message(
+                            result, self._settings.maximum_tool_message_bytes,
+                        ),
                         tool_call_id=result.call_id, tool_name=result.tool_id,
                     ))
                     if repeated >= 3:
@@ -304,6 +325,12 @@ class IterativeModelAgent:
             )
         else:
             result = self._tools.invoke(decision, profile)
+        if not result.succeeded:
+            result = AgentToolResult(
+                result.call_id, result.tool_id, False,
+                f"{result.output}\nstructured_recovery={_recovery_guidance(result)}",
+                result.postcondition,
+            )
         self._store.record_result(thread_id, turn_id, result)
         return result, repeated
 
@@ -419,6 +446,160 @@ def _bounded_tool_output(output: str, maximum_bytes: int = 262_144) -> str:
     marker = b"\n[tool output truncated by FAM_OS]"
     retained = encoded[:maximum_bytes - len(marker)]
     return retained.decode("utf-8", "ignore") + marker.decode("ascii")
+
+
+def _tool_message(result: AgentToolResult, maximum_bytes: int) -> str:
+    output = _bounded_tool_output(result.output, maximum_bytes)
+    if result.postcondition is None:
+        return output
+    return json.dumps({
+        "output": output,
+        "postcondition": result.postcondition,
+    }, sort_keys=True, separators=(",", ":"))
+
+
+def _agent_phase(results) -> str:
+    if any(item.succeeded and item.postcondition for item in results):
+        return "verification"
+    if any(item.succeeded and item.tool_id in {
+        "write_file", "create_directory", "delete_path", "move_path",
+        "apply_patch", "run_command",
+    } for item in results):
+        return "verification"
+    if any(item.succeeded for item in results):
+        return "implementation"
+    return "exploration"
+
+
+def _phase_tools(descriptors, results):
+    phase = _agent_phase(results)
+    hidden = set() if phase == "verification" else {"verify_command"}
+    return tuple(item for item in descriptors if item.tool_id not in hidden)
+
+
+def _phase_instruction(phase: str) -> str:
+    if phase == "exploration":
+        return (
+            "Current phase: explore only as much as needed. For a simple explicit "
+            "filesystem objective, perform the direct filesystem action immediately."
+        )
+    if phase == "implementation":
+        return (
+            "Current phase: implement the smallest coherent change using file tools; "
+            "do not return another plan."
+        )
+    return (
+        "Current phase: verify the requested outcome. A successful semantic "
+        "postcondition from a filesystem tool is already verification evidence."
+    )
+
+
+def _messages_with_phase(messages, phase: str):
+    values = list(messages)
+    if not values:
+        return ()
+    first = values[0]
+    values[0] = InferenceMessage(
+        first.role, f"{first.content}\n\n{_phase_instruction(phase)}",
+        images=first.images, tool_calls=first.tool_calls,
+        tool_call_id=first.tool_call_id, tool_name=first.tool_name,
+    )
+    return tuple(values)
+
+
+def _budgeted_messages(
+    messages, *, context_tokens: int, maximum_output_tokens: int, descriptors,
+):
+    tool_bytes = len(json.dumps([
+        {"name": item.tool_id, "description": item.description,
+         "parameters": item.input_schema}
+        for item in descriptors
+    ], sort_keys=True, separators=(",", ":")).encode("utf-8"))
+    maximum_bytes = max(
+        8_192, (context_tokens - maximum_output_tokens) * 3 - tool_bytes,
+    )
+    values = list(messages)
+    if len(values) >= 2:
+        values[1] = _compact_initial_user(values[1], maximum_bytes // 3)
+    total = sum(len(item.content.encode("utf-8")) for item in values)
+    if total <= maximum_bytes:
+        return tuple(values)
+    preserved = values[:2]
+    recent = []
+    used = sum(len(item.content.encode("utf-8")) for item in preserved)
+    remaining = max(2_048, maximum_bytes - used - 1_024)
+    for item in reversed(values[2:]):
+        size = len(item.content.encode("utf-8"))
+        if size > remaining:
+            if not recent and remaining >= 512:
+                recent.append(_message_with_content(
+                    item, _bounded_tool_output(item.content, remaining),
+                ))
+                remaining = 0
+            continue
+        recent.append(item)
+        remaining -= size
+    dropped = max(0, len(values) - len(preserved) - len(recent))
+    summary = InferenceMessage(
+        MessageRole.SYSTEM,
+        f"Context compacted: {dropped} older messages were omitted. Preserve the "
+        "original objective and continue from the latest retained tool evidence.",
+    )
+    return tuple((*preserved, summary, *reversed(recent)))
+
+
+def _message_with_content(message: InferenceMessage, content: str):
+    return InferenceMessage(
+        message.role, content, images=message.images,
+        tool_calls=message.tool_calls, tool_call_id=message.tool_call_id,
+        tool_name=message.tool_name,
+    )
+
+
+def _compact_initial_user(message: InferenceMessage, maximum_bytes: int):
+    if len(message.content.encode("utf-8")) <= maximum_bytes:
+        return message
+    try:
+        value = json.loads(message.content)
+    except (json.JSONDecodeError, TypeError):
+        return InferenceMessage(
+            message.role, _bounded_tool_output(message.content, maximum_bytes),
+        )
+    if not isinstance(value, dict):
+        return message
+    for key in ("conversation_history", "prior_context"):
+        content = value.get(key)
+        if isinstance(content, str) and len(content.encode("utf-8")) > 2_048:
+            value[key] = _bounded_tool_output(content, 2_048)
+    compacted = json.dumps(value, sort_keys=True, separators=(",", ":"))
+    return InferenceMessage(message.role, compacted)
+
+
+def _recovery_guidance(result: AgentToolResult) -> str:
+    lowered = result.output.casefold()
+    if (
+        "execvp" in lowered or "command not found" in lowered
+        or "missing executable" in lowered
+    ):
+        return (
+            "The executable is unavailable. Inspect project manifests and scripts, "
+            "then use an installed equivalent; do not repeat the same command."
+        )
+    if "filenotfounderror" in lowered or "no such file" in lowered:
+        return (
+            "The path was not found. Use list_directory with path '.' and retry with "
+            "an exact relative path from that result."
+        )
+    elif "path must stay inside" in lowered or "path escapes" in lowered:
+        return (
+            "The path was invalid. Use a workspace-relative path without a leading "
+            "slash or '..'; use '.' for the selected folder."
+        )
+    else:
+        return (
+            "The tool failed. Change the arguments or strategy using the concrete "
+            "error; do not repeat the identical call."
+        )
 
 
 def _profile_allows(

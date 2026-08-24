@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import StrEnum
+from typing import Any
 
 
 class AgentAuthorityProfile(StrEnum):
@@ -54,12 +55,29 @@ class AgentToolResult:
     tool_id: str
     succeeded: bool
     output: str
+    postcondition: dict[str, Any] | None = None
 
     def __post_init__(self) -> None:
         if not self.call_id.strip() or not self.tool_id.strip():
             raise ValueError("agent tool result identity is invalid")
         if len(self.output.encode("utf-8")) > 262_144:
             raise ValueError("agent tool result exceeds its bound")
+        if self.postcondition is not None and not isinstance(self.postcondition, dict):
+            raise ValueError("agent tool postcondition must be an object")
+
+
+@dataclass(frozen=True, slots=True)
+class AgentToolExecution:
+    """Tool output with a machine-checked semantic postcondition."""
+
+    output: str
+    postcondition: dict[str, Any] | None = None
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.output, str):
+            raise TypeError("agent tool execution output must be text")
+        if self.postcondition is not None and not isinstance(self.postcondition, dict):
+            raise ValueError("agent tool execution postcondition must be an object")
 
 
 @dataclass(frozen=True, slots=True)
@@ -81,4 +99,3 @@ class AgentTurnOutcome:
     response: AgentFinalResponse
     tool_results: tuple[AgentToolResult, ...]
     model_steps: int
-

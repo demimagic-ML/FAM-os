@@ -9,6 +9,7 @@ from fam_os.core.agent import (
     AgentToolCall,
     AgentToolDescriptor,
     AgentToolEffect,
+    AgentToolExecution,
     AgentToolRegistry,
     IterativeAgentSettings,
     IterativeModelAgent,
@@ -47,6 +48,56 @@ class _NativeRuntime:
 
 
 class IterativeAgentTests(unittest.TestCase):
+    def test_semantic_filesystem_postcondition_completes_without_verify_command(self):
+        metrics = InferenceMetrics("model", 0, 0, 1, 1)
+        runtime = _NativeRuntime([
+            InferenceResponse("", metrics, (
+                InferenceToolCall(
+                    "create-1", "create_directory", {"path": "reports"},
+                ),
+            )),
+            InferenceResponse("Created reports and verified it exists.", metrics),
+        ])
+        tools = AgentToolRegistry()
+        tools.register(
+            AgentToolDescriptor(
+                "create_directory", "Create a directory.",
+                AgentToolEffect.WORKSPACE_WRITE, {
+                    "type": "object", "properties": {
+                        "path": {"type": "string"},
+                    }, "required": ["path"],
+                },
+            ),
+            lambda arguments: AgentToolExecution(
+                f"created {arguments['path']}", {
+                    "verified": True, "exists": True, "kind": "directory",
+                    "path": arguments["path"],
+                },
+            ),
+        )
+        tools.register(
+            _tool("verify_command", AgentToolEffect.COMMAND), lambda _: "passed",
+        )
+
+        outcome = IterativeModelAgent(
+            runtime, IterativeAgentSettings("model"), tools, _Store(),
+            completion_validator=lambda results: (
+                None if any(
+                    item.postcondition and item.postcondition.get("verified")
+                    for item in results
+                ) else "verified effect required"
+            ),
+        ).run(
+            thread_id="thread", turn_id="turn", objective="Create reports.",
+            profile=AgentAuthorityProfile.WORKSPACE,
+        )
+
+        self.assertEqual(2, outcome.model_steps)
+        self.assertTrue(outcome.tool_results[0].postcondition["verified"])
+        self.assertIn(
+            "verify_command", {item.name for item in runtime.requests[1].tools},
+        )
+
     def test_large_successful_tool_output_is_truncated_not_rejected(self):
         tools = AgentToolRegistry()
         tools.register(
@@ -81,6 +132,9 @@ class IterativeAgentTests(unittest.TestCase):
             ),
             lambda arguments: f"content of {arguments['path']}",
         )
+        tools.register(
+            _tool("verify_command", AgentToolEffect.COMMAND), lambda _: "passed",
+        )
 
         outcome = IterativeModelAgent(
             runtime, IterativeAgentSettings("model"), tools, _Store(),
@@ -92,10 +146,38 @@ class IterativeAgentTests(unittest.TestCase):
         self.assertEqual("README.md contains the project overview.",
                          outcome.response.content)
         self.assertEqual("read_file", runtime.requests[0].tools[0].name)
+        self.assertNotIn(
+            "verify_command", {item.name for item in runtime.requests[0].tools},
+        )
+        self.assertNotIn(
+            "verify_command", {item.name for item in runtime.requests[1].tools},
+        )
         self.assertEqual("auto", runtime.requests[0].tool_choice)
         self.assertFalse(runtime.requests[0].json_output)
         self.assertEqual(MessageRole.TOOL, runtime.requests[1].messages[-1].role)
         self.assertEqual("native-1", runtime.requests[1].messages[-1].tool_call_id)
+
+    def test_large_conversation_history_is_compacted_before_inference(self):
+        metrics = InferenceMetrics("model", 0, 0, 1, 1)
+        runtime = _NativeRuntime([
+            InferenceResponse("Done from current objective.", metrics),
+        ])
+
+        IterativeModelAgent(
+            runtime,
+            IterativeAgentSettings(
+                "qwen2.5-coder:7b", context_tokens=8_192,
+                maximum_output_tokens=2_048,
+            ),
+            AgentToolRegistry(), _HistoryStore("old history " * 10_000),
+        ).run(
+            thread_id="thread", turn_id="turn", objective="Current objective.",
+            profile=AgentAuthorityProfile.ASK,
+        )
+
+        content = "\n".join(item.content for item in runtime.requests[0].messages)
+        self.assertIn("Current objective.", content)
+        self.assertLess(len(content.encode("utf-8")), 20_000)
 
     def test_sqlite_store_delivers_durable_owner_controls_once(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -350,6 +432,14 @@ class _Store:
     def record_result(self, *args): pass
     def complete_turn(self, *args): pass
     def fail_turn(self, *args): pass
+
+
+class _HistoryStore(_Store):
+    def __init__(self, history):
+        self.history = history
+
+    def conversation_context(self, _thread_id):
+        return self.history
 
 
 class _ControlStore(_Store):

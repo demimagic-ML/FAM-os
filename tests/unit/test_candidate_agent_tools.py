@@ -108,6 +108,35 @@ class CandidateAgentToolsTests(unittest.TestCase):
             self.assertEqual(len(loop.records), len(tools.applied_edits))
             self.assertEqual(1, len(tools.successful_verifications))
 
+    def test_create_directory_returns_machine_checked_postcondition(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            owner, transactions = root / "owner", root / "transactions"
+            owner.mkdir()
+            adapter = CandidateWorkspaceAdapter(owner, transactions)
+            candidate = adapter.create("task-directory")
+            loop = _Loop(adapter, candidate)
+            definition = SimpleNamespace(task=SimpleNamespace(
+                task_id="task-directory", max_changed_files=128,
+                max_changed_bytes=64 * 1024**2,
+            ))
+            registry = AgentToolRegistry()
+            tools = AuthorizedCandidateAgentTools(
+                loop, "owner", "task-directory", "session", "principal",
+                definition, SimpleNamespace(candidate=candidate),
+                _CommandTools(Path(candidate.candidate_workspace)),
+            )
+            tools.register(registry)
+
+            result = _invoke(registry, "create_directory", {"path": "reports"})
+
+            self.assertTrue(result.succeeded, result.output)
+            self.assertEqual({
+                "verified": True, "operation": "create_directory",
+                "path": "reports", "exists": True, "kind": "directory",
+            }, result.postcondition)
+            self.assertEqual(1, len(tools.successful_verifications))
+
 
 def _invoke(registry, tool, arguments):
     return registry.invoke(

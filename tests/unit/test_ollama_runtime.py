@@ -26,6 +26,38 @@ class FakeTransport:
 
 
 class OllamaRuntimeTests(unittest.TestCase):
+    def test_lists_available_model_names(self) -> None:
+        transport = FakeTransport([{"models": [
+            {"name": "qwen2.5-coder:7b"},
+            {"model": "qwen3-coder:30b"},
+        ]}])
+        runtime = OllamaRuntime(OllamaSettings("http://localhost:11434", 15), transport)
+
+        self.assertEqual(
+            ("qwen2.5-coder:7b", "qwen3-coder:30b"),
+            runtime.available_models(),
+        )
+    def test_normalizes_tagged_template_tool_call(self) -> None:
+        transport = FakeTransport([{
+            "message": {"role": "assistant", "content": (
+                '<tool_call>{"name":"read_file","arguments":'
+                '{"path":"README.md"}}</tool_call>'
+            )},
+        }])
+        runtime = OllamaRuntime(OllamaSettings("http://localhost:11434", 15), transport)
+
+        result = runtime.chat(InferenceRequest(
+            "qwen", (InferenceMessage(MessageRole.USER, "Read it"),), 4096, 128,
+            tools=(InferenceTool(
+                "read_file", "Read a file.", {
+                    "type": "object", "properties": {
+                        "path": {"type": "string"},
+                    }, "required": ["path"],
+                },
+            ),), tool_choice="auto",
+        ))
+
+        self.assertEqual("read_file", result.tool_calls[0].name)
     def test_normalizes_template_tool_json_only_for_offered_schema(self) -> None:
         transport = FakeTransport([{
             "message": {

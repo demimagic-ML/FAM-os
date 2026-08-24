@@ -7,7 +7,9 @@ from dataclasses import replace
 from pathlib import Path
 from typing import Protocol
 
-from fam_os.core.agent import AgentToolDescriptor, AgentToolEffect, AgentToolRegistry
+from fam_os.core.agent import (
+    AgentToolDescriptor, AgentToolEffect, AgentToolExecution, AgentToolRegistry,
+)
 from fam_os.core.engineering import (
     CandidateEditStatus,
     GeneratedCandidateOperation,
@@ -128,11 +130,25 @@ class AuthorizedCandidateAgentTools:
             kind, path, content, media_type=_media_type(path),
         ),), "Agent wrote a file.")
 
-    def create_directory(self, arguments: dict[str, object]) -> str:
-        return self._apply((GeneratedCandidateOperation(
+    def create_directory(self, arguments: dict[str, object]) -> AgentToolExecution:
+        relative = _text(arguments, "path")
+        output = self._apply((GeneratedCandidateOperation(
             GeneratedCandidateOperationKind.CREATE_DIRECTORY,
-            _text(arguments, "path"),
+            relative,
         ),), "Agent created a directory.")
+        path = self._workspace.root / relative
+        verified = path.is_dir() and not path.is_symlink()
+        if verified:
+            self.successful_verifications.append(
+                f"semantic:create_directory:path={relative}:exists=true:kind=directory"
+            )
+        return AgentToolExecution(output, {
+            "verified": verified,
+            "operation": "create_directory",
+            "path": relative,
+            "exists": path.exists(),
+            "kind": "directory" if path.is_dir() else "other",
+        })
 
     def delete_path(self, arguments: dict[str, object]) -> str:
         return self._apply((GeneratedCandidateOperation(

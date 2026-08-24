@@ -90,9 +90,7 @@ class NaturalEngineeringAgentService:
         turn_id = f"agent-turn-{definition.task.task_id}-{turn_suffix}"
         agent = IterativeModelAgent(
             self._runtime,
-            IterativeAgentSettings(
-                self._model_ref, maximum_steps=self._maximum_steps,
-            ),
+            _agent_settings(self._model_ref, self._maximum_steps),
             registry,
             SQLiteAgentTurnStore(
                 self._database, preparation.candidate.owner_workspace,
@@ -103,7 +101,8 @@ class NaturalEngineeringAgentService:
                 and candidate_tools.successful_verifications
                 else (
                     "Implementation turns require an applied candidate edit and a "
-                    "successful verify_command call. If a check already passed through "
+                    "successful semantic postcondition or verify_command call. If a "
+                    "check already passed through "
                     "run_command, rerun that same check with verify_command so its "
                     "result becomes verification evidence. Do not stage or commit Git; "
                     "candidate approval and delivery happen after this turn."
@@ -138,9 +137,7 @@ class NaturalEngineeringAgentService:
         thread_id = _thread_id(owner_id, session_id, workspace)
         agent = IterativeModelAgent(
             self._runtime,
-            IterativeAgentSettings(
-                self._model_ref, maximum_steps=self._maximum_steps,
-            ),
+            _agent_settings(self._model_ref, self._maximum_steps),
             registry,
             SQLiteAgentTurnStore(self._database, workspace),
             completion_validator=lambda results: (
@@ -272,6 +269,18 @@ def _thread_id(owner_id: str, session_id: str, workspace: str) -> str:
         f"{owner_id}\0{session_id}\0{workspace}".encode(),
     ).hexdigest()[:32]
     return f"agent-thread-{digest}"
+
+
+def _agent_settings(model_ref: str, maximum_steps: int) -> IterativeAgentSettings:
+    normalized = model_ref.casefold()
+    small_local = any(
+        marker in normalized for marker in (":7b", "-7b", ":3b", ":1.7b")
+    )
+    return IterativeAgentSettings(
+        model_ref, maximum_steps=maximum_steps,
+        context_tokens=8_192 if small_local else 32_768,
+        maximum_output_tokens=2_048 if small_local else 4_096,
+    )
 
 
 def _context(preparation) -> str:

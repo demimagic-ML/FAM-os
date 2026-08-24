@@ -6,10 +6,29 @@ from pathlib import Path
 from unittest.mock import Mock
 
 from fam_os.adapters.codex_subscription import CodexSubscriptionSettings
-from fam_os.product.service import LocalProductService, ProductServiceSettings
+from fam_os.product.service import (
+    LocalProductService, ProductServiceSettings, _engineering_model_ref,
+)
 
 
 class ProductServiceStartupSafetyTests(unittest.TestCase):
+    def test_engineering_prefers_stronger_installed_agent_model(self) -> None:
+        runtime = Mock()
+        runtime.available_models.return_value = (
+            "qwen2.5-coder:7b", "qwen3-coder:30b",
+        )
+
+        self.assertEqual(
+            "qwen3-coder:30b",
+            _engineering_model_ref(runtime, "qwen2.5-coder:7b", None),
+        )
+
+    def test_explicit_engineering_model_overrides_discovery(self) -> None:
+        self.assertEqual(
+            "custom-agent:latest",
+            _engineering_model_ref(Mock(), "fallback", "custom-agent:latest"),
+        )
+
     def test_runtime_root_rejects_linux_unix_socket_overflow(self) -> None:
         runtime_root = Path("/tmp") / ("x" * 100)
 

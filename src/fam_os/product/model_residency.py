@@ -147,6 +147,10 @@ class ProductionModelResidency:
             if self._loader is not None:
                 self._loader.ensure_model(model_ref)
 
+    def available_models(self) -> tuple[str, ...]:
+        reader = getattr(self._runtime, "available_models", None)
+        return () if not callable(reader) else tuple(reader())
+
     def prewarm(self, model_ref: str, keep_alive: str = "10m") -> None:
         """Serialize speculative loads and reconcile known catalog residency."""
 

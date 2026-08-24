@@ -174,6 +174,7 @@ class ProductServiceSettings:
     state_root: Path
     runtime_root: Path
     model_ref: str = "qwen3:1.7b"
+    engineering_model_ref: str | None = None
     ollama_url: str = "http://127.0.0.1:11435"
     console_port: int = 8765
     ready_file: Path | None = None
@@ -246,6 +247,35 @@ class ProductServiceSettings:
         if self.validation_profile is None:
             return self.resource_limits
         return validation_profile_resource_limits(self.validation_profile)
+
+_AGENT_MODEL_PREFERENCE = (
+    "qwen3.6-35b", "qwen3.6:35b", "qwen3-coder:30b",
+    "devstral-small-2:latest", "devstral-small", "openhands-lm-32b",
+    "qwen2.5-coder:32b",
+    "qwen2.5-coder:14b",
+)
+
+
+def _engineering_model_ref(runtime, fallback: str, configured: str | None) -> str:
+    if configured is not None and configured.strip():
+        return configured.strip()
+    reader = getattr(runtime, "available_models", None)
+    if not callable(reader):
+        return fallback
+    try:
+        installed = tuple(reader())
+    except (OSError, RuntimeError, ValueError):
+        return fallback
+    normalized = {item.casefold(): item for item in installed}
+    for preferred in _AGENT_MODEL_PREFERENCE:
+        exact = normalized.get(preferred)
+        if exact is not None:
+            return exact
+        for key, value in normalized.items():
+            if key.startswith(preferred + ":"):
+                return value
+    return fallback
+
 
 class LocalProductService:
     def __init__(
@@ -615,7 +645,10 @@ class LocalProductService:
             runtime = OllamaRuntime(OllamaSettings(self.settings.ollama_url, 180))
         self._runtime = runtime
         engineering_inference = compose_engineering_inference(
-            runtime, self.settings.model_ref, self.settings.codex_subscription,
+            runtime, _engineering_model_ref(
+                runtime, self.settings.model_ref,
+                self.settings.engineering_model_ref,
+            ), self.settings.codex_subscription,
             self._engineering_runtime,
         )
         self._engineering_runtime = engineering_inference.runtime

@@ -7,6 +7,7 @@ from fam_os.core.agent.contracts import (
     AgentToolDescriptor,
     AgentToolEffect,
     AgentToolResult,
+    AgentToolExecution,
     AgentTurnOutcome,
 )
 from fam_os.core.agent.runtime import (
@@ -25,6 +26,7 @@ __all__ = [
     "AgentToolEffect",
     "AgentToolRegistry",
     "AgentToolResult",
+    "AgentToolExecution",
     "AgentTurnOutcome",
     "AgentTurnStore",
     "IterativeAgentSettings",

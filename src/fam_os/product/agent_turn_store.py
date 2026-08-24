@@ -80,6 +80,7 @@ class SQLiteAgentTurnStore:
         self._event(thread_id, turn_id, result.call_id, result.tool_id, "result", {
             "succeeded": result.succeeded,
             "output": result.output,
+            "postcondition": result.postcondition,
         })
 
     def complete_turn(

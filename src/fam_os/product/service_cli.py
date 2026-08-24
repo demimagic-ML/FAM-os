@@ -40,6 +40,13 @@ def run(argv=None) -> int:
     parser.add_argument("--state-root", type=Path, default=_state_root())
     parser.add_argument("--runtime-root", type=Path, default=_runtime_root())
     parser.add_argument("--model", default="qwen3:1.7b")
+    parser.add_argument(
+        "--engineering-model", default=None,
+        help=(
+            "preferred local model for agentic engineering; when omitted FAM uses "
+            "the strongest recognized installed coding model and falls back to --model"
+        ),
+    )
     parser.add_argument("--ollama-url", default="http://127.0.0.1:11435")
     parser.add_argument("--external-ollama", action="store_true")
     parser.add_argument(
@@ -128,6 +135,7 @@ def run(argv=None) -> int:
         state_root=state_root,
         runtime_root=args.runtime_root.absolute(),
         model_ref=args.model,
+        engineering_model_ref=args.engineering_model,
         ollama_url=args.ollama_url,
         console_port=args.console_port,
         ready_file=args.ready_file,

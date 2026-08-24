@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import replace
 import hashlib
 import json
+import re
 import time
 from collections.abc import Callable
 
@@ -103,6 +104,23 @@ class OllamaRuntime:
         )
         return parse_loaded_models(payload)
 
+    def available_models(self) -> tuple[str, ...]:
+        payload = self._transport.request(
+            "GET", self._settings.endpoint("/api/tags"), None,
+            self._settings.timeout_seconds,
+        )
+        models = payload.get("models")
+        if not isinstance(models, list):
+            raise OllamaProtocolError("Ollama tags response lacks models")
+        names = []
+        for item in models:
+            if not isinstance(item, dict):
+                continue
+            name = item.get("name") or item.get("model")
+            if isinstance(name, str) and name.strip():
+                names.append(name)
+        return tuple(dict.fromkeys(names))
+
     def _wait_until_unloaded(self, model_ref: str) -> None:
         deadline = self._clock() + self._settings.unload_timeout_seconds
         while any(model.model_ref == model_ref for model in self.loaded_models()):
@@ -128,9 +146,8 @@ def _recover_content_tool_call(
     """Normalize tool-capable Ollama templates that emit calls as JSON content."""
     if response.tool_calls or not request.tools:
         return response
-    try:
-        value = json.loads(response.content)
-    except (json.JSONDecodeError, TypeError):
+    value = _content_tool_value(response.content)
+    if value is None:
         return response
     if not isinstance(value, dict) or set(value) != {"name", "arguments"}:
         return response
@@ -148,6 +165,22 @@ def _recover_content_tool_call(
             f"ollama-content-call-{digest}", name, arguments,
         ),),
     )
+
+
+def _content_tool_value(content: str):
+    candidates = [content.strip()]
+    tagged = re.fullmatch(r"<tool_call>\s*(.*?)\s*</tool_call>", content, re.DOTALL)
+    if tagged is not None:
+        candidates.insert(0, tagged.group(1))
+    fenced = re.fullmatch(r"```(?:json)?\s*(.*?)\s*```", content, re.DOTALL)
+    if fenced is not None:
+        candidates.insert(0, fenced.group(1))
+    for candidate in candidates:
+        try:
+            return json.loads(candidate)
+        except (json.JSONDecodeError, TypeError):
+            continue
+    return None
 
 
 def _validate_tool_arguments(arguments, schema) -> None:
