@@ -13,6 +13,11 @@ class ProductionSessionMemoryTests(unittest.TestCase):
         self.assertEqual("", memory.context_for_request("request-1"))
         memory.record_assistant("request-1", "I will remember ORBIT.", "unverified")
 
+        session_context = memory.context_for_session("owner", "session-a")
+        self.assertIn("My codename is ORBIT.", session_context)
+        self.assertIn("I will remember ORBIT.", session_context)
+        self.assertEqual("", memory.context_for_session("owner", "session-b"))
+
         memory.begin_request("request-2", "owner", "session-a", "What is my codename?")
         context = memory.context_for_request("request-2")
         self.assertIn("user: My codename is ORBIT.", context)

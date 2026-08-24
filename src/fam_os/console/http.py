@@ -67,6 +67,7 @@ class ConsoleHttpServer(ThreadingHTTPServer):
         integration_center=None,
         automation_service=None,
         recipe_library=None,
+        conversation_turn_api=None,
     ):
         if not ipaddress.ip_address(address[0]).is_loopback:
             raise ValueError("FAM Console must bind only to loopback")
@@ -86,6 +87,7 @@ class ConsoleHttpServer(ThreadingHTTPServer):
         self.integration_center = integration_center
         self.automation_service = automation_service
         self.recipe_library = recipe_library
+        self.conversation_turn_api = conversation_turn_api
         self.workspace_api = workspace_api or ConsoleWorkspaceApi(Path.home())
         super().__init__(address, ConsoleRequestHandler)
 
@@ -199,6 +201,14 @@ class ConsoleRequestHandler(BaseHTTPRequestHandler):
             return
         try:
             document = self._json_body(_json_limit(path))
+            if path == "/api/v1/conversation/resolve":
+                if self.server.conversation_turn_api is None:
+                    self._json(503, {"error": "Conversation resolution is unavailable."})
+                    return
+                self._json(200, self.server.conversation_turn_api.resolve(
+                    document, session.session_id,
+                ))
+                return
             if handle_memory_post(self, path, document):
                 return
             if handle_adaptation_post(self, path, document):

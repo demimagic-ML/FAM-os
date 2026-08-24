@@ -13,6 +13,11 @@ from fam_os.adapters.ollama import OllamaRuntime, OllamaSettings
 from fam_os.adapters.shell import ShellRequestDispatcher, UnixShellServer, UnixShellServerConfiguration
 from fam_os.applications.transport import PeerAuthorizationPolicy
 from fam_os.console.http import ConsoleHttpServer
+from fam_os.console.conversation_turns import ConsoleConversationTurnApi
+from fam_os.core.production.turn_resolution import (
+    ConversationTurnResolverSettings,
+    ModelConversationTurnResolver,
+)
 from fam_os.console.service import load_or_create_token
 from fam_os.console.tasks import ConsoleTaskApi
 from fam_os.core.production.gateway import ProductionTaskGateway
@@ -92,7 +97,6 @@ from fam_os.adapters.sqlite import (
 )
 from fam_os.core.engineering import (
     CandidateGenerationRecord, CandidateGenerationService,
-    NaturalEngineeringConversation,
     DocumentationGenerationService,
     EngineeringIncidentEvidenceReceipt, EngineeringIncidentState,
     EngineeringReviewCheckpoint, EngineeringReviewExecutionService,
@@ -249,6 +253,7 @@ class LocalProductService:
         self.settings = settings
         self._runtime = runtime
         self._engineering_runtime = engineering_runtime
+        self._engineering_model_ref: str | None = None
         self._adaptation_health_sampler = adaptation_health_sampler
         self._context_profile_observer = context_profile_observer
         self._runtime_unit: ProductRuntimeUnit | None = None
@@ -364,6 +369,8 @@ class LocalProductService:
             ),
         )
         token = load_or_create_token(self.settings.runtime_root / "console.token")
+        if self._engineering_runtime is None or self._engineering_model_ref is None:
+            raise RuntimeError("conversation turn inference was not composed")
         storage = None if self._storage_unit is None else self._storage_unit.result
         if storage is None:
             raise RuntimeError("Console requires secure storage state")
@@ -432,6 +439,16 @@ class LocalProductService:
             integration_center=self.integration_center,
             automation_service=self.automation_service,
             recipe_library=self.recipe_library,
+            conversation_turn_api=ConsoleConversationTurnApi(
+                "local-owner",
+                self._session_memory,
+                ModelConversationTurnResolver(
+                    self._engineering_runtime,
+                    ConversationTurnResolverSettings(
+                        self._engineering_model_ref,
+                    ),
+                ),
+            ),
         )
         self.shell_server.open()
         self.application_fabric.open()
@@ -596,6 +613,7 @@ class LocalProductService:
             self._engineering_runtime,
         )
         self._engineering_runtime = engineering_inference.runtime
+        self._engineering_model_ref = engineering_inference.model_ref
         core = self._storage_unit.core
         if core is None or storage.cipher is None:
             raise RuntimeError("production Core storage was not composed")
@@ -796,7 +814,6 @@ class LocalProductService:
                 self.settings.git_publication_credential_ref
             ),
             grant_reader=self._storage_unit.engineering_grants,
-            conversation=NaturalEngineeringConversation(),
         )
         self.engineering_secret_api = ProductEngineeringSecretApi(
             local_owner_id(os.geteuid()),

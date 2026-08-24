@@ -255,7 +255,13 @@ async function createTask(event) {
   if (!prompt || $("#send-task").disabled) return;
   const selected = selectedTaskContext();
   const workspacePath = FamWorkspace.selectedPath();
-  if ($("#task-mode").value === "engineering") {
+  const resolved = await request("/api/v1/conversation/resolve", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({prompt}),
+  });
+  if ($("#task-mode").value === "engineering" ||
+      resolved?.disposition === "repository_change") {
     if (!workspacePath) {
       throw new Error("Choose a folder inside the Git repository for a repository change.");
     }
@@ -264,7 +270,8 @@ async function createTask(event) {
     setComposerBusy(true);
     try {
       await FamNaturalEngineering.start(
-        prompt, contextLabel(selected, workspacePath), workspacePath,
+        resolved.resolved_request,
+        contextLabel(selected, workspacePath), workspacePath,
       );
     } catch (error) {
       setComposerBusy(false);
@@ -300,7 +307,7 @@ async function createTask(event) {
     });
   }
   const body = {
-    prompt,
+    prompt: resolved.resolved_request,
     contexts,
     verification_required: $("#verify").checked,
   };

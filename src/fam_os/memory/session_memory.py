@@ -119,6 +119,25 @@ class ProductionSessionMemory:
                     turns.append(record.content)
             return self._render_context(turns)
 
+    def context_for_session(self, owner_id: str, session_id: str) -> str:
+        """Return the bounded conversation visible to an exact active session."""
+        _required(owner_id, session_id)
+        with self._lock:
+            now = self._instant()
+            self._purge(now)
+            access = MemoryAccessContext(
+                owner_id, SESSION_MEMORY_PURPOSE, session_id=session_id,
+            )
+            manifests = tuple(self._store.inspect(access, now))[
+                -self._limits.maximum_context_records:
+            ]
+            turns: list[bytes] = []
+            for manifest in manifests:
+                record = self._store.get(manifest.record_id, access, now)
+                if record is not None:
+                    turns.append(record.content)
+            return self._render_context(turns)
+
     def record_assistant(
         self, request_id: str, content: str, assurance: str,
     ) -> None:
