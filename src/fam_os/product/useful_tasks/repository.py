@@ -16,13 +16,14 @@ class UsefulTaskRepository:
         self, task_id: str, workflow_id: str, prompt: str, workspace_root: Path,
         timestamp: str, request_document: dict[str, object],
         parent_task_id: str | None = None, project_id: str | None = None,
+        status: str = "running",
     ) -> None:
         self._database.execute(
             "INSERT INTO useful_tasks(task_id,workflow_id,prompt,workspace_root,status,"
             "created_at,updated_at,request_json,parent_task_id,project_id) "
             "VALUES(?,?,?,?,?,?,?,?,?,?)",
             (
-                task_id, workflow_id, prompt, str(workspace_root), "running", timestamp,
+                task_id, workflow_id, prompt, str(workspace_root), status, timestamp,
                 timestamp, json.dumps(request_document, sort_keys=True), parent_task_id, project_id,
             ),
         )
@@ -47,6 +48,28 @@ class UsefulTaskRepository:
             "UPDATE useful_tasks SET status='failed',error=?,updated_at=? WHERE task_id=?",
             (error, timestamp, task_id),
         )
+
+    def set_status(self, task_id: str, status: str, timestamp: str) -> None:
+        self._database.execute(
+            "UPDATE useful_tasks SET status=?,updated_at=? WHERE task_id=?",
+            (status, timestamp, task_id),
+        )
+
+    def cancel(self, task_id: str, timestamp: str) -> None:
+        self._database.execute(
+            "UPDATE useful_tasks SET status='cancelled',error='Cancelled by owner',updated_at=? "
+            "WHERE task_id=? AND status IN ('queued','running')", (timestamp, task_id),
+        )
+
+    def projects(self) -> tuple[dict[str, object], ...]:
+        rows = self._database.fetchall(
+            "SELECT project_id,COUNT(*),MAX(updated_at),"
+            "SUM(CASE WHEN status='completed' THEN 1 ELSE 0 END),"
+            "SUM(CASE WHEN status='failed' THEN 1 ELSE 0 END) FROM useful_tasks "
+            "WHERE project_id IS NOT NULL GROUP BY project_id ORDER BY MAX(updated_at) DESC",
+        )
+        return tuple({"project_id": row[0], "task_count": row[1], "updated_at": row[2],
+                      "completed_count": row[3], "failed_count": row[4]} for row in rows)
 
     def add_artifact(self, artifact: UsefulArtifact) -> None:
         self._database.execute(

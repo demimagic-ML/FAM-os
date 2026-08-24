@@ -1,6 +1,8 @@
 import os
+import json
 import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 from fam_os.product.integration_center import IntegrationCenter
@@ -34,6 +36,27 @@ class IntegrationCenterTests(unittest.TestCase):
             database.open()
             with self.assertRaises(KeyError):
                 IntegrationCenter(database).configure("unknown", {})
+            database.close()
+
+    def test_filesystem_configuration_is_written_and_reloaded(self) -> None:
+        class Clients:
+            def __init__(self): self.paths = []
+            def reload_from_file(self, path): self.paths.append(path)
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            database = ProductionDatabase(StorageSettings(root / "fam.sqlite3", os.geteuid()))
+            database.open()
+            clients = Clients()
+            with patch("fam_os.product.integration_center.shutil.which", return_value="/usr/bin/npx"):
+                result = IntegrationCenter(database, state_root=root, mcp_clients=clients).configure(
+                    "mcp.filesystem", {"configuration": {"roots": [temporary]}},
+                )
+            self.assertEqual("ready", result["status"])
+            config = root / "config/mcp-clients.json"
+            self.assertEqual(1, len(clients.paths))
+            self.assertEqual(0, config.stat().st_mode & 0o077)
+            document = json.loads(config.read_text())
+            self.assertEqual("filesystem", document["servers"][0]["server_id"])
             database.close()
 
 

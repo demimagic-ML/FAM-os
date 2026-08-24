@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from concurrent.futures import Future, ThreadPoolExecutor
+from threading import RLock
 from pathlib import Path
 from uuid import uuid4
 
@@ -59,6 +61,9 @@ class UsefulTaskApi:
         self._identifier = identifier or (lambda: str(uuid4()))
         self._clock = clock or (lambda: datetime.now(timezone.utc))
         self._tool_loop_repository = tool_loop_repository
+        self._executor = ThreadPoolExecutor(max_workers=4, thread_name_prefix="fam-useful-task")
+        self._futures: dict[str, Future] = {}
+        self._lock = RLock()
 
     def workflows(self) -> tuple[dict[str, object], ...]:
         return WORKFLOWS
@@ -82,6 +87,63 @@ class UsefulTaskApi:
             task_id, workflow_id, prompt, root, timestamp, document,
             parent_task_id, project_id,
         )
+        return self._execute_created(task_id, workflow_id, root, document)
+
+    def submit(self, document: dict, *, parent_task_id: str | None = None) -> dict[str, object]:
+        workflow_id = _text(document, "workflow_id")
+        prompt = _text(document, "prompt")
+        root = Path(_text(document, "workspace_root")).resolve(strict=True)
+        if not root.is_dir() or workflow_id not in {item["workflow_id"] for item in WORKFLOWS}:
+            raise ValueError("useful workflow or workspace is invalid")
+        project_id = document.get("project_id")
+        if project_id is not None and (not isinstance(project_id, str) or not project_id.strip()):
+            raise ValueError("project_id must be non-empty text")
+        task_id, timestamp = self._identifier(), self._timestamp()
+        self._repository.create(task_id, workflow_id, prompt, root, timestamp, document,
+                                parent_task_id, project_id, status="running")
+        future = self._executor.submit(self._execute_background, task_id, workflow_id, root, document)
+        with self._lock:
+            self._futures[task_id] = future
+        future.add_done_callback(lambda _future: self._forget(task_id))
+        return self.inspect(task_id)
+
+    def cancel(self, task_id: str) -> dict[str, object]:
+        task = self.inspect(task_id)
+        if task["status"] != "running":
+            return task
+        with self._lock:
+            future = self._futures.get(task_id)
+        if future is not None and future.cancel():
+            self._repository.cancel(task_id, self._timestamp())
+        else:
+            raise RuntimeError("running workflow cannot be safely interrupted; cancellation is available before execution")
+        return self.inspect(task_id)
+
+    def projects(self) -> dict[str, object]:
+        return {"projects": self._repository.projects()}
+
+    def recipe_template(self, task_id: str) -> dict[str, object]:
+        self.inspect(task_id)
+        document = self._repository.request_document(task_id)
+        return {key: value for key, value in document.items() if key not in {"workspace_root", "input_paths", "urls"}}
+
+    def close(self) -> None:
+        with self._lock:
+            for task_id, future in tuple(self._futures.items()):
+                if future.cancel():
+                    self._repository.cancel(task_id, self._timestamp())
+        self._executor.shutdown(wait=False, cancel_futures=True)
+
+    def _execute_background(self, task_id, workflow_id, root, document):
+        if self.inspect(task_id)["status"] == "cancelled":
+            return self.inspect(task_id)
+        return self._execute_created(task_id, workflow_id, root, document)
+
+    def _forget(self, task_id: str) -> None:
+        with self._lock:
+            self._futures.pop(task_id, None)
+
+    def _execute_created(self, task_id, workflow_id, root, document):
         try:
             writer = UsefulArtifactWriter(root, task_id)
             if self._tool_loop_repository is None:

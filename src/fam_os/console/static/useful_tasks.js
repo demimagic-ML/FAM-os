@@ -30,7 +30,7 @@ const FamUsefulTasks = (() => {
     button.disabled = true;
     message("Running locally…");
     try {
-      const task = await api("/api/v1/useful/tasks", {
+      const task = await api("/api/v1/useful/tasks/submit", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({
@@ -41,7 +41,7 @@ const FamUsefulTasks = (() => {
           urls: lines(byId("useful-urls").value) || undefined,
         }),
       });
-      message(task.status === "completed" ? task.summary : task.error);
+      message(`Task ${task.status}. You can keep working while it runs.`);
       await loadTasks();
     } finally {
       button.disabled = false;
@@ -80,7 +80,8 @@ const FamUsefulTasks = (() => {
     }));
     const actions = document.createElement("div");
     actions.className = "useful-artifacts";
-    actions.append(action("Retry", "retry", task.task_id), action("Fork", "fork", task.task_id));
+    actions.append(action("Retry", "retry", task.task_id), action("Fork", "fork", task.task_id), action("Save recipe", "recipe", task.task_id));
+    if (task.status === "running") actions.append(action("Cancel", "cancel", task.task_id));
     article.append(header, summary, artifacts, actions);
     return article;
   }
@@ -99,6 +100,12 @@ const FamUsefulTasks = (() => {
       preview.classList.remove("hidden"); return;
     }
     const button = event.target.closest("[data-task-action]"); if (!button) return;
+    if (button.dataset.taskAction === "recipe") {
+      const name = window.prompt("Recipe name"); if (!name) return;
+      const description = window.prompt("What is this recipe for?", "Reusable workflow") || "Reusable workflow";
+      await api("/api/v1/recipes", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({name, description, source_task_id:button.dataset.task})});
+      message("Recipe saved."); return;
+    }
     let body = {};
     if (button.dataset.taskAction === "fork") {
       const prompt = window.prompt("New task instructions"); if (!prompt) return;

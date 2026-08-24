@@ -43,6 +43,9 @@ class RecipeLibrary:
     def create(self, document: dict) -> dict[str, object]:
         name, description = _text(document, "name"), _text(document, "description")
         template = document.get("request_template")
+        source_task_id = document.get("source_task_id")
+        if template is None and isinstance(source_task_id, str):
+            template = self._tasks.recipe_template(source_task_id)
         if not isinstance(template, dict) or not isinstance(template.get("workflow_id"), str):
             raise ValueError("recipe request_template requires a workflow_id")
         identifier, now = str(uuid4()), _now()
@@ -50,10 +53,27 @@ class RecipeLibrary:
             "INSERT INTO useful_recipes VALUES(?,?,?,?,?,?,?)",
             (
                 identifier, name, description, json.dumps(template, sort_keys=True),
-                now, now, document.get("source_task_id"),
+                now, now, source_task_id,
             ),
         )
         return self.inspect(identifier)
+
+    def update(self, recipe_id: str, document: dict) -> dict[str, object]:
+        current = self.inspect(recipe_id)
+        if current["builtin"]:
+            raise ValueError("built-in recipes cannot be edited")
+        name = document.get("name", current["name"])
+        description = document.get("description", current["description"])
+        template = document.get("request_template", current["request_template"])
+        if not isinstance(name, str) or not name.strip() or not isinstance(description, str) or not description.strip():
+            raise ValueError("recipe name and description must be non-empty text")
+        if not isinstance(template, dict) or not isinstance(template.get("workflow_id"), str):
+            raise ValueError("recipe request_template requires a workflow_id")
+        self._database.execute(
+            "UPDATE useful_recipes SET name=?,description=?,request_template_json=?,updated_at=? WHERE recipe_id=?",
+            (name.strip(), description.strip(), json.dumps(template, sort_keys=True), _now(), recipe_id),
+        )
+        return self.inspect(recipe_id)
 
     def inspect(self, recipe_id: str) -> dict[str, object]:
         for item in self.list()["recipes"]:

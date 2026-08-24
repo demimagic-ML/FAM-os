@@ -4,10 +4,12 @@ from __future__ import annotations
 
 import json
 import threading
+import shutil
+import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
-from typing import Any
+from typing import Any, cast
 
 
 TRIGGER_TYPES = {"manual", "interval", "webhook", "file_changed"}
@@ -21,8 +23,10 @@ class AutomationService:
         self._poll_seconds = poll_seconds
         self._stop = threading.Event()
         self._thread: threading.Thread | None = None
-        self._running: set[str] = set()
+        self._running: dict[str, int] = {}
         self._lock = threading.RLock()
+        self._queues: dict[str, threading.Lock] = {}
+        self._restart_tokens: dict[str, threading.Event] = {}
 
     def start(self) -> None:
         if self._thread is None:
@@ -76,6 +80,18 @@ class AutomationService:
 
     def run_now(self, automation_id: str) -> dict[str, object]:
         record = self.inspect(automation_id)
+        return self._execute(record)
+
+    def webhook(self, automation_id: str, payload: dict) -> dict[str, object]:
+        record = self.inspect(automation_id)
+        trigger = cast(dict[str, object], record["trigger"])
+        if trigger["type"] != "webhook":
+            raise ValueError("automation does not use a webhook trigger")
+        request = dict(cast(dict[str, object], record["request"]))
+        if payload:
+            request["webhook_payload"] = payload
+        record = dict(record)
+        record["request"] = request
         return self._execute(record)
 
     def runs(self, automation_id: str) -> dict[str, object]:
@@ -132,10 +148,28 @@ class AutomationService:
 
     def _execute(self, record: dict[str, Any]) -> dict[str, object]:
         identifier = record["automation_id"]
+        mode = record["run_mode"]
+        queue_lock = self._queues.setdefault(identifier, threading.Lock())
+        if mode == "queued":
+            with queue_lock:
+                return self._execute_unlocked(record, None, registered=False)
         with self._lock:
-            if identifier in self._running and record["run_mode"] == "single":
+            if identifier in self._running and mode == "single":
                 return {"automation_id": identifier, "status": "skipped_running"}
-            self._running.add(identifier)
+            token = threading.Event()
+            if mode == "restart":
+                previous = self._restart_tokens.get(identifier)
+                if previous is not None:
+                    previous.set()
+                self._restart_tokens[identifier] = token
+            self._running[identifier] = self._running.get(identifier, 0) + 1
+        return self._execute_unlocked(record, token, registered=True)
+
+    def _execute_unlocked(self, record: dict[str, Any], restart_token, *, registered: bool) -> dict[str, object]:
+        identifier = record["automation_id"]
+        if not registered:
+            with self._lock:
+                self._running[identifier] = self._running.get(identifier, 0) + 1
         run_id, started = str(uuid4()), _now()
         self._database.execute(
             "INSERT INTO useful_automation_runs(run_id,automation_id,status,started_at) "
@@ -144,26 +178,28 @@ class AutomationService:
         try:
             task = self._tasks.run(record["request"])
             now = _now()
+            status = "superseded" if restart_token is not None and restart_token.is_set() else task["status"]
             self._database.execute(
                 "UPDATE useful_automations SET last_run_at=?,last_task_id=?,last_status=?,"
                 "updated_at=? WHERE automation_id=?",
-                (now, task["task_id"], task["status"], now, identifier),
+                (now, task["task_id"], status, now, identifier),
             )
             self._database.execute(
                 "UPDATE useful_automation_runs SET status=?,completed_at=?,task_id=? WHERE run_id=?",
-                (task["status"], now, task["task_id"], run_id),
+                (status, now, task["task_id"], run_id),
             )
             self._database.execute(
                 "INSERT INTO useful_notifications VALUES(?,?,?,?,?,?,NULL)",
                 (
                     str(uuid4()), "automation", record["name"],
-                    f"Automation finished with status {task['status']}.",
+                    f"Automation finished with status {status}.",
                     task["task_id"], now,
                 ),
             )
+            _desktop_notification(record["name"], f"Automation finished with status {status}.")
             return {
                 "automation_id": identifier, "run_id": run_id,
-                "status": task["status"], "task": task,
+                "status": status, "task": task,
             }
         except Exception as error:
             self._database.execute(
@@ -173,7 +209,13 @@ class AutomationService:
             raise
         finally:
             with self._lock:
-                self._running.discard(identifier)
+                remaining = self._running.get(identifier, 1) - 1
+                if remaining:
+                    self._running[identifier] = remaining
+                else:
+                    self._running.pop(identifier, None)
+                if restart_token is not None and self._restart_tokens.get(identifier) is restart_token:
+                    self._restart_tokens.pop(identifier, None)
 
     def _update_state(self, identifier: str, state: dict) -> None:
         self._database.execute(
@@ -229,3 +271,17 @@ def _text(document: dict, name: str) -> str:
 
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def _desktop_notification(title: str, message: str) -> None:
+    command = shutil.which("notify-send")
+    if command is None:
+        return
+    try:
+        subprocess.run(
+            [command, "FAM_OS · " + title, message],
+            stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+            timeout=2, check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return

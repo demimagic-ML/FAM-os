@@ -25,6 +25,9 @@ def handle_recipe_post(handler, path: str, document: dict) -> bool:
     elif path.startswith("/api/v1/recipes/") and path.endswith("/run"):
         identifier = unquote(path.removeprefix("/api/v1/recipes/").removesuffix("/run"))
         handler._json(201, api.run(identifier, document))
+    elif path.startswith("/api/v1/recipes/") and path.endswith("/edit"):
+        identifier = unquote(path.removeprefix("/api/v1/recipes/").removesuffix("/edit"))
+        handler._json(200, api.update(identifier, document))
     else:
         return False
     return True

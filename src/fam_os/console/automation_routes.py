@@ -32,6 +32,9 @@ def handle_automation_post(handler, path: str, document: dict) -> bool:
     elif path.startswith("/api/v1/automations/") and path.endswith("/run"):
         identifier = unquote(path.removeprefix("/api/v1/automations/").removesuffix("/run"))
         handler._json(200, api.run_now(identifier))
+    elif path.startswith("/api/v1/automations/") and path.endswith("/webhook"):
+        identifier = unquote(path.removeprefix("/api/v1/automations/").removesuffix("/webhook"))
+        handler._json(200, api.webhook(identifier, document))
     else:
         return False
     return True

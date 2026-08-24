@@ -33,6 +33,8 @@ class RecipeTests(unittest.TestCase):
             result = library.run(custom["recipe_id"], {"workspace_root": temporary})
             self.assertEqual("completed", result["status"])
             self.assertEqual("data.analyze-csv", tasks.requests[0]["workflow_id"])
+            edited = library.update(custom["recipe_id"], {"name": "Quarterly report"})
+            self.assertEqual("Quarterly report", edited["name"])
             database.close()
 
 

@@ -23,6 +23,9 @@ def handle_useful_get(handler, path: str) -> bool:
             attention_only=_optional(query, "attention") == "true",
         ))
         return True
+    if path == "/api/v1/useful/projects":
+        handler._json(200, api.projects())
+        return True
     artifact_prefix = "/api/v1/useful/artifacts/"
     if path.startswith(artifact_prefix):
         artifact_id = unquote(path.removeprefix(artifact_prefix))
@@ -50,12 +53,17 @@ def handle_useful_post(handler, path: str, document: dict) -> bool:
         handler._json(503, {"error": "useful workflows are unavailable"})
     elif path == "/api/v1/useful/tasks":
         handler._json(201, api.run(document))
+    elif path == "/api/v1/useful/tasks/submit":
+        handler._json(202, api.submit(document))
     elif path.startswith("/api/v1/useful/tasks/") and path.endswith("/retry"):
         task_id = unquote(path.removeprefix("/api/v1/useful/tasks/").removesuffix("/retry"))
         handler._json(201, api.retry(task_id))
     elif path.startswith("/api/v1/useful/tasks/") and path.endswith("/fork"):
         task_id = unquote(path.removeprefix("/api/v1/useful/tasks/").removesuffix("/fork"))
         handler._json(201, api.fork(task_id, document))
+    elif path.startswith("/api/v1/useful/tasks/") and path.endswith("/cancel"):
+        task_id = unquote(path.removeprefix("/api/v1/useful/tasks/").removesuffix("/cancel"))
+        handler._json(200, api.cancel(task_id))
     else:
         return False
     return True

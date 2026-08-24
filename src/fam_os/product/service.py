@@ -389,7 +389,14 @@ class LocalProductService:
                 engineering_delegate=delegate,
                 tool_loop_repository=ToolLoopRepository(database),
             )
-            self.integration_center = IntegrationCenter(database)
+            self.integration_center = IntegrationCenter(
+                database,
+                state_root=self.settings.state_root,
+                mcp_clients=(
+                    None if self.application_services is None
+                    else self.application_services.mcp_clients
+                ),
+            )
             self.automation_service = AutomationService(database, self.useful_task_api)
             self.recipe_library = RecipeLibrary(database, self.useful_task_api)
         self.console_server = ConsoleHttpServer(
@@ -451,6 +458,9 @@ class LocalProductService:
         if self.automation_service is not None:
             self.automation_service.stop()
             self.automation_service = None
+        if self.useful_task_api is not None:
+            self.useful_task_api.close()
+            self.useful_task_api = None
         if self.peer_service is not None:
             self.peer_service.stop()
             self.peer_service = None

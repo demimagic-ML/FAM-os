@@ -27,13 +27,19 @@ const FamProductivity = (() => {
     const title=document.createElement("h3"); title.textContent=recipe.name;
     const description=document.createElement("p"); description.textContent=recipe.description;
     const button=document.createElement("button"); button.type="button"; button.className="quiet";
-    button.dataset.recipe=recipe.recipe_id; button.textContent="Use recipe";
-    article.append(top,title,description,button); return article;
+    button.dataset.recipe=recipe.recipe_id; button.dataset.recipeAction="run"; button.textContent="Use recipe";
+    article.append(top,title,description,button);
+    if(!recipe.builtin){const edit=document.createElement("button");edit.type="button";edit.className="quiet";edit.dataset.recipe=recipe.recipe_id;edit.dataset.recipeAction="edit";edit.textContent="Edit";article.append(edit);} return article;
   }
   async function runRecipe(event) {
     const button=event.target.closest("[data-recipe]"); if(!button)return;
-    const workspace=window.prompt("Workspace folder"); if(!workspace)return;
     const recipe=recipes.find(item=>item.recipe_id===button.dataset.recipe);
+    if(button.dataset.recipeAction==="edit"){
+      const name=window.prompt("Recipe name",recipe.name);if(!name)return;
+      const description=window.prompt("Description",recipe.description);if(!description)return;
+      await api(`/api/v1/recipes/${encodeURIComponent(recipe.recipe_id)}/edit`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name,description})});await load();return;
+    }
+    const workspace=window.prompt("Workspace folder"); if(!workspace)return;
     const inputs={workspace_root:workspace};
     if(recipe.request_template.workflow_id==="research.cited-brief"){
       const urls=window.prompt("Source URLs, separated by spaces"); if(!urls)return;

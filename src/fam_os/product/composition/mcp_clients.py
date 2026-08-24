@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+from threading import RLock
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -36,6 +37,7 @@ class ProductMcpClients:
         self._registry = registry
         self._definitions = definitions
         self._transports: dict[str, McpApplicationTransport] = {}
+        self._lock = RLock()
 
     @classmethod
     def from_file(cls, registry, path: Path) -> "ProductMcpClients":
@@ -55,9 +57,28 @@ class ProductMcpClients:
         return cls(registry, definitions)
 
     def start(self) -> None:
+        with self._lock:
+            self._start_definitions(self._definitions)
+
+    def reload_from_file(self, path: Path) -> None:
+        """Replace live MCP transports, restoring the previous set on failure."""
+        replacement = self.from_file(self._registry, path)
+        with self._lock:
+            previous = self._definitions
+            self.close()
+            try:
+                self._definitions = replacement._definitions
+                self._start_definitions(self._definitions)
+            except BaseException:
+                self.close()
+                self._definitions = previous
+                self._start_definitions(previous)
+                raise
+
+    def _start_definitions(self, definitions) -> None:
         started = []
         try:
-            for definition in self._definitions:
+            for definition in definitions:
                 worker = McpClientWorker(definition.transport, definition.policy)
                 transport = None
                 try:
@@ -86,10 +107,11 @@ class ProductMcpClients:
         return self._transports.get(connector_id)
 
     def close(self) -> None:
-        for connector_id, transport in tuple(self._transports.items()):
-            self._registry.unregister(connector_id)
-            transport.close()
-        self._transports.clear()
+        with self._lock:
+            for connector_id, transport in tuple(self._transports.items()):
+                self._registry.unregister(connector_id)
+                transport.close()
+            self._transports.clear()
 
 
 def _definition(value) -> McpClientDefinition:

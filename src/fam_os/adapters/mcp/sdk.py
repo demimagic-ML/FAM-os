@@ -78,7 +78,12 @@ class OfficialMcpStdioSession:
         )
 
     async def list_resources(self, cursor=None) -> McpResourcePage:
-        result = await self._session.list_resources(cursor=cursor)
+        try:
+            result = await self._session.list_resources(cursor=cursor)
+        except Exception as error:
+            if _method_not_found(error):
+                return McpResourcePage((), None)
+            raise
         items = tuple(
             McpResource(
                 str(item.uri), item.title or item.name,
@@ -128,3 +133,8 @@ def _tool(item):
     return McpTool(
         item.name, item.description, item.inputSchema, item.outputSchema, annotations
     )
+
+
+def _method_not_found(error: Exception) -> bool:
+    payload = getattr(error, "error", None)
+    return getattr(payload, "code", None) == -32601
