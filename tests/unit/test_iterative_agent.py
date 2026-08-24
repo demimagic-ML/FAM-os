@@ -184,6 +184,36 @@ class IterativeAgentTests(unittest.TestCase):
         self.assertEqual(2, len(calls))
         self.assertFalse(outcome.tool_results[2].succeeded)
         self.assertIn("loop detected", outcome.tool_results[2].output.lower())
+        self.assertEqual(
+            "system", runtime.requests[3].messages[-1].role.value,
+        )
+        self.assertIn("blocked for the remainder", runtime.requests[3].messages[-1].content)
+
+    def test_repeated_tool_call_does_not_abort_turn_before_model_recovers(self):
+        repeated = {"type": "tool_call", "tool": "inspect", "arguments": {},
+                    "reason": "Retry the unavailable approach."}
+        runtime = _Runtime([
+            repeated, repeated, repeated, repeated, repeated, repeated,
+            {"type": "final", "content": "The optional tool is unavailable; used existing evidence."},
+        ])
+        calls = []
+        tools = AgentToolRegistry()
+        tools.register(
+            _tool("inspect", AgentToolEffect.OBSERVE),
+            lambda _: calls.append(True) or "unavailable",
+        )
+
+        outcome = IterativeModelAgent(
+            runtime, IterativeAgentSettings("model"), tools, _Store(),
+        ).run(
+            thread_id="thread", turn_id="turn", objective="Inspect.",
+            profile=AgentAuthorityProfile.ASK,
+        )
+
+        self.assertEqual(7, outcome.model_steps)
+        self.assertEqual(2, len(calls))
+        self.assertEqual("The optional tool is unavailable; used existing evidence.",
+                         outcome.response.content)
 
     def test_owner_guidance_is_injected_before_the_next_model_step(self):
         runtime = _Runtime([

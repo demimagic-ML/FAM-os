@@ -49,7 +49,11 @@ class WorkspaceCommandTools:
     def register(self, registry: AgentToolRegistry) -> None:
         registry.register(AgentToolDescriptor(
             "run_command",
-            "Run an argv command in the writable workspace sandbox and return stdout, stderr, and exit status.",
+            "Run an argv command in the writable workspace sandbox and return stdout, "
+            "stderr, and exit status. The sandbox has system executables from /usr/bin "
+            "and /bin, no network, no copied project virtual environment, and no "
+            "permission to install into the host Python environment. Inspect project "
+            "manifests and prefer already available runtimes and repository scripts.",
             AgentToolEffect.COMMAND,
             {
                 "type": "object",

@@ -230,10 +230,6 @@ class IterativeModelAgent:
             }, sort_keys=True, separators=(",", ":"))
             decision_counts[signature] = decision_counts.get(signature, 0) + 1
             repeated = decision_counts[signature]
-            if repeated >= 6:
-                raise RuntimeError(
-                    f"agent repeated tool call without progress: {decision.tool_id}"
-                )
             if repeated >= 3:
                 result = AgentToolResult(
                     decision.call_id, decision.tool_id, False,
@@ -254,6 +250,16 @@ class IterativeModelAgent:
                     "output": result.output,
                 }, sort_keys=True, separators=(",", ":")),
             ))
+            if repeated >= 3:
+                messages.append(InferenceMessage(
+                    MessageRole.SYSTEM,
+                    "The last tool and arguments are blocked for the remainder of this "
+                    "turn because they repeatedly made no progress. Do not call them "
+                    "again. Reassess the objective from existing evidence, inspect the "
+                    "project's declared workflows, and choose a materially different "
+                    "tool or approach. Missing optional tooling is not a reason to "
+                    "install it unless installation is itself part of the objective.",
+                ))
         raise RuntimeError("agent turn exhausted its model-step budget")
 
 
@@ -300,6 +306,11 @@ def _initial_messages(objective, prior_context, conversation_history, profile, d
         "are direct argv, not shell syntax. If a preferred test runner is unavailable "
         "and dependency installation is not authorized, use the existing language "
         "runtime to perform a focused behavioral check instead of repeatedly installing. "
+        "Treat a missing executable or rejected package installation as environment "
+        "evidence: do not retry it or switch to another installer. Inspect the repository's "
+        "manifests and existing scripts, then use an available equivalent or perform a "
+        "focused check with the installed runtime. Optional linters are not prerequisites "
+        "unless the objective explicitly asks to install them. "
         "Use run_command for setup and exploratory processes. Use verify_command for "
         "the final test, build, diagnostic, or behavioral assertion whose zero exit "
         "status proves the implementation works. "
