@@ -372,8 +372,6 @@ class LocalProductService:
             ),
         )
         token = load_or_create_token(self.settings.runtime_root / "console.token")
-        if self._engineering_runtime is None or self._engineering_model_ref is None:
-            raise RuntimeError("conversation turn inference was not composed")
         storage = None if self._storage_unit is None else self._storage_unit.result
         if storage is None:
             raise RuntimeError("Console requires secure storage state")
@@ -442,15 +440,20 @@ class LocalProductService:
             integration_center=self.integration_center,
             automation_service=self.automation_service,
             recipe_library=self.recipe_library,
-            conversation_turn_api=ConsoleConversationTurnApi(
-                "local-owner",
-                self._session_memory,
-                ModelConversationTurnResolver(
-                    self._engineering_runtime,
-                    ConversationTurnResolverSettings(
-                        self._engineering_model_ref,
+            conversation_turn_api=(
+                None
+                if self._engineering_runtime is None
+                or self._engineering_model_ref is None
+                else ConsoleConversationTurnApi(
+                    "local-owner",
+                    self._session_memory,
+                    ModelConversationTurnResolver(
+                        self._engineering_runtime,
+                        ConversationTurnResolverSettings(
+                            self._engineering_model_ref,
+                        ),
                     ),
-                ),
+                )
             ),
         )
         self.shell_server.open()
