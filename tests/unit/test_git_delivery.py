@@ -80,6 +80,24 @@ class GitDeliveryTests(unittest.TestCase):
             self.assertIn("author ", adapter.blame(root, "tracked.txt"))
             self.assertEqual("feature/verified", adapter.observe("task-1", root).head_ref)
 
+    def test_directory_inside_repository_resolves_to_canonical_top_level(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            subprocess.run(("git", "init", "-q", "-b", "main", str(root)), check=True)
+            selected = root / "src/fam_os"
+            selected.mkdir(parents=True)
+
+            adapter = LocalGitAdapter(clock=lambda: NOW)
+            observation = adapter.observe("task-nested", selected)
+
+            self.assertEqual(root, adapter.repository_root(selected))
+            self.assertEqual(str(root), observation.repository_root)
+
+    def test_directory_outside_repository_is_rejected_clearly(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with self.assertRaisesRegex(ValueError, "inside a repository"):
+                LocalGitAdapter(clock=lambda: NOW).repository_root(directory)
+
     def test_publication_is_exact_expiring_single_use_and_exceptional_refs_fail_closed(self):
         approval = git_schema_values()[3]
         grant = engineering_grant_schema_values()[0]

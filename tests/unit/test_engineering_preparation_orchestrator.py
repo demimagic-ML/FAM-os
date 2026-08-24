@@ -1,4 +1,5 @@
 import tempfile
+import subprocess
 import unittest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -28,6 +29,21 @@ NOW = datetime(2026, 7, 19, 23, 30, tzinfo=timezone.utc)
 
 
 class EngineeringPreparationOrchestratorTests(unittest.TestCase):
+    def test_nested_workspace_is_normalized_to_repository_top_level(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            subprocess.run(("git", "init", "-q", "-b", "main", str(root)), check=True)
+            nested = root / "src/package"
+            nested.mkdir(parents=True)
+            (root / "README.md").write_text("repository root\n")
+
+            evidence = BoundedFilesystemRepositoryObserver(clock=lambda: NOW).observe(
+                "task-nested", str(nested),
+            )
+
+            self.assertEqual(str(root), evidence.workspace_root)
+            self.assertIn("README.md", tuple(item.path for item in evidence.files))
+
     def test_real_bounded_observation_planning_and_candidate_creation_advance_loop(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

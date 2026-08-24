@@ -41,9 +41,11 @@ class BoundedFilesystemRepositoryObserver:
         self._clock = clock or (lambda: datetime.now(timezone.utc))
 
     def observe(self, task_id: str, workspace_root: str) -> RepositoryEvidenceBundle:
-        root = Path(workspace_root).resolve(strict=True)
-        if str(root) != workspace_root or root.is_symlink():
+        selected = Path(workspace_root).resolve(strict=True)
+        if str(selected) != workspace_root or selected.is_symlink():
             raise PermissionError("repository root must be exact and canonical")
+        resolver = getattr(self._git, "repository_root", None)
+        root = selected if resolver is None else resolver(selected)
         reject_tree_symlinks(root, _EXCLUDED)
         files, contexts, manifests, total, truncated = self._scan(root)
         git = self._git.observe(task_id, root)

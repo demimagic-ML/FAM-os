@@ -1,7 +1,6 @@
 """Shell-free exact-path local Git observation and mutation adapter."""
 
 import hashlib
-import os
 import re
 import subprocess
 from datetime import datetime, timezone
@@ -167,14 +166,29 @@ class LocalGitAdapter:
         )
 
     def blame(self, root: Path, relative_path: str) -> str:
-        self._paths(self._root(root), (relative_path,))
-        return self._run(root.resolve(), "blame", "--line-porcelain", "--", relative_path)
+        root = self._root(root)
+        self._paths(root, (relative_path,))
+        return self._run(root, "blame", "--line-porcelain", "--", relative_path)
+
+    def repository_root(self, selected_directory: Path | str) -> Path:
+        """Resolve a repository root from its top-level or any directory inside it."""
+        selected = Path(selected_directory).resolve(strict=True)
+        if selected.is_symlink() or not selected.is_dir():
+            raise ValueError("local Git adapter requires a directory inside a repository")
+        try:
+            discovered = Path(
+                self._run(selected, "rev-parse", "--show-toplevel")
+            ).resolve(strict=True)
+        except RuntimeError as error:
+            raise ValueError(
+                "local Git adapter requires a directory inside a repository"
+            ) from error
+        if discovered.is_symlink() or not discovered.is_dir():
+            raise ValueError("Git returned an invalid repository root")
+        return discovered
 
     def _root(self, root: Path) -> Path:
-        root = root.resolve(strict=True)
-        if root.is_symlink() or not (root / ".git").exists():
-            raise ValueError("local Git adapter requires a repository root")
-        return root
+        return self.repository_root(root)
 
     def _paths(self, root: Path, paths: tuple[str, ...]) -> None:
         for relative in paths:

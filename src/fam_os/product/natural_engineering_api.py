@@ -80,6 +80,7 @@ class ProductNaturalEngineeringApi:
         token = self._identifier()
         task_id, grant_id = f"engineering-{token}", f"grant-{token}"
         evidence = self._observer.observe(task_id, str(canonical))
+        canonical = Path(getattr(evidence, "workspace_root", str(canonical)))
         task_intent = (
             prompt if self._conversation is None else self._conversation.resolve(
                 owner_id, transport_session_id, str(canonical), prompt,
