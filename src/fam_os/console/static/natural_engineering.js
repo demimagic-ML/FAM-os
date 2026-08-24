@@ -17,19 +17,26 @@ const FamNaturalEngineering = (() => {
     return ["resources", "grant", "review", "changeset", "publication", "rollback"].includes(current?.phase);
   }
 
-  async function start(prompt, scope, workspaceRoot) {
+  async function start(prompt, scope, workspaceRoot, authorityProfile = "workspace") {
     current = null;
     const proposal = await api(prefix, {
       method: "POST",
       headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({prompt, workspace_root: workspaceRoot}),
+      body: JSON.stringify({
+        prompt, workspace_root: workspaceRoot,
+        authority_profile: authorityProfile,
+      }),
     });
     const turn = hooks.startTurn(prompt, scope, proposal.proposal_id);
     current = {
       proposal, turn, phase: "grant", changesetId: null,
       rollbackRequired: false,
     };
-    renderProposal();
+    if (authorityProfile === "ask") {
+      await activate();
+    } else {
+      renderProposal();
+    }
     hooks.setBusy(false);
   }
 
@@ -389,6 +396,19 @@ const FamNaturalEngineering = (() => {
         limit(planText, 16000), "Analysis and plan complete",
         plan ? "Repository-grounded plan saved for this session" : "No effects executed",
       );
+      return;
+    }
+    if (task.outcome === "answer_ready") {
+      current.phase = null;
+      renderSteps([
+        ["succeeded", "Inspect selected repository evidence", "read only"],
+        ["succeeded", "Generate a local-model answer", "Ask mode"],
+      ]);
+      renderText(
+        limit(task.answer, 16000), "Repository-grounded answer",
+        `${task.tool_result_count} read-only tool result(s) · no effects executed`,
+      );
+      hideApproval();
       return;
     }
     if (task.outcome === "runtime_diagnostics_completed") {

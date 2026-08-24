@@ -86,6 +86,7 @@
           <details class="composer-scope" id="task-scope">
             <summary><span>Task scope</span><strong id="scope-summary">Local machine</strong><i aria-hidden="true">⌄</i></summary>
             <div class="task-options">
+              <label class="context-field" for="agent-profile"><span>Agent access</span><select id="agent-profile"><option value="ask">Ask — read only</option><option value="workspace" selected>Workspace — edit and test here</option><option value="full_os">Full OS — current-user host access</option></select></label>
               <label class="context-field" for="task-mode"><span>Task type</span><select id="task-mode"><option value="general">General task</option><option value="engineering">Repository change</option></select></label>
               <label class="context-field" for="context"><span>Work in</span><select id="context"><option value="">No application context</option></select></label>
               <label class="context-field" for="resource"><span>Specific file or URI (optional)</span><input id="resource" type="text" placeholder="file:///home/you/project/README.md"></label>

@@ -11,6 +11,8 @@ from fam_os.core.engineering import (
     generated_candidate_plan_digest,
     RuntimeDiagnosticStatus,
     DatabaseChangeStatus,
+    EngineeringAuthority,
+    EngineeringReviewStatus,
 )
 from fam_os.schemas import encode_document
 from fam_os.product.natural_engineering_repair import (
@@ -19,9 +21,6 @@ from fam_os.product.natural_engineering_repair import (
 from fam_os.product.natural_engineering_trace import (
     NaturalEngineeringTraceCoordinator,
 )
-from fam_os.core.engineering import EngineeringReviewStatus
-
-
 class NaturalEngineeringExecutionCoordinator:
     def __init__(
         self, loop, context_reader, generation: CandidateGenerationService,
@@ -51,7 +50,7 @@ class NaturalEngineeringExecutionCoordinator:
         context = self._context_reader.read(
             preparation.candidate, task.intent, preferred,
         )
-        agent_evidence_ids = ()
+        agent_evidence_ids: tuple[str, ...] = ()
         try:
             baseline_requests, baseline_receipts = (
                 self._loop.capture_runtime_performance_baseline(
@@ -441,6 +440,26 @@ class NaturalEngineeringExecutionCoordinator:
             result["repair_count"] = 1
         return result
 
+    def answer(
+        self, owner_id: str, definition, *, session_id: str,
+    ) -> dict:
+        if self._agent is None:
+            raise LookupError("iterative engineering agent is unavailable")
+        preparation = self._loop.preparation(
+            owner_id, definition.task.task_id,
+        )
+        outcome = self._agent.answer(
+            owner_id, definition, preparation, session_id=session_id,
+        )
+        result = self._loop.inspect(owner_id, definition.task.task_id)
+        result.update({
+            "outcome": "answer_ready",
+            "answer": outcome.response.content,
+            "agent_turn_id": outcome.turn_id,
+            "tool_result_count": len(outcome.tool_results),
+        })
+        return result
+
     def execute_diagnostics_only(
         self, owner_id: str, definition, *, session_id: str,
         principal_id: str,
@@ -495,6 +514,9 @@ class NaturalEngineeringExecutionCoordinator:
         workspace = definition.task.workspace_roots[0]
         turn_id = self._agent.replay_verification(
             definition.task.task_id, workspace,
+            full_os=(
+                EngineeringAuthority.HOST_ADMIN in definition.task.authorities
+            ),
         )
         return self._loop.accept_agent_reverification(
             owner_id, definition.task.task_id, turn_id,

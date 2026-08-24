@@ -3,12 +3,16 @@
 from __future__ import annotations
 
 import logging
-
-from datetime import datetime, timezone
+from dataclasses import replace
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from uuid import uuid4
 
+from fam_os.core.agent import AgentAuthorityProfile
 from fam_os.core.engineering import (
+    BreakGlassChallenge,
+    BreakGlassDecision,
+    BreakGlassDisposition,
     CandidateVerificationStatus,
     CheckpointDecision,
     CheckpointDisposition,
@@ -19,6 +23,7 @@ from fam_os.core.engineering import (
     OwnerGrantApproval,
     architecture_plan_view,
     candidate_preview_digest,
+    consequences_digest,
 )
 from fam_os.core.engineering.grant_policy import engineering_grant_digest
 from fam_os.schemas import encode_document
@@ -33,6 +38,9 @@ from fam_os.product.natural_engineering_integration_authority import (
 )
 from fam_os.product.natural_engineering_review_governance import (
     NaturalEngineeringReviewGovernance,
+)
+from fam_os.product.owner_engineering_authentication import (
+    break_glass_authentication_digest,
 )
 
 
@@ -73,6 +81,7 @@ class ProductNaturalEngineeringApi:
     def propose(
         self, owner_id: str, prompt: str, workspace_root: str,
         *, transport_session_id: str | None = None,
+        authority_profile: AgentAuthorityProfile = AgentAuthorityProfile.WORKSPACE,
     ) -> dict:
         self._require_owner(owner_id)
         workspace = Path(workspace_root)
@@ -93,6 +102,7 @@ class ProductNaturalEngineeringApi:
             principal_id=owner_id, task_id=task_id, grant_id=grant_id,
             toolchains=_toolchains(evidence), now=self._clock(),
             task_intent=task_intent,
+            authority_profile=authority_profile,
         )
         self._proposals.put(proposal)
         return self._view(proposal)
@@ -331,6 +341,17 @@ class ProductNaturalEngineeringApi:
                         owner_id, proposal.definition.task.task_id,
                     )
                     self._review_governance.attach_blocked(prepared, reviews)
+            elif (
+                self._executor is not None
+                and EngineeringAuthority.MODIFY
+                not in proposal.definition.task.authorities
+                and EngineeringAuthority.EXECUTE
+                not in proposal.definition.task.authorities
+            ):
+                prepared = self._executor.answer(
+                    owner_id, proposal.definition,
+                    session_id=transport_session_id,
+                )
             elif (
                 self._executor is not None
                 and EngineeringAuthority.EXECUTE in proposal.definition.task.authorities
@@ -854,7 +875,39 @@ class ProductNaturalEngineeringApi:
             f"approval-{grant.grant_id}", grant.grant_id,
             owner_id, digest, self._clock(), context.context_id,
         )
-        self._authorizer.activate(grant, approval)
+        challenge = decision = None
+        if grant.requires_break_glass:
+            issued = self._clock()
+            consequences = (
+                "Commands run with the current OS user's host filesystem and process access.",
+                "Host commands are not isolated by the Workspace sandbox.",
+                "The model may modify resources outside the selected repository when required by the task.",
+            )
+            consequence_sha = consequences_digest(consequences)
+            challenge = BreakGlassChallenge(
+                f"break-glass-challenge-{grant.grant_id}", owner_id,
+                grant.grant_id, grant.authorities, grant.verification,
+                grant.scope.kind, grant.scope.scope_id, consequences,
+                consequence_sha, issued, min(grant.expires_at, issued + timedelta(minutes=2)),
+            )
+            decision = BreakGlassDecision(
+                grant.break_glass_decision_id, challenge.challenge_id,
+                owner_id, grant.grant_id, BreakGlassDisposition.APPROVED,
+                grant.scope.kind, grant.scope.scope_id, consequence_sha,
+                issued, "pending-break-glass-context",
+            )
+            break_context = self._authentication.issue(
+                owner_id, "engineering-break-glass",
+                break_glass_authentication_digest(challenge, decision),
+                transport_session_id=transport_session_id,
+            )
+            decision = replace(
+                decision, authentication_context_id=break_context.context_id,
+            )
+        if challenge is None or decision is None:
+            self._authorizer.activate(grant, approval)
+        else:
+            self._authorizer.activate(grant, approval, challenge, decision)
 
     def _view(self, proposal):
         value = _view(proposal, self._proposals.status(proposal.proposal_id))

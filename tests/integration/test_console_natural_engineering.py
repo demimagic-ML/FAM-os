@@ -34,6 +34,7 @@ class ConsoleNaturalEngineeringTests(unittest.TestCase):
             opener, self.base + "/api/v1/engineering/natural-language/proposals",
             csrf, {
                 "prompt": "Implement and test it", "workspace_root": "/workspace/project",
+                "authority_profile": "workspace",
             },
         )
         resources = _post(
@@ -114,8 +115,10 @@ class _Api:
 
     def propose(
         self, owner_id, prompt, workspace_root, *, transport_session_id=None,
+        authority_profile=None,
     ):
         self.proposal_session_id = transport_session_id
+        self.authority_profile = authority_profile
         return {"proposal_id": "proposal-1", "status": "proposed"}
 
     def activate(self, owner_id, proposal_id, session_id, confirmed):

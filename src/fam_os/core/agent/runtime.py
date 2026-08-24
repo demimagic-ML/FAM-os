@@ -134,9 +134,10 @@ class IterativeModelAgent:
             objective, prior_context, profile, self._tools.descriptors(),
         ))
         results: list[AgentToolResult] = []
+        decision_counts: dict[str, int] = {}
         try:
             return self._run_steps(
-                thread_id, turn_id, profile, messages, results,
+                thread_id, turn_id, profile, messages, results, decision_counts,
             )
         except Exception as error:
             self._store.fail_turn(
@@ -144,7 +145,9 @@ class IterativeModelAgent:
             )
             raise
 
-    def _run_steps(self, thread_id, turn_id, profile, messages, results):
+    def _run_steps(
+        self, thread_id, turn_id, profile, messages, results, decision_counts,
+    ):
         for step in range(1, self._settings.maximum_steps + 1):
             response = self._runtime.chat(InferenceRequest(
                 model_ref=self._settings.model_ref,
@@ -163,6 +166,12 @@ class IterativeModelAgent:
                     else self._completion_validator(tuple(results))
                 )
                 if rejection is not None:
+                    signature = f"final:{decision.content}"
+                    decision_counts[signature] = decision_counts.get(signature, 0) + 1
+                    if decision_counts[signature] >= 4:
+                        raise RuntimeError(
+                            "agent repeated a rejected completion without progress"
+                        )
                     messages.append(InferenceMessage(
                         MessageRole.USER,
                         json.dumps({
@@ -180,7 +189,24 @@ class IterativeModelAgent:
                     thread_id, turn_id, decision, tuple(results), step,
                 )
             self._store.record_call(thread_id, turn_id, decision)
-            result = self._tools.invoke(decision, profile)
+            signature = json.dumps({
+                "tool": decision.tool_id,
+                "arguments": decision.arguments,
+            }, sort_keys=True, separators=(",", ":"))
+            decision_counts[signature] = decision_counts.get(signature, 0) + 1
+            repeated = decision_counts[signature]
+            if repeated >= 6:
+                raise RuntimeError(
+                    f"agent repeated tool call without progress: {decision.tool_id}"
+                )
+            if repeated >= 3:
+                result = AgentToolResult(
+                    decision.call_id, decision.tool_id, False,
+                    "Repeated-call loop detected. This action has already produced the "
+                    "same result; inspect different evidence or choose another strategy.",
+                )
+            else:
+                result = self._tools.invoke(decision, profile)
             self._store.record_result(thread_id, turn_id, result)
             results.append(result)
             messages.append(InferenceMessage(

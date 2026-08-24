@@ -6,6 +6,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 from fam_os.adapters.sqlite import SQLiteNaturalEngineeringProposalStore
+from fam_os.core.agent import AgentAuthorityProfile
 from fam_os.product.natural_engineering_api import (
     ProductNaturalEngineeringApi,
     _toolchains,
@@ -26,6 +27,35 @@ NOW = datetime(2026, 7, 19, 9, 0, tzinfo=timezone.utc)
 
 
 class ProductNaturalEngineeringApiTests(unittest.TestCase):
+    def test_full_os_profile_requires_and_activates_exact_break_glass_evidence(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            workspace = Path(temporary) / "project"
+            workspace.mkdir()
+            authorizer = _Authorizer()
+            api = ProductNaturalEngineeringApi(
+                "owner-1",
+                SQLiteNaturalEngineeringProposalStore(Path(temporary) / "p.sqlite3"),
+                _Authentication(), authorizer, _AuthorizingLoop(authorizer), _Observer(),
+                clock=lambda: NOW, identifier=lambda: "full",
+            )
+            proposal = api.propose(
+                "owner-1", "Implement the feature and run tests.", str(workspace),
+                authority_profile=AgentAuthorityProfile.FULL_OS,
+            )
+
+            result = api.activate(
+                "owner-1", proposal["proposal_id"], "console-session-1",
+                confirmed=True,
+            )
+
+            self.assertEqual("candidate_ready", result["engineering_task"]["stage"])
+            self.assertIsNotNone(authorizer.challenge)
+            self.assertEqual(
+                authorizer.grant.break_glass_decision_id,
+                authorizer.decision.decision_id,
+            )
+            api.close()
+
     def test_manifest_toolchain_outranks_unrelated_source_file_languages(self):
         evidence = SimpleNamespace(
             manifests=(SimpleNamespace(ecosystem="node"),),
@@ -331,8 +361,10 @@ class _Authorizer:
     def __init__(self):
         self.grants = {}
 
-    def activate(self, grant, approval):
+    def activate(self, grant, approval, challenge=None, decision=None):
         self.grant = grant
+        self.challenge = challenge
+        self.decision = decision
         self.grants[grant.grant_id] = grant
 
     def usable(self, grant_id):
@@ -351,6 +383,16 @@ class _Loop:
 
     def database_postapply_receipts(self, owner_id, task_id):
         return ()
+
+
+class _AuthorizingLoop(_Loop):
+    def __init__(self, authorizer):
+        self.authorizer = authorizer
+
+    def start(self, owner_id, definition, budget):
+        if self.authorizer.usable(definition.task.grant_id) is None:
+            raise PermissionError("grant required")
+        return super().start(owner_id, definition, budget)
 
 
 class _PlanningLoop(_Loop):

@@ -31,17 +31,20 @@ class WorkspaceAgentTools:
 
     def register(self, registry: AgentToolRegistry) -> None:
         registry.register(_descriptor(
-            "list_directory", "List one workspace directory.",
+            "list_directory", "List one relative workspace directory; globs are not accepted.",
             AgentToolEffect.OBSERVE,
             {"path": {"type": "string"}},
         ), self.list_directory)
         registry.register(_descriptor(
-            "read_file", "Read one UTF-8 workspace file with its SHA-256 digest.",
+            "read_file", "Read one relative UTF-8 workspace file; globs are not accepted.",
             AgentToolEffect.OBSERVE,
             {"path": {"type": "string"}},
         ), self.read_file)
         registry.register(_descriptor(
-            "search_text", "Search workspace text files for a literal string.",
+            "search_text", (
+                "Search a relative workspace file or directory recursively for a literal "
+                "string. Use '.' for the whole workspace; globs are not accepted."
+            ),
             AgentToolEffect.OBSERVE,
             {"query": {"type": "string"}, "path": {"type": "string"}},
         ), self.search_text)

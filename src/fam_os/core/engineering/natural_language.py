@@ -7,6 +7,8 @@ from datetime import datetime, timedelta
 import hashlib
 import re
 
+from fam_os.core.agent import AgentAuthorityProfile
+
 from fam_os.core.engineering.authority import (
     CheckpointPolicy,
     EngineeringAuthority,
@@ -125,6 +127,7 @@ class NaturalLanguageEngineeringPlanner:
         principal_id: str, task_id: str, grant_id: str,
         toolchains: tuple[str, ...], now: datetime,
         task_intent: str | None = None,
+        authority_profile: AgentAuthorityProfile = AgentAuthorityProfile.WORKSPACE,
     ) -> NaturalLanguageEngineeringProposal:
         normalized = " ".join(prompt.casefold().split())
         if not normalized or len(prompt.encode("utf-8")) > 16_384:
@@ -137,6 +140,24 @@ class NaturalLanguageEngineeringPlanner:
             if pattern.search(normalized)
         )
         authorities, operations = _ordinary_scope(normalized)
+        if authority_profile is AgentAuthorityProfile.ASK:
+            authorities = (
+                EngineeringAuthority.OBSERVE, EngineeringAuthority.PROPOSE,
+            )
+            operations = (EngineeringOperation.READ,)
+            high_risk = ()
+        elif authority_profile is AgentAuthorityProfile.FULL_OS:
+            authorities = tuple(dict.fromkeys((
+                *authorities, EngineeringAuthority.RAW_SHELL,
+                EngineeringAuthority.HOST_ADMIN,
+            )))
+            high_risk = tuple(
+                item for item in high_risk
+                if item not in {
+                    EngineeringAuthority.RAW_SHELL,
+                    EngineeringAuthority.HOST_ADMIN,
+                }
+            )
         if (
             EngineeringAuthority.EXECUTE in authorities
             and not toolchains
@@ -164,6 +185,10 @@ class NaturalLanguageEngineeringPlanner:
             authorities, scope, prompt, now, expires, GrantLifecycleState.ACTIVE,
             ReversibilityPolicy.REQUIRED, SecretExposurePolicy.NONE,
             VerificationRequirement.REQUIRED, impact,
+            break_glass_decision_id=(
+                f"break-glass-decision-{grant_id}"
+                if authority_profile is AgentAuthorityProfile.FULL_OS else None
+            ),
         )
         task = EngineeringTaskEnvelope(
             task_id, owner_id, grant_id, resolved_intent, now, expires, (workspace_root,),

@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 from dataclasses import replace
 from pathlib import Path
+from typing import Protocol
 
 from fam_os.core.agent import AgentToolDescriptor, AgentToolEffect, AgentToolRegistry
 from fam_os.core.engineering import (
@@ -14,7 +15,6 @@ from fam_os.core.engineering import (
     GeneratedCandidatePlan,
     bind_generated_candidate_plan,
 )
-from fam_os.product.agent_command_tools import WorkspaceCommandTools
 from fam_os.product.agent_workspace_tools import WorkspaceAgentTools
 
 
@@ -24,13 +24,18 @@ _EPHEMERAL_DIRECTORIES = frozenset({
 })
 
 
+class _CommandTools(Protocol):
+    def run_command(self, arguments: dict[str, object]) -> str: ...
+
+
 class AuthorizedCandidateAgentTools:
     """Expose flexible tools while recording every candidate filesystem effect."""
 
     def __init__(
         self, loop, owner_id: str, task_id: str, session_id: str,
         principal_id: str, definition, preparation,
-        command_tools: WorkspaceCommandTools,
+        command_tools: _CommandTools,
+        command_effect: AgentToolEffect = AgentToolEffect.COMMAND,
     ) -> None:
         self._loop = loop
         self._owner_id = owner_id
@@ -46,6 +51,7 @@ class AuthorizedCandidateAgentTools:
             Path(preparation.candidate.owner_workspace),
         )
         self._commands = command_tools
+        self._command_effect = command_effect
         self._sequence = 0
         self.applied_edits: list[object] = []
         self.successful_verifications: list[str] = []
@@ -86,11 +92,12 @@ class AuthorizedCandidateAgentTools:
                       "destination": {"type": "string"},
                   })
         _register(registry, "run_command", (
-            "Run a direct argv command (not a shell expression) in the candidate "
-            "sandbox. Workspace mode has no network. Filesystem effects are detected "
+            "Run a direct argv command (not a shell expression) from the candidate. "
+            "Its isolation and OS reach follow the approved authority profile. "
+            "Filesystem effects inside the candidate are detected "
             "and replayed through authorized candidate edits; ephemeral tool caches "
             "and virtual environments are not proposed as source changes."
-        ), AgentToolEffect.COMMAND, self.run_command, {
+        ), self._command_effect, self.run_command, {
             "command": {"type": "array", "items": {"type": "string"}},
             "timeout_seconds": {"type": "number"},
         })
@@ -98,7 +105,7 @@ class AuthorizedCandidateAgentTools:
             "Run a direct argv check whose zero exit status demonstrates that the "
             "requested implementation works. Use this for tests, builds, diagnostics, "
             "or focused behavioral assertions, not for setup or dependency installation."
-        ), AgentToolEffect.COMMAND, self.verify_command, {
+        ), self._command_effect, self.verify_command, {
             "command": {"type": "array", "items": {"type": "string"}},
             "timeout_seconds": {"type": "number"},
         })

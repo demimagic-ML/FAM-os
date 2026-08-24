@@ -2,6 +2,8 @@
 
 from urllib.parse import unquote
 
+from fam_os.core.agent import AgentAuthorityProfile
+
 
 _PREFIX = "/api/v1/engineering/natural-language/proposals"
 
@@ -42,11 +44,14 @@ def handle_natural_engineering_post(
         handler._json(503, {"error": "Natural engineering is unavailable."})
         return True
     if path == _PREFIX:
-        _exact(document, {"prompt", "workspace_root"})
+        _exact(document, {"prompt", "workspace_root", "authority_profile"})
         response = api.propose(
             api.owner_id, _text(document["prompt"]),
             _text(document["workspace_root"]),
             transport_session_id=session_id,
+            authority_profile=AgentAuthorityProfile(
+                _text(document["authority_profile"]),
+            ),
         )
     else:
         proposal_id, operation = _path(path)

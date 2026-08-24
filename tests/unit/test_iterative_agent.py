@@ -121,6 +121,31 @@ class IterativeAgentTests(unittest.TestCase):
         self.assertEqual(3, outcome.model_steps)
         self.assertIn("completion_rejected", runtime.requests[1].messages[-1].content)
 
+    def test_repeated_tool_call_is_not_reexecuted_and_requests_new_strategy(self):
+        repeated = {"type": "tool_call", "tool": "inspect", "arguments": {},
+                    "reason": "Try the same observation."}
+        runtime = _Runtime([
+            repeated, repeated, repeated,
+            {"type": "final", "content": "Changed strategy."},
+        ])
+        calls = []
+        tools = AgentToolRegistry()
+        tools.register(
+            _tool("inspect", AgentToolEffect.OBSERVE),
+            lambda _: calls.append(True) or "same",
+        )
+
+        outcome = IterativeModelAgent(
+            runtime, IterativeAgentSettings("model"), tools, _Store(),
+        ).run(
+            thread_id="thread", turn_id="turn", objective="Inspect.",
+            profile=AgentAuthorityProfile.ASK,
+        )
+
+        self.assertEqual(2, len(calls))
+        self.assertFalse(outcome.tool_results[2].succeeded)
+        self.assertIn("loop detected", outcome.tool_results[2].output.lower())
+
 
 class _Store:
     def begin_turn(self, *args): pass

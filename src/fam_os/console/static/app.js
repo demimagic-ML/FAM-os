@@ -184,7 +184,11 @@ function updateScopeSummary() {
   const selected = selectedTaskContext();
   const resource = $("#resource").value.trim();
   const mode = $("#task-mode").value;
-  const parts = [mode === "engineering" ? "Repository change" : "General task"];
+  const profile = $("#agent-profile").value;
+  const profileLabel = {
+    ask: "Ask", workspace: "Workspace", full_os: "Full OS",
+  }[profile];
+  const parts = [profileLabel, mode === "engineering" ? "Repository change" : "General task"];
   parts.push(selected ? selected.display_name : "Local machine");
   if (resource) parts.push("specific resource");
   if ($("#verify").checked) parts.push("verified");
@@ -272,6 +276,7 @@ async function createTask(event) {
       await FamNaturalEngineering.start(
         resolved.resolved_request,
         contextLabel(selected, workspacePath), workspacePath,
+        $("#agent-profile").value,
       );
     } catch (error) {
       setComposerBusy(false);
@@ -606,6 +611,7 @@ $("#cancel").onclick = () => cancelTask().catch(fail);
 $("#undo").onclick = () => undoTask().catch(fail);
 $("#refresh").onclick = () => refresh().catch(fail);
 $("#context").onchange = updateScopeSummary;
+$("#agent-profile").onchange = updateScopeSummary;
 $("#task-mode").onchange = updateScopeSummary;
 $("#resource").oninput = updateScopeSummary;
 $("#verify").onchange = updateScopeSummary;
