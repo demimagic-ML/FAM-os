@@ -38,7 +38,8 @@ const FamNaturalEngineering = (() => {
       proposal, turn, phase: "grant", changesetId: null,
       rollbackRequired: false, workspaceRoot,
     };
-    if (authorityProfile === "ask") {
+    const authorities = proposal.grant?.payload?.authorities || [];
+    if (authorities.every(value => ["observe", "propose"].includes(value))) {
       await activate();
     } else {
       renderProposal();

@@ -191,12 +191,11 @@ function selectedTaskContext() {
 function updateScopeSummary() {
   const selected = selectedTaskContext();
   const resource = $("#resource").value.trim();
-  const mode = $("#task-mode").value;
   const profile = $("#agent-profile").value;
   const profileLabel = {
     ask: "Ask", workspace: "Workspace", full_os: "Full OS",
   }[profile];
-  const parts = [profileLabel, mode === "engineering" ? "Repository change" : "General task"];
+  const parts = [profileLabel, FamWorkspace.selectedPath() ? "Workspace agent" : "Application task"];
   parts.push(selected ? selected.display_name : "Local machine");
   if (resource) parts.push("specific resource");
   if ($("#verify").checked) parts.push("verified");
@@ -281,11 +280,7 @@ async function createTask(event) {
     headers: {"Content-Type": "application/json"},
     body: JSON.stringify({prompt}),
   });
-  if ($("#task-mode").value === "engineering" ||
-      resolved?.disposition === "repository_change") {
-    if (!workspacePath) {
-      throw new Error("Choose a folder inside the Git repository for a repository change.");
-    }
+  if (workspacePath) {
     stopTaskWatch();
     state.task = null;
     setComposerBusy(true);
@@ -304,6 +299,9 @@ async function createTask(event) {
     selectView("work");
     $("#prompt").focus();
     return;
+  }
+  if (resolved?.disposition === "repository_change") {
+    throw new Error("Choose a folder for this workspace task.");
   }
   const context = selected ? {
     context_id: selected.context_id,
@@ -639,7 +637,6 @@ $("#undo").onclick = () => undoTask().catch(fail);
 $("#refresh").onclick = () => refresh().catch(fail);
 $("#context").onchange = updateScopeSummary;
 $("#agent-profile").onchange = updateScopeSummary;
-$("#task-mode").onchange = updateScopeSummary;
 $("#resource").oninput = updateScopeSummary;
 $("#verify").onchange = updateScopeSummary;
 $("#prompt").oninput = resizePrompt;
