@@ -485,6 +485,9 @@ class ProductNaturalEngineeringApi:
                 "integration_environment_receipt_ids",
             )
         )
+        database_expected = bool(
+            self._loop.database_results(owner_id, task_id)
+        )
         verifications = []
         agent_reverification_id = None
         try:
@@ -494,9 +497,13 @@ class ProductNaturalEngineeringApi:
         except (LookupError, RuntimeError):
             if self._executor is None:
                 raise
-            agent_reverification_id = self._executor.reverify_agent(
-                owner_id, proposal.definition,
-            )
+            try:
+                agent_reverification_id = self._executor.reverify_agent(
+                    owner_id, proposal.definition,
+                )
+            except LookupError:
+                if not (database_expected or integration_expected):
+                    raise
             selected_recipes = ()
         for index, (toolchain, recipe) in enumerate(selected_recipes):
             verifications.append(self._loop.reverify_candidate(
@@ -507,9 +514,6 @@ class ProductNaturalEngineeringApi:
                 recipe_version=recipe.recipe_version,
                 record_lifecycle=False,
             ))
-        database_expected = bool(
-            self._loop.database_results(owner_id, task_id)
-        )
         try:
             database_postapply = self._loop.reverify_database(
                 owner_id, task_id, record_lifecycle=False,
@@ -521,7 +525,11 @@ class ProductNaturalEngineeringApi:
             for item in verifications
         )
         if not verifications:
-            verification_passed = agent_reverification_id is not None
+            verification_passed = (
+                agent_reverification_id is not None
+                or database_expected
+                or integration_expected
+            )
         database_passed = (
             (not database_expected)
             or bool(database_postapply) and all(
