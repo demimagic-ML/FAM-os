@@ -235,7 +235,7 @@ class IterativeModelAgent:
                 ))
                 for index, native_call in enumerate(response.tool_calls, 1):
                     decision = AgentToolCall(
-                        native_call.call_id or f"call-{step}-{index}",
+                        f"{native_call.call_id or 'native-call'}-{step}-{index}",
                         native_call.name, native_call.arguments,
                         "Selected through native model tool calling.",
                     )

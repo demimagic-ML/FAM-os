@@ -155,7 +155,9 @@ class IterativeAgentTests(unittest.TestCase):
         self.assertEqual("auto", runtime.requests[0].tool_choice)
         self.assertFalse(runtime.requests[0].json_output)
         self.assertEqual(MessageRole.TOOL, runtime.requests[1].messages[-1].role)
-        self.assertEqual("native-1", runtime.requests[1].messages[-1].tool_call_id)
+        self.assertEqual(
+            "native-1-1-1", runtime.requests[1].messages[-1].tool_call_id,
+        )
 
     def test_large_conversation_history_is_compacted_before_inference(self):
         metrics = InferenceMetrics("model", 0, 0, 1, 1)
