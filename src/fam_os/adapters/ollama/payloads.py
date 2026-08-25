@@ -24,7 +24,7 @@ def build_chat_payload(request: InferenceRequest) -> JsonObject:
         "stream": False,
         "keep_alive": request.keep_alive,
         "messages": [_message_payload(message) for message in request.messages],
-        "think": False,
+        "think": request.reasoning_effort or False,
         "options": options,
     }
     if request.tools:
@@ -64,6 +64,8 @@ def _message_payload(message) -> JsonObject:
         ]
     if message.tool_name is not None:
         value["tool_name"] = message.tool_name
+    if message.reasoning_content is not None:
+        value["thinking"] = message.reasoning_content
     return value
 
 

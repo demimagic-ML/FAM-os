@@ -276,10 +276,15 @@ def _agent_settings(model_ref: str, maximum_steps: int) -> IterativeAgentSetting
     small_local = any(
         marker in normalized for marker in (":7b", "-7b", ":3b", ":1.7b")
     )
+    qwen38 = "qwen3.8" in normalized
     return IterativeAgentSettings(
         model_ref, maximum_steps=maximum_steps,
-        context_tokens=8_192 if small_local else 32_768,
-        maximum_output_tokens=2_048 if small_local else 4_096,
+        context_tokens=(
+            8_192 if small_local else 65_536 if qwen38 else 32_768
+        ),
+        maximum_output_tokens=(
+            2_048 if small_local else 8_192 if qwen38 else 4_096
+        ),
     )
 
 

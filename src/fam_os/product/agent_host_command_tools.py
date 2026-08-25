@@ -62,11 +62,14 @@ class HostCommandTools:
             tuple(os.environ.items()), IsolationLevel.NONE,
         )
         if result.status is not SandboxStatus.COMPLETED:
-            return (
+            raise RuntimeError(
                 f"status={result.status.value}\nreason={result.reason}\n"
                 f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
             )
-        return (
+        output = (
             f"status=completed\nexit_code={result.exit_code}\n"
             f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
         )
+        if result.exit_code != 0:
+            raise RuntimeError(output)
+        return output

@@ -9,7 +9,10 @@ from typing import Protocol
 
 from fam_os.core.agent.contracts import (
     AgentAuthorityProfile,
+    AgentExecutionCheckpoint,
     AgentFinalResponse,
+    AgentGoalLedger,
+    AgentGraphNode,
     AgentModelDecision,
     AgentToolCall,
     AgentToolDescriptor,
@@ -18,11 +21,17 @@ from fam_os.core.agent.contracts import (
     AgentToolResult,
     AgentTurnOutcome,
 )
+from fam_os.core.agent.orchestration import (
+    AgentContextCompiler,
+    EvidenceVerifier,
+    RecoveryRouter,
+)
 from fam_os.core.ports.inference import (
     ChatInferenceRuntime,
     InferenceMessage,
     InferenceRequest,
     InferenceTool,
+    InferenceToolCall,
     MessageRole,
 )
 
@@ -51,6 +60,22 @@ class AgentTurnStore(Protocol):
 
     def consume_controls(self, thread_id: str) -> tuple[dict[str, str], ...]: ...
 
+    def goal_ledger(self, thread_id: str) -> AgentGoalLedger: ...
+
+    def context_state(self, thread_id: str) -> tuple[int, int]: ...
+
+    def record_compaction(self, thread_id: str, generation: int) -> None: ...
+
+    def checkpoint(self, checkpoint: AgentExecutionCheckpoint) -> None: ...
+
+    def latest_checkpoint(
+        self, thread_id: str, turn_id: str | None = None,
+    ) -> AgentExecutionCheckpoint | None: ...
+
+    def restore_turn(
+        self, thread_id: str, turn_id: str,
+    ) -> tuple[tuple[AgentToolCall, AgentToolResult], ...]: ...
+
 
 class AgentTurnCancelled(RuntimeError):
     """Raised when the owner cancels an active iterative turn."""
@@ -73,6 +98,9 @@ class AgentToolRegistry:
 
     def descriptors(self) -> tuple[AgentToolDescriptor, ...]:
         return tuple(self._tools[key][0] for key in sorted(self._tools))
+
+    def contains(self, tool_id: str) -> bool:
+        return tool_id in self._tools
 
     def invoke(
         self,
@@ -145,6 +173,9 @@ class IterativeModelAgent:
         self._store = store
         self._completion_validator = completion_validator
         self._completion_reviewer = completion_reviewer
+        self._context_compiler = AgentContextCompiler()
+        self._recovery_router = RecoveryRouter()
+        self._evidence_verifier = EvidenceVerifier()
 
     def run(
         self,
@@ -159,7 +190,13 @@ class IterativeModelAgent:
             raise ValueError("agent turn identity and objective are required")
         history_reader = getattr(self._store, "conversation_context", None)
         history = history_reader(thread_id) if callable(history_reader) else ""
+        self._install_capability_discovery()
         self._store.begin_turn(thread_id, turn_id, objective, profile)
+        ledger_reader = getattr(self._store, "goal_ledger", None)
+        ledger = (
+            ledger_reader(thread_id) if callable(ledger_reader)
+            else AgentGoalLedger(objective, "", objective)
+        )
         native_tools = bool(getattr(self._runtime, "supports_native_tools", False))
         messages = list(_initial_messages(
             objective, prior_context, history, profile, self._tools.descriptors(),
@@ -167,10 +204,70 @@ class IterativeModelAgent:
         ))
         results: list[AgentToolResult] = []
         decision_counts: dict[str, int] = {}
+        retry_limits: dict[str, int] = {}
+        checkpoint_sequence = [0]
+        start_step = 1
+        latest_reader = getattr(self._store, "latest_checkpoint", None)
+        latest = (
+            latest_reader(thread_id, turn_id) if callable(latest_reader) else None
+        )
+        if latest is None:
+            self._checkpoint(
+                thread_id, turn_id, checkpoint_sequence, AgentGraphNode.PREPARE,
+                0, "exploration", {
+                    "objective": objective,
+                    "original_request": ledger.original_request,
+                    "accepted_plan": ledger.accepted_plan,
+                },
+            )
+        else:
+            checkpoint_sequence[0] = latest.sequence
+            restored_reader = getattr(self._store, "restore_turn", None)
+            restored = (
+                restored_reader(thread_id, turn_id)
+                if callable(restored_reader) else ()
+            )
+            for call, result in restored:
+                signature = json.dumps({
+                    "tool": call.tool_id, "arguments": call.arguments,
+                }, sort_keys=True, separators=(",", ":"))
+                decision_counts[signature] = decision_counts.get(signature, 0) + 1
+                if not result.succeeded:
+                    retry_limits[signature] = self._recovery_router.classify(
+                        result,
+                    ).retry_limit
+                results.append(result)
+                if native_tools:
+                    messages.append(InferenceMessage(
+                        MessageRole.ASSISTANT, "Resuming the persisted tool action.",
+                        tool_calls=(InferenceToolCall(
+                            call.call_id, call.tool_id, call.arguments,
+                        ),),
+                    ))
+                    messages.append(InferenceMessage(
+                        MessageRole.TOOL, _tool_message(
+                            result, self._settings.maximum_tool_message_bytes,
+                        ), tool_call_id=result.call_id, tool_name=result.tool_id,
+                    ))
+                else:
+                    messages.append(InferenceMessage(
+                        MessageRole.USER,
+                        json.dumps({
+                            "type": "restored_tool_result",
+                            "call_id": result.call_id,
+                            "tool": result.tool_id,
+                            "succeeded": result.succeeded,
+                            "output": result.output,
+                            "postcondition": result.postcondition,
+                        }, sort_keys=True, separators=(",", ":")),
+                    ))
+            start_step = max(1, latest.step + 1)
         try:
             return self._run_steps(
                 thread_id, turn_id, objective, profile, messages, results,
-                decision_counts, native_tools,
+                decision_counts, native_tools, ledger, prior_context, history,
+                checkpoint_sequence, retry_limits,
+                start_step,
             )
         except AgentTurnCancelled as error:
             cancel = getattr(self._store, "cancel_turn", None)
@@ -178,18 +275,56 @@ class IterativeModelAgent:
                 cancel(thread_id, turn_id, str(error))
             else:
                 self._store.fail_turn(thread_id, turn_id, str(error))
+            self._checkpoint(
+                thread_id, turn_id, checkpoint_sequence, AgentGraphNode.FAILED,
+                0, _agent_phase(results), {"cancelled": True, "reason": str(error)},
+            )
             raise
         except Exception as error:
             self._store.fail_turn(
                 thread_id, turn_id, f"{type(error).__name__}: {str(error)[:2_000]}",
             )
+            self._checkpoint(
+                thread_id, turn_id, checkpoint_sequence, AgentGraphNode.FAILED,
+                0, _agent_phase(results), {"failure": str(error)[:2_000]},
+            )
             raise
+
+    def _install_capability_discovery(self) -> None:
+        descriptors = self._tools.descriptors()
+        if len(descriptors) <= 8 or self._tools.contains("request_capabilities"):
+            return
+        available = tuple(item.tool_id for item in descriptors)
+        self._tools.register(AgentToolDescriptor(
+            "request_capabilities",
+            "Request exposure of additional registered tools when the current set "
+            "cannot perform the next necessary action. Hidden tool identifiers: "
+            + ", ".join(available) + ".",
+            AgentToolEffect.OBSERVE,
+            {
+                "type": "object",
+                "properties": {
+                    "reason": {"type": "string"},
+                },
+                "required": ["reason"],
+            },
+        ), lambda _arguments: json.dumps({
+            "additional_tools_available": available,
+            "instruction": "The next inference step will expose the full tool set.",
+        }, separators=(",", ":")))
 
     def _run_steps(
         self, thread_id, turn_id, objective, profile, messages, results,
-        decision_counts, native_tools,
+        decision_counts, native_tools, ledger, prior_context, history,
+        checkpoint_sequence, retry_limits,
+        start_step,
     ):
-        for step in range(1, self._settings.maximum_steps + 1):
+        context_reader = getattr(self._store, "context_state", None)
+        generation, compaction_count = (
+            context_reader(thread_id) if callable(context_reader) else (0, 0)
+        )
+        capabilities_expanded = start_step > 1
+        for step in range(start_step, self._settings.maximum_steps + 1):
             consume = getattr(self._store, "consume_controls", None)
             controls = consume(thread_id) if callable(consume) else ()
             for control in controls:
@@ -206,13 +341,36 @@ class IterativeModelAgent:
                             "priority": "Apply this guidance to the current objective.",
                         }, sort_keys=True, separators=(",", ":")),
                     ))
-            descriptors = _phase_tools(self._tools.descriptors(), results)
+            descriptors = _phase_tools(
+                self._tools.descriptors(), results, capabilities_expanded,
+            )
             phase = _agent_phase(results)
-            request_messages = _budgeted_messages(
-                _messages_with_phase(messages, phase),
+            phased = _messages_with_phase(messages, phase)
+            compiled = self._context_compiler.compile(
+                system=phased[0].content, ledger=ledger, profile=profile.value,
+                prior_context=prior_context, conversation_history=history,
+                event_messages=tuple(phased[2:]), tool_results=tuple(results),
+                descriptors=descriptors,
                 context_tokens=self._settings.context_tokens,
                 maximum_output_tokens=self._settings.maximum_output_tokens,
-                descriptors=descriptors,
+                generation=generation, compaction_count=compaction_count,
+            )
+            request_messages = compiled.messages
+            if compiled.compacted and compiled.generation != generation:
+                generation = compiled.generation
+                compaction_count += 1
+                recorder = getattr(self._store, "record_compaction", None)
+                if callable(recorder):
+                    recorder(thread_id, generation)
+            self._checkpoint(
+                thread_id, turn_id, checkpoint_sequence, AgentGraphNode.INFER,
+                step, phase, {
+                    "context_generation": generation,
+                    "compacted": compiled.compacted,
+                    "clean_reset": compiled.reset,
+                    "tool_count": len(descriptors),
+                    "result_count": len(results),
+                },
             )
             response = self._runtime.chat(InferenceRequest(
                 model_ref=self._settings.model_ref,
@@ -227,11 +385,50 @@ class IterativeModelAgent:
                     if native_tools else ()
                 ),
                 tool_choice="auto" if native_tools and descriptors else None,
+                reasoning_effort=_reasoning_effort(self._settings.model_ref, phase),
+                preserve_reasoning=_preserve_reasoning(self._settings.model_ref),
             ))
+            if not response.content and not response.tool_calls:
+                signature = "model:empty_visible_response"
+                decision_counts[signature] = decision_counts.get(signature, 0) + 1
+                if decision_counts[signature] > 1:
+                    raise RuntimeError(
+                        "model repeatedly returned no visible action or answer"
+                    )
+                messages.append(InferenceMessage(
+                    MessageRole.ASSISTANT, "No visible action or answer was emitted.",
+                    reasoning_content=(
+                        response.reasoning_content
+                        if _preserve_reasoning(self._settings.model_ref) else None
+                    ),
+                ))
+                messages.append(InferenceMessage(
+                    MessageRole.USER,
+                    json.dumps({
+                        "type": "model_response_repair",
+                        "reason": "The prior response had no visible action or answer.",
+                        "instruction": (
+                            "Emit exactly one offered tool call or a visible final answer."
+                        ),
+                    }, separators=(",", ":")),
+                ))
+                self._checkpoint(
+                    thread_id, turn_id, checkpoint_sequence,
+                    AgentGraphNode.RECOVER, step, phase, {
+                        "category": "empty_visible_response",
+                        "retry_limit": 1,
+                    },
+                )
+                capabilities_expanded = True
+                continue
             if native_tools and response.tool_calls:
                 messages.append(InferenceMessage(
                     MessageRole.ASSISTANT, response.content,
                     tool_calls=response.tool_calls,
+                    reasoning_content=(
+                        response.reasoning_content
+                        if _preserve_reasoning(self._settings.model_ref) else None
+                    ),
                 ))
                 for index, native_call in enumerate(response.tool_calls, 1):
                     decision = AgentToolCall(
@@ -239,25 +436,52 @@ class IterativeModelAgent:
                         native_call.name, native_call.arguments,
                         "Selected through native model tool calling.",
                     )
-                    result, repeated = self._invoke_tool(
+                    self._checkpoint(
+                        thread_id, turn_id, checkpoint_sequence,
+                        AgentGraphNode.EXECUTE, step, phase, {
+                            "call_id": decision.call_id, "tool": decision.tool_id,
+                            "arguments": decision.arguments,
+                        },
+                    )
+                    result, repeated, blocked = self._invoke_tool(
                         thread_id, turn_id, profile, decision, decision_counts,
+                        retry_limits,
                     )
                     results.append(result)
+                    self._record_observation_checkpoint(
+                        thread_id, turn_id, checkpoint_sequence, step, phase,
+                        result, repeated,
+                    )
                     messages.append(InferenceMessage(
                         MessageRole.TOOL, _tool_message(
                             result, self._settings.maximum_tool_message_bytes,
                         ),
                         tool_call_id=result.call_id, tool_name=result.tool_id,
                     ))
-                    if repeated >= 3:
+                    if blocked:
                         messages.append(_repeat_intervention())
                 continue
             decision = (
                 AgentFinalResponse(response.content)
                 if native_tools else parse_agent_decision(response.content, step)
             )
-            messages.append(InferenceMessage(MessageRole.ASSISTANT, response.content))
+            messages.append(InferenceMessage(
+                MessageRole.ASSISTANT, response.content,
+                reasoning_content=(
+                    response.reasoning_content
+                    if _preserve_reasoning(self._settings.model_ref) else None
+                ),
+            ))
             if isinstance(decision, AgentFinalResponse):
+                verification = self._evidence_verifier.evaluate(tuple(results))
+                self._checkpoint(
+                    thread_id, turn_id, checkpoint_sequence, AgentGraphNode.VERIFY,
+                    step, phase, {
+                        "accepted": verification.accepted,
+                        "reason": verification.reason,
+                        "evidence": list(verification.evidence),
+                    },
+                )
                 rejection = (
                     None if self._completion_validator is None
                     else self._completion_validator(tuple(results))
@@ -284,15 +508,35 @@ class IterativeModelAgent:
                             ),
                         }, sort_keys=True, separators=(",", ":")),
                     ))
+                    capabilities_expanded = True
                     continue
                 self._store.complete_turn(thread_id, turn_id, decision)
+                self._checkpoint(
+                    thread_id, turn_id, checkpoint_sequence, AgentGraphNode.COMPLETE,
+                    step, phase, {
+                        "response": decision.content,
+                        "verified_evidence_count": len(verification.evidence),
+                    },
+                )
                 return AgentTurnOutcome(
                     thread_id, turn_id, decision, tuple(results), step,
                 )
-            result, repeated = self._invoke_tool(
+            self._checkpoint(
+                thread_id, turn_id, checkpoint_sequence, AgentGraphNode.EXECUTE,
+                step, phase, {
+                    "call_id": decision.call_id, "tool": decision.tool_id,
+                    "arguments": decision.arguments,
+                },
+            )
+            result, repeated, blocked = self._invoke_tool(
                 thread_id, turn_id, profile, decision, decision_counts,
+                retry_limits,
             )
             results.append(result)
+            self._record_observation_checkpoint(
+                thread_id, turn_id, checkpoint_sequence, step, phase,
+                result, repeated,
+            )
             messages.append(InferenceMessage(
                 MessageRole.USER,
                 json.dumps({
@@ -303,21 +547,56 @@ class IterativeModelAgent:
                     "output": result.output,
                 }, sort_keys=True, separators=(",", ":")),
             ))
-            if repeated >= 3:
+            if blocked:
                 messages.append(_repeat_intervention())
         raise RuntimeError("agent turn exhausted its model-step budget")
 
+    def _record_observation_checkpoint(
+        self, thread_id, turn_id, sequence, step, phase, result, repeated,
+    ) -> None:
+        self._checkpoint(
+            thread_id, turn_id, sequence, AgentGraphNode.OBSERVE,
+            step, phase, {
+                "call_id": result.call_id, "tool": result.tool_id,
+                "succeeded": result.succeeded,
+                "postcondition": result.postcondition,
+                "output_preview": result.output[:2_000],
+            },
+        )
+        if not result.succeeded:
+            directive = self._recovery_router.classify(result)
+            self._checkpoint(
+                thread_id, turn_id, sequence, AgentGraphNode.RECOVER,
+                step, phase, {
+                    "category": directive.category,
+                    "instruction": directive.instruction,
+                    "retry_limit": directive.retry_limit,
+                    "fingerprint": directive.fingerprint,
+                    "attempt": repeated,
+                },
+            )
+
+    def _checkpoint(
+        self, thread_id, turn_id, sequence, node, step, phase, state,
+    ) -> None:
+        writer = getattr(self._store, "checkpoint", None)
+        if not callable(writer):
+            return
+        sequence[0] += 1
+        writer(AgentExecutionCheckpoint(
+            thread_id, turn_id, sequence[0], node, step, phase, state,
+        ))
+
     def _invoke_tool(
         self, thread_id, turn_id, profile, decision, decision_counts,
+        retry_limits,
     ):
         self._store.record_call(thread_id, turn_id, decision)
-        signature = json.dumps({
-            "tool": decision.tool_id,
-            "arguments": decision.arguments,
-        }, sort_keys=True, separators=(",", ":"))
+        signature = _decision_signature(decision)
         decision_counts[signature] = decision_counts.get(signature, 0) + 1
         repeated = decision_counts[signature]
-        if repeated >= 3:
+        blocked = repeated > retry_limits.get(signature, 1) + 1
+        if blocked:
             result = AgentToolResult(
                 decision.call_id, decision.tool_id, False,
                 "Repeated-call loop detected. This action has already produced the "
@@ -326,13 +605,26 @@ class IterativeModelAgent:
         else:
             result = self._tools.invoke(decision, profile)
         if not result.succeeded:
+            recovery = self._recovery_router.classify(result)
+            retry_limits[signature] = recovery.retry_limit
             result = AgentToolResult(
                 result.call_id, result.tool_id, False,
-                f"{result.output}\nstructured_recovery={_recovery_guidance(result)}",
+                f"{result.output}\nstructured_recovery=" + json.dumps({
+                    "category": recovery.category,
+                    "instruction": recovery.instruction,
+                    "retry_limit": recovery.retry_limit,
+                    "fingerprint": recovery.fingerprint,
+                }, sort_keys=True, separators=(",", ":")),
                 result.postcondition,
             )
         self._store.record_result(thread_id, turn_id, result)
-        return result, repeated
+        return result, repeated, blocked
+
+
+def _decision_signature(decision: AgentToolCall) -> str:
+    return json.dumps({
+        "tool": decision.tool_id, "arguments": decision.arguments,
+    }, sort_keys=True, separators=(",", ":"))
 
 
 def parse_agent_decision(content: str, step: int) -> AgentModelDecision:
@@ -371,6 +663,9 @@ def _initial_messages(
         "You are an iterative local coding and operating-system agent. Work toward "
         "the objective by choosing one tool at a time, observing its real result, and "
         "adapting. Do not stop at a plan when the objective requests implementation. "
+        "The goal_ledger is authoritative durable task state. Resolve referential "
+        "follow-ups such as 'do it', 'continue', or 'implement the plan' against its "
+        "accepted_plan and original_request; do not repeat the plan as the answer. "
         "For coding work, inspect both the relevant implementation and its acceptance "
         "tests before editing. Preserve tests unless changing requirements explicitly "
         "require a test change. Diagnose causes rather than rewriting evidence, and run "
@@ -459,6 +754,10 @@ def _tool_message(result: AgentToolResult, maximum_bytes: int) -> str:
 
 
 def _agent_phase(results) -> str:
+    if any(
+        item.succeeded and item.tool_id == "verify_command" for item in results
+    ):
+        return "finalization"
     if any(item.succeeded and item.postcondition for item in results):
         return "verification"
     if any(item.succeeded and item.tool_id in {
@@ -471,10 +770,27 @@ def _agent_phase(results) -> str:
     return "exploration"
 
 
-def _phase_tools(descriptors, results):
+def _phase_tools(descriptors, results, expand=False):
     phase = _agent_phase(results)
-    hidden = set() if phase == "verification" else {"verify_command"}
-    return tuple(item for item in descriptors if item.tool_id not in hidden)
+    if phase == "finalization":
+        return ()
+    if phase == "verification":
+        return tuple(descriptors)
+    if expand or phase == "implementation" or any(
+        item.succeeded and item.tool_id == "request_capabilities" for item in results
+    ):
+        return tuple(item for item in descriptors if item.tool_id != "verify_command")
+    core = {
+        "list_directory", "read_file", "search_text", "write_file",
+        "create_directory", "observe_application", "request_capabilities",
+    }
+    selected = tuple(
+        item for item in descriptors
+        if item.tool_id in core and item.tool_id != "verify_command"
+    )
+    return selected or tuple(
+        item for item in descriptors if item.tool_id != "verify_command"
+    )
 
 
 def _phase_instruction(phase: str) -> str:
@@ -488,9 +804,14 @@ def _phase_instruction(phase: str) -> str:
             "Current phase: implement the smallest coherent change using file tools; "
             "do not return another plan."
         )
-    return (
+    if phase == "verification":
+        return (
         "Current phase: verify the requested outcome. A successful semantic "
         "postcondition from a filesystem tool is already verification evidence."
+        )
+    return (
+        "Current phase: finalization. The verification command succeeded. Return "
+        "a concise visible final answer now; do not perform more exploratory work."
     )
 
 
@@ -507,101 +828,6 @@ def _messages_with_phase(messages, phase: str):
     return tuple(values)
 
 
-def _budgeted_messages(
-    messages, *, context_tokens: int, maximum_output_tokens: int, descriptors,
-):
-    tool_bytes = len(json.dumps([
-        {"name": item.tool_id, "description": item.description,
-         "parameters": item.input_schema}
-        for item in descriptors
-    ], sort_keys=True, separators=(",", ":")).encode("utf-8"))
-    maximum_bytes = max(
-        8_192, (context_tokens - maximum_output_tokens) * 3 - tool_bytes,
-    )
-    values = list(messages)
-    if len(values) >= 2:
-        values[1] = _compact_initial_user(values[1], maximum_bytes // 3)
-    total = sum(len(item.content.encode("utf-8")) for item in values)
-    if total <= maximum_bytes:
-        return tuple(values)
-    preserved = values[:2]
-    recent = []
-    used = sum(len(item.content.encode("utf-8")) for item in preserved)
-    remaining = max(2_048, maximum_bytes - used - 1_024)
-    for item in reversed(values[2:]):
-        size = len(item.content.encode("utf-8"))
-        if size > remaining:
-            if not recent and remaining >= 512:
-                recent.append(_message_with_content(
-                    item, _bounded_tool_output(item.content, remaining),
-                ))
-                remaining = 0
-            continue
-        recent.append(item)
-        remaining -= size
-    dropped = max(0, len(values) - len(preserved) - len(recent))
-    summary = InferenceMessage(
-        MessageRole.SYSTEM,
-        f"Context compacted: {dropped} older messages were omitted. Preserve the "
-        "original objective and continue from the latest retained tool evidence.",
-    )
-    return tuple((*preserved, summary, *reversed(recent)))
-
-
-def _message_with_content(message: InferenceMessage, content: str):
-    return InferenceMessage(
-        message.role, content, images=message.images,
-        tool_calls=message.tool_calls, tool_call_id=message.tool_call_id,
-        tool_name=message.tool_name,
-    )
-
-
-def _compact_initial_user(message: InferenceMessage, maximum_bytes: int):
-    if len(message.content.encode("utf-8")) <= maximum_bytes:
-        return message
-    try:
-        value = json.loads(message.content)
-    except (json.JSONDecodeError, TypeError):
-        return InferenceMessage(
-            message.role, _bounded_tool_output(message.content, maximum_bytes),
-        )
-    if not isinstance(value, dict):
-        return message
-    for key in ("conversation_history", "prior_context"):
-        content = value.get(key)
-        if isinstance(content, str) and len(content.encode("utf-8")) > 2_048:
-            value[key] = _bounded_tool_output(content, 2_048)
-    compacted = json.dumps(value, sort_keys=True, separators=(",", ":"))
-    return InferenceMessage(message.role, compacted)
-
-
-def _recovery_guidance(result: AgentToolResult) -> str:
-    lowered = result.output.casefold()
-    if (
-        "execvp" in lowered or "command not found" in lowered
-        or "missing executable" in lowered
-    ):
-        return (
-            "The executable is unavailable. Inspect project manifests and scripts, "
-            "then use an installed equivalent; do not repeat the same command."
-        )
-    if "filenotfounderror" in lowered or "no such file" in lowered:
-        return (
-            "The path was not found. Use list_directory with path '.' and retry with "
-            "an exact relative path from that result."
-        )
-    elif "path must stay inside" in lowered or "path escapes" in lowered:
-        return (
-            "The path was invalid. Use a workspace-relative path without a leading "
-            "slash or '..'; use '.' for the selected folder."
-        )
-    else:
-        return (
-            "The tool failed. Change the arguments or strategy using the concrete "
-            "error; do not repeat the identical call."
-        )
-
-
 def _profile_allows(
     profile: AgentAuthorityProfile, effect: AgentToolEffect,
 ) -> bool:
@@ -615,3 +841,15 @@ def _profile_allows(
             AgentToolEffect.COMMAND,
         }
     return True
+
+
+def _reasoning_effort(model_ref: str, phase: str) -> str | None:
+    if "qwen3.8" not in model_ref.casefold():
+        return None
+    if phase in {"implementation", "verification"}:
+        return "medium"
+    return "low"
+
+
+def _preserve_reasoning(model_ref: str) -> bool:
+    return "qwen3.8" in model_ref.casefold()

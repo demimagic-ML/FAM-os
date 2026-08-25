@@ -3,7 +3,7 @@ import unittest
 from pathlib import Path
 
 from fam_os.core.agent import AgentAuthorityProfile, AgentToolCall, AgentToolRegistry
-from fam_os.product.agent_command_tools import WorkspaceCommandTools
+from fam_os.product.agent_command_tools import WorkspaceCommandTools, _executable_hints
 from fam_os.verification.sandbox import IsolationLevel, SandboxResult, SandboxStatus
 
 
@@ -13,14 +13,15 @@ class _Locator:
 
 
 class _Launcher:
-    def __init__(self):
+    def __init__(self, exit_code=0):
         self.calls = []
+        self.exit_code = exit_code
 
     def run(self, command, limits, environment, isolation):
         self.calls.append((command, limits, environment, isolation))
         return SandboxResult(
             SandboxStatus.COMPLETED, IsolationLevel.BUBBLEWRAP,
-            0.1, "tests passed\n", "", 0,
+            0.1, "tests passed\n", "", self.exit_code,
         )
 
 
@@ -63,6 +64,26 @@ class AgentCommandToolsTests(unittest.TestCase):
 
             self.assertFalse(result.succeeded)
             self.assertEqual([], launcher.calls)
+
+    def test_nonzero_command_is_a_failed_tool_result_for_recovery(self):
+        with tempfile.TemporaryDirectory() as directory:
+            registry = AgentToolRegistry()
+            WorkspaceCommandTools(
+                Path(directory), locator=_Locator(), launcher=_Launcher(1),
+            ).register(registry)
+
+            result = registry.invoke(AgentToolCall(
+                "call", "run_command", {"command": ["python3", "test.py"]},
+                "Observe the failing test.",
+            ), AgentAuthorityProfile.WORKSPACE)
+
+            self.assertFalse(result.succeeded)
+            self.assertIn("exit_code=1", result.output)
+
+    def test_missing_runtime_recovery_lists_real_sandbox_visible_alternatives(self):
+        hints = _executable_hints("python")
+
+        self.assertIn("/usr/bin/python3", hints)
 
 
 if __name__ == "__main__":

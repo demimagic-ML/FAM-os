@@ -21,6 +21,51 @@ class AgentToolEffect(StrEnum):
     OS_WRITE = "os_write"
 
 
+class AgentGraphNode(StrEnum):
+    """Durable boundaries in the model/tool execution graph."""
+
+    PREPARE = "prepare"
+    INFER = "infer"
+    EXECUTE = "execute"
+    OBSERVE = "observe"
+    RECOVER = "recover"
+    VERIFY = "verify"
+    COMPLETE = "complete"
+    FAILED = "failed"
+
+
+@dataclass(frozen=True, slots=True)
+class AgentGoalLedger:
+    original_request: str
+    accepted_plan: str
+    current_objective: str
+    completed_objectives: tuple[str, ...] = ()
+    unresolved_items: tuple[str, ...] = ()
+
+    def __post_init__(self) -> None:
+        if not self.original_request.strip() or not self.current_objective.strip():
+            raise ValueError("agent goal ledger requires an original and current objective")
+
+
+@dataclass(frozen=True, slots=True)
+class AgentExecutionCheckpoint:
+    thread_id: str
+    turn_id: str
+    sequence: int
+    node: AgentGraphNode
+    step: int
+    phase: str
+    state: dict[str, Any]
+
+    def __post_init__(self) -> None:
+        if not self.thread_id.strip() or not self.turn_id.strip():
+            raise ValueError("agent checkpoint identity is required")
+        if self.sequence < 1 or self.step < 0 or not self.phase.strip():
+            raise ValueError("agent checkpoint position is invalid")
+        if not isinstance(self.node, AgentGraphNode) or not isinstance(self.state, dict):
+            raise ValueError("agent checkpoint state is invalid")
+
+
 @dataclass(frozen=True, slots=True)
 class AgentToolDescriptor:
     tool_id: str

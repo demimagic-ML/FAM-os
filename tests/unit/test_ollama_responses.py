@@ -38,6 +38,41 @@ class OllamaResponseTests(unittest.TestCase):
         self.assertEqual(response.metrics.output_tokens, 10)
         self.assertEqual(response.metrics.generation_tokens_per_second, 20.0)
 
+    def test_preserves_qwen_reasoning_separately_from_visible_content(self) -> None:
+        response = parse_chat_response("qwen3.8:27b", {
+            "message": {
+                "role": "assistant", "content": "Visible answer.",
+                "thinking": "Private reusable reasoning state.",
+            },
+        }, 0.1)
+
+        self.assertEqual("Visible answer.", response.content)
+        self.assertEqual(
+            "Private reusable reasoning state.", response.reasoning_content,
+        )
+
+    def test_accepts_thinking_only_for_structured_runtime_recovery(self) -> None:
+        response = parse_chat_response("devstral", {
+            "message": {
+                "role": "assistant", "content": "",
+                "thinking": "I need to choose a different tool.",
+            },
+        }, 0.1)
+
+        self.assertEqual("", response.content)
+        self.assertEqual(
+            "I need to choose a different tool.", response.reasoning_content,
+        )
+
+    def test_accepts_empty_terminal_response_for_structured_runtime_recovery(self):
+        response = parse_chat_response("devstral", {
+            "message": {"role": "assistant", "content": ""},
+            "done_reason": "stop",
+        }, 0.1)
+
+        self.assertEqual("", response.content)
+        self.assertEqual("stop", response.finish_reason)
+
     def test_rejects_missing_message_content(self) -> None:
         with self.assertRaisesRegex(OllamaProtocolError, "message.content"):
             parse_chat_response("model", {"message": {}}, 0.1)

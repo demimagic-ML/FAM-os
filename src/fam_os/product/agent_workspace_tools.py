@@ -10,6 +10,7 @@ from pathlib import Path, PurePosixPath
 from fam_os.core.agent import (
     AgentToolDescriptor,
     AgentToolEffect,
+    AgentToolExecution,
     AgentToolRegistry,
 )
 
@@ -54,7 +55,7 @@ class WorkspaceAgentTools:
                 )},
                 "offset_bytes": {"type": "integer"},
                 "maximum_bytes": {"type": "integer"},
-            },
+            }, required=("path",),
         ), self.read_file)
         registry.register(_descriptor(
             "search_text", (
@@ -63,6 +64,7 @@ class WorkspaceAgentTools:
             ),
             AgentToolEffect.OBSERVE,
             {"query": {"type": "string"}, "path": {"type": "string"}},
+            required=("query", "path"),
         ), self.search_text)
         registry.register(_descriptor(
             "write_file", "Create or replace one UTF-8 workspace file.",
@@ -71,22 +73,28 @@ class WorkspaceAgentTools:
                 "path": {"type": "string"},
                 "content": {"type": "string"},
                 "expected_sha256": {"type": ["string", "null"]},
-            },
+            }, required=("path", "content"),
         ), self.write_file)
+        registry.register(_descriptor(
+            "create_directory", "Create one relative workspace directory.",
+            AgentToolEffect.WORKSPACE_WRITE,
+            {"path": {"type": "string"}}, required=("path",),
+        ), self.create_directory)
         registry.register(_descriptor(
             "apply_patch", "Apply a unified Git patch inside the workspace.",
             AgentToolEffect.WORKSPACE_WRITE,
-            {"patch": {"type": "string"}},
+            {"patch": {"type": "string"}}, required=("patch",),
         ), self.apply_patch)
         registry.register(_descriptor(
             "delete_path", "Delete one workspace file or empty directory.",
             AgentToolEffect.WORKSPACE_WRITE,
-            {"path": {"type": "string"}},
+            {"path": {"type": "string"}}, required=("path",),
         ), self.delete_path)
         registry.register(_descriptor(
             "move_path", "Move a file or directory inside the workspace.",
             AgentToolEffect.WORKSPACE_WRITE,
             {"source": {"type": "string"}, "destination": {"type": "string"}},
+            required=("source", "destination"),
         ), self.move_path)
         if self._git_available():
             registry.register(_descriptor(
@@ -114,7 +122,10 @@ class WorkspaceAgentTools:
             else:
                 kind = "other"
             rows.append(f"{kind}\t{item.name}")
-        return _bounded("\n".join(rows), self.maximum_result_bytes)
+        return _bounded(
+            "\n".join(rows) or "Directory is empty.",
+            self.maximum_result_bytes,
+        )
 
     def read_file(self, arguments: dict[str, object]) -> str:
         _exact(arguments, {"path", "offset_bytes", "maximum_bytes"}, optional=True)
@@ -170,7 +181,7 @@ class WorkspaceAgentTools:
                     used += encoded
         return "\n".join(rows) or "No matches."
 
-    def write_file(self, arguments: dict[str, object]) -> str:
+    def write_file(self, arguments: dict[str, object]) -> AgentToolExecution:
         path = self._path(_text(arguments, "path"), must_exist=False)
         content = _text(arguments, "content", allow_empty=True).encode("utf-8")
         expected = arguments.get("expected_sha256")
@@ -191,7 +202,28 @@ class WorkspaceAgentTools:
             os.replace(temporary, path)
         finally:
             temporary.unlink(missing_ok=True)
-        return f"wrote {path.relative_to(self.root).as_posix()} ({len(content)} bytes)"
+        relative = path.relative_to(self.root).as_posix()
+        digest = hashlib.sha256(path.read_bytes()).hexdigest()
+        return AgentToolExecution(
+            f"wrote {relative} ({len(content)} bytes)", {
+                "verified": path.is_file() and not path.is_symlink(),
+                "operation": "write_file", "path": relative,
+                "exists": path.exists(), "kind": "file", "sha256": digest,
+                "bytes": len(content),
+            },
+        )
+
+    def create_directory(self, arguments: dict[str, object]) -> AgentToolExecution:
+        path = self._path(_text(arguments, "path"), must_exist=False)
+        if path.exists() and not path.is_dir():
+            raise FileExistsError("create_directory target is not a directory")
+        path.mkdir(parents=True, exist_ok=True)
+        relative = path.relative_to(self.root).as_posix()
+        verified = path.is_dir() and not path.is_symlink()
+        return AgentToolExecution(f"created directory {relative}", {
+            "verified": verified, "operation": "create_directory",
+            "path": relative, "exists": path.exists(), "kind": "directory",
+        })
 
     def apply_patch(self, arguments: dict[str, object]) -> str:
         patch = _text(arguments, "patch").encode("utf-8")
@@ -207,7 +239,7 @@ class WorkspaceAgentTools:
             raise RuntimeError(_bounded(output or "git apply failed", 16_384))
         return _bounded(output or "patch applied", self.maximum_result_bytes)
 
-    def delete_path(self, arguments: dict[str, object]) -> str:
+    def delete_path(self, arguments: dict[str, object]) -> AgentToolExecution:
         path = self._path(_text(arguments, "path"), must_exist=True)
         relative = path.relative_to(self.root).as_posix()
         if path.is_symlink() or path.is_file():
@@ -216,18 +248,28 @@ class WorkspaceAgentTools:
             path.rmdir()
         else:
             raise ValueError("delete_path target is unsupported")
-        return f"deleted {relative}"
+        return AgentToolExecution(f"deleted {relative}", {
+            "verified": not path.exists(), "operation": "delete_path",
+            "path": relative, "exists": path.exists(),
+        })
 
-    def move_path(self, arguments: dict[str, object]) -> str:
+    def move_path(self, arguments: dict[str, object]) -> AgentToolExecution:
         source = self._path(_text(arguments, "source"), must_exist=True)
         destination = self._path(_text(arguments, "destination"), must_exist=False)
         if destination.exists():
             raise FileExistsError("move destination already exists")
         self._ensure_parent(destination)
         source.rename(destination)
-        return (
-            f"moved {source.relative_to(self.root).as_posix()} to "
-            f"{destination.relative_to(self.root).as_posix()}"
+        source_relative = source.relative_to(self.root).as_posix()
+        destination_relative = destination.relative_to(self.root).as_posix()
+        return AgentToolExecution(
+            f"moved {source_relative} to {destination_relative}", {
+                "verified": destination.exists() and not source.exists(),
+                "operation": "move_path", "source": source_relative,
+                "destination": destination_relative,
+                "source_exists": source.exists(),
+                "destination_exists": destination.exists(),
+            },
         )
 
     def git_status(self, arguments: dict[str, object]) -> str:
@@ -308,9 +350,9 @@ class WorkspaceAgentTools:
                     yield path
 
 
-def _descriptor(tool_id, description, effect, properties):
+def _descriptor(tool_id, description, effect, properties, *, required=()):
     return AgentToolDescriptor(tool_id, description, effect, {
-        "type": "object", "properties": properties,
+        "type": "object", "properties": properties, "required": list(required),
     })
 
 

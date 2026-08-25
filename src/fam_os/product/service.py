@@ -167,6 +167,7 @@ from fam_os.adapters.media.local_speech import FasterWhisperRecognizer
 from fam_os.memory import ProductionSessionMemory
 from fam_os.supervisor import ResourceLimits
 from fam_os.scheduler import AcceleratorVisibility, ValidationProfileDocument
+from fam_os.product.agent_model_scorecard import load_scorecard, select_measured_model
 
 
 @dataclass(frozen=True, slots=True)
@@ -249,14 +250,16 @@ class ProductServiceSettings:
         return validation_profile_resource_limits(self.validation_profile)
 
 _AGENT_MODEL_PREFERENCE = (
-    "qwen3.6-35b", "qwen3.6:35b", "qwen3-coder:30b",
+    "qwen3.8:27b", "qwen3.8-27b", "qwen3.6-35b", "qwen3.6:35b", "qwen3-coder:30b",
     "devstral-small-2:latest", "devstral-small", "openhands-lm-32b",
     "qwen2.5-coder:32b",
     "qwen2.5-coder:14b",
 )
 
 
-def _engineering_model_ref(runtime, fallback: str, configured: str | None) -> str:
+def _engineering_model_ref(
+    runtime, fallback: str, configured: str | None, scorecard_path: Path | None = None,
+) -> str:
     if configured is not None and configured.strip():
         return configured.strip()
     reader = getattr(runtime, "available_models", None)
@@ -267,6 +270,10 @@ def _engineering_model_ref(runtime, fallback: str, configured: str | None) -> st
     except (OSError, RuntimeError, ValueError):
         return fallback
     normalized = {item.casefold(): item for item in installed}
+    if scorecard_path is not None:
+        measured = select_measured_model(installed, load_scorecard(scorecard_path))
+        if measured is not None:
+            return measured
     for preferred in _AGENT_MODEL_PREFERENCE:
         exact = normalized.get(preferred)
         if exact is not None:
@@ -648,6 +655,7 @@ class LocalProductService:
             runtime, _engineering_model_ref(
                 runtime, self.settings.model_ref,
                 self.settings.engineering_model_ref,
+                self.settings.state_root / "agent-model-scorecard.json",
             ), self.settings.codex_subscription,
             self._engineering_runtime,
         )

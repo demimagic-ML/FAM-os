@@ -36,8 +36,10 @@ def parse_chat_response(
         raise OllamaProtocolError("chat response requires message.content")
     tool_calls = _tool_calls(message.get("tool_calls", []))
     content = message.get("content", "")
-    if not content and not tool_calls:
-        raise OllamaProtocolError("chat response requires content or tool calls")
+    reasoning = (
+        message.get("thinking") if isinstance(message.get("thinking"), str)
+        else None
+    )
     output_tokens = _optional_integer(payload, "eval_count") or 0
     duration_ns = _optional_integer(payload, "eval_duration") or 0
     rate = output_tokens / (duration_ns / 1e9) if duration_ns else None
@@ -52,9 +54,14 @@ def parse_chat_response(
     done_reason = payload.get("done_reason")
     if done_reason is not None and not isinstance(done_reason, str):
         raise OllamaProtocolError("done_reason must be text")
+    if not content and not tool_calls and not reasoning and not done_reason:
+        raise OllamaProtocolError(
+            "chat response requires output or a terminal finish reason"
+        )
     return InferenceResponse(
         content=content, metrics=metrics, tool_calls=tool_calls,
         finish_reason=done_reason,
+        reasoning_content=reasoning,
     )
 
 

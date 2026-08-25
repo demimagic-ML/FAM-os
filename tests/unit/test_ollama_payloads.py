@@ -127,6 +127,32 @@ class OllamaPayloadTests(unittest.TestCase):
         self.assertNotIn("num_gpu", options)
         self.assertNotIn("main_gpu", options)
 
+    def test_qwen_reasoning_effort_and_private_history_are_translated(self) -> None:
+        request = InferenceRequest(
+            "qwen3.8:27b",
+            (
+                InferenceMessage(MessageRole.USER, "continue"),
+                InferenceMessage(
+                    MessageRole.ASSISTANT, "", tool_calls=(InferenceToolCall(
+                        "call-1", "inspect", {},
+                    ),), reasoning_content="private useful reasoning",
+                ),
+            ),
+            32_768, 4_096,
+            tools=(InferenceTool(
+                "inspect", "Inspect state.",
+                {"type": "object", "properties": {}, "required": []},
+            ),),
+            tool_choice="auto", reasoning_effort="high", preserve_reasoning=True,
+        )
+
+        payload = build_chat_payload(request)
+
+        self.assertEqual("high", payload["think"])
+        self.assertEqual(
+            "private useful reasoning", payload["messages"][1]["thinking"],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

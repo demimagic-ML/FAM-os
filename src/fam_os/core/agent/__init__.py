@@ -2,7 +2,10 @@
 
 from fam_os.core.agent.contracts import (
     AgentAuthorityProfile,
+    AgentExecutionCheckpoint,
     AgentFinalResponse,
+    AgentGoalLedger,
+    AgentGraphNode,
     AgentToolCall,
     AgentToolDescriptor,
     AgentToolEffect,
@@ -20,7 +23,10 @@ from fam_os.core.agent.runtime import (
 
 __all__ = [
     "AgentAuthorityProfile",
+    "AgentExecutionCheckpoint",
     "AgentFinalResponse",
+    "AgentGoalLedger",
+    "AgentGraphNode",
     "AgentToolCall",
     "AgentToolDescriptor",
     "AgentToolEffect",

@@ -18,6 +18,10 @@ class AgentWorkspaceToolsTests(unittest.TestCase):
             self.assertNotIn("git_status", identifiers)
             self.assertNotIn("git_diff", identifiers)
 
+            listed = _invoke(registry, "list_directory", {"path": "."})
+            self.assertTrue(listed.succeeded)
+            self.assertEqual("Directory is empty.", listed.output)
+
     def test_large_file_is_read_in_bounded_pages(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -55,6 +59,14 @@ class AgentWorkspaceToolsTests(unittest.TestCase):
                 "expected_sha256": None,
             })
             self.assertTrue(created.succeeded)
+            self.assertEqual("file", created.postcondition["kind"])
+            self.assertTrue(created.postcondition["verified"])
+            directory = _invoke(registry, "create_directory", {"path": "reports"})
+            self.assertTrue(directory.succeeded)
+            self.assertEqual({
+                "verified": True, "operation": "create_directory",
+                "path": "reports", "exists": True, "kind": "directory",
+            }, directory.postcondition)
             patched = _invoke(registry, "apply_patch", {"patch": (
                 "diff --git a/src/app.py b/src/app.py\n"
                 "--- a/src/app.py\n+++ b/src/app.py\n"
@@ -65,8 +77,10 @@ class AgentWorkspaceToolsTests(unittest.TestCase):
                 "source": "src/new.py", "destination": "lib/new.py",
             })
             self.assertTrue(moved.succeeded)
+            self.assertTrue(moved.postcondition["verified"])
             deleted = _invoke(registry, "delete_path", {"path": "lib/new.py"})
             self.assertTrue(deleted.succeeded)
+            self.assertTrue(deleted.postcondition["verified"])
             self.assertEqual("value = 2\n", (root / "src/app.py").read_text())
 
     def test_workspace_profile_blocks_escape_and_symlink_traversal(self):

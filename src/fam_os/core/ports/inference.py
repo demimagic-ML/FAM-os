@@ -50,6 +50,7 @@ class InferenceMessage:
     tool_calls: tuple[InferenceToolCall, ...] = ()
     tool_call_id: str | None = None
     tool_name: str | None = None
+    reasoning_content: str | None = None
 
     def __post_init__(self) -> None:
         if not self.content and not self.tool_calls:
@@ -65,6 +66,8 @@ class InferenceMessage:
             raise ValueError("only tool messages may carry tool result identity")
         if self.tool_calls and self.role is not MessageRole.ASSISTANT:
             raise ValueError("only assistant messages may carry tool calls")
+        if self.reasoning_content is not None and self.role is not MessageRole.ASSISTANT:
+            raise ValueError("only assistant messages may carry preserved reasoning")
 
 
 @dataclass(frozen=True, slots=True)
@@ -81,6 +84,8 @@ class InferenceRequest:
     main_accelerator_index: int | None = None
     tools: tuple[InferenceTool, ...] = ()
     tool_choice: str | None = None
+    reasoning_effort: str | None = None
+    preserve_reasoning: bool = False
 
     def __post_init__(self) -> None:
         if not self.model_ref.strip():
@@ -106,6 +111,8 @@ class InferenceRequest:
             raise ValueError("tool choice requires inference tools")
         if len({item.name for item in self.tools}) != len(self.tools):
             raise ValueError("inference tool names must be unique")
+        if self.reasoning_effort not in {None, "low", "medium", "high"}:
+            raise ValueError("inference reasoning effort is invalid")
 
 
 @dataclass(frozen=True, slots=True)
@@ -114,10 +121,17 @@ class InferenceResponse:
     metrics: InferenceMetrics
     tool_calls: tuple[InferenceToolCall, ...] = ()
     finish_reason: str | None = None
+    reasoning_content: str | None = None
 
     def __post_init__(self) -> None:
-        if not self.content and not self.tool_calls:
-            raise ValueError("inference response requires content or tool calls")
+        if (
+            not self.content and not self.tool_calls and not self.reasoning_content
+            and not self.finish_reason
+        ):
+            raise ValueError(
+                "inference response requires content, tool calls, reasoning, or a "
+                "terminal finish reason"
+            )
 
 
 @dataclass(frozen=True, slots=True)

@@ -6,10 +6,13 @@ from pathlib import Path
 
 from fam_os.core.agent import (
     AgentAuthorityProfile,
+    AgentExecutionCheckpoint,
+    AgentGraphNode,
     AgentToolCall,
     AgentToolDescriptor,
     AgentToolEffect,
     AgentToolExecution,
+    AgentToolResult,
     AgentToolRegistry,
     IterativeAgentSettings,
     IterativeModelAgent,
@@ -159,6 +162,136 @@ class IterativeAgentTests(unittest.TestCase):
             "native-1-1-1", runtime.requests[1].messages[-1].tool_call_id,
         )
 
+    def test_large_registry_exposes_tools_dynamically_after_model_request(self):
+        metrics = InferenceMetrics("model", 0, 0, 1, 1)
+        runtime = _NativeRuntime([
+            InferenceResponse("", metrics, (
+                InferenceToolCall(
+                    "discover", "request_capabilities", {"reason": "Need tool 8"},
+                ),
+            )),
+            InferenceResponse("", metrics, (
+                InferenceToolCall("use", "special_tool_8", {}),
+            )),
+            InferenceResponse("Used the dynamically exposed tool.", metrics),
+        ])
+        tools = AgentToolRegistry()
+        for index in range(9):
+            tools.register(
+                _tool(f"special_tool_{index}", AgentToolEffect.OBSERVE),
+                lambda _arguments, index=index: f"result-{index}",
+            )
+
+        IterativeModelAgent(
+            runtime, IterativeAgentSettings("model"), tools, _Store(),
+        ).run(
+            thread_id="thread", turn_id="turn", objective="Use special tool 8.",
+            profile=AgentAuthorityProfile.WORKSPACE,
+        )
+
+        first = {item.name for item in runtime.requests[0].tools}
+        second = {item.name for item in runtime.requests[1].tools}
+        self.assertEqual({"request_capabilities"}, first)
+        self.assertIn("special_tool_8", second)
+
+    def test_thinking_only_response_is_repaired_once(self):
+        metrics = InferenceMetrics("model", 0, 0, 1, 1)
+        runtime = _NativeRuntime([
+            InferenceResponse("", metrics, reasoning_content="Need a visible answer."),
+            InferenceResponse("Recovered with a visible answer.", metrics),
+        ])
+
+        outcome = IterativeModelAgent(
+            runtime, IterativeAgentSettings("qwen3.8:27b"),
+            AgentToolRegistry(), _Store(),
+        ).run(
+            thread_id="thread", turn_id="turn", objective="Answer visibly.",
+            profile=AgentAuthorityProfile.ASK,
+        )
+
+        self.assertEqual(2, outcome.model_steps)
+        self.assertIn("model_response_repair", runtime.requests[1].messages[-1].content)
+
+    def test_successful_verification_enters_tool_free_finalization(self):
+        metrics = InferenceMetrics("model", 0, 0, 1, 1)
+        runtime = _NativeRuntime([
+            InferenceResponse("", metrics, (
+                InferenceToolCall("write", "write_file", {"path": "x"}),
+            )),
+            InferenceResponse("", metrics, (
+                InferenceToolCall("verify", "verify_command", {"command": ["test"]}),
+            )),
+            InferenceResponse("Verified successfully.", metrics),
+        ])
+        tools = AgentToolRegistry()
+        tools.register(
+            AgentToolDescriptor(
+                "write_file", "Write the result.", AgentToolEffect.WORKSPACE_WRITE,
+                {"type": "object", "properties": {
+                    "path": {"type": "string"},
+                }, "required": ["path"]},
+            ), lambda arguments: AgentToolExecution(
+                f"wrote {arguments['path']}", {
+                    "verified": True, "operation": "write_file",
+                    "path": arguments["path"],
+                },
+            ),
+        )
+        tools.register(
+            AgentToolDescriptor(
+                "verify_command", "Verify the result.", AgentToolEffect.COMMAND,
+                {"type": "object", "properties": {
+                    "command": {"type": "array"},
+                }, "required": ["command"]},
+            ), lambda _arguments: "status=completed\nexit_code=0",
+        )
+
+        outcome = IterativeModelAgent(
+            runtime, IterativeAgentSettings("model"), tools, _Store(),
+        ).run(
+            thread_id="thread", turn_id="turn", objective="Verify and finish.",
+            profile=AgentAuthorityProfile.WORKSPACE,
+        )
+
+        self.assertEqual("Verified successfully.", outcome.response.content)
+        self.assertEqual((), runtime.requests[2].tools)
+        self.assertIsNone(runtime.requests[2].tool_choice)
+
+    def test_rejected_early_completion_expands_hidden_capabilities(self):
+        metrics = InferenceMetrics("model", 0, 0, 1, 1)
+        runtime = _NativeRuntime([
+            InferenceResponse("I cannot perform it yet.", metrics),
+            InferenceResponse("", metrics, (
+                InferenceToolCall("run", "special_tool_8", {}),
+            )),
+            InferenceResponse("Completed after using the tool.", metrics),
+        ])
+        tools = AgentToolRegistry()
+        for index in range(9):
+            tools.register(
+                _tool(f"special_tool_{index}", AgentToolEffect.OBSERVE),
+                lambda _arguments, index=index: f"result-{index}",
+            )
+
+        outcome = IterativeModelAgent(
+            runtime, IterativeAgentSettings("model"), tools, _Store(),
+            completion_validator=lambda results: (
+                None if any(item.tool_id == "special_tool_8" for item in results)
+                else "Use special_tool_8 before completing."
+            ),
+        ).run(
+            thread_id="thread", turn_id="turn", objective="Use special tool 8.",
+            profile=AgentAuthorityProfile.WORKSPACE,
+        )
+
+        self.assertEqual(3, outcome.model_steps)
+        self.assertNotIn(
+            "special_tool_8", {item.name for item in runtime.requests[0].tools},
+        )
+        self.assertIn(
+            "special_tool_8", {item.name for item in runtime.requests[1].tools},
+        )
+
     def test_large_conversation_history_is_compacted_before_inference(self):
         metrics = InferenceMetrics("model", 0, 0, 1, 1)
         runtime = _NativeRuntime([
@@ -199,6 +332,137 @@ class IterativeAgentTests(unittest.TestCase):
                     store.consume_controls("thread"),
                 )
                 self.assertEqual((), store.consume_controls("thread"))
+            finally:
+                database.close()
+
+    def test_sqlite_store_persists_goal_ledger_and_graph_checkpoints(self):
+        metrics = InferenceMetrics("model", 0, 0, 1, 1)
+        with tempfile.TemporaryDirectory() as directory:
+            database = ProductionDatabase(StorageSettings(
+                Path(directory) / "state.sqlite3", os.geteuid(),
+            ))
+            database.open()
+            try:
+                store = SQLiteAgentTurnStore(database, "/workspace")
+                first = _NativeRuntime([
+                    InferenceResponse("Plan: edit app.py and run its tests.", metrics),
+                ])
+                IterativeModelAgent(
+                    first, IterativeAgentSettings("model"),
+                    AgentToolRegistry(), store,
+                ).run(
+                    thread_id="thread", turn_id="turn-1",
+                    objective="Plan the requested change.",
+                    profile=AgentAuthorityProfile.ASK,
+                )
+                second = _NativeRuntime([
+                    InferenceResponse("Implemented the accepted plan.", metrics),
+                ])
+                IterativeModelAgent(
+                    second, IterativeAgentSettings("model"),
+                    AgentToolRegistry(), store,
+                ).run(
+                    thread_id="thread", turn_id="turn-2", objective="Do it.",
+                    profile=AgentAuthorityProfile.WORKSPACE,
+                )
+
+                initial = json.loads(second.requests[0].messages[1].content)
+                ledger = initial["goal_ledger"]
+                self.assertEqual("Plan the requested change.", ledger["original_request"])
+                self.assertIn("edit app.py", ledger["accepted_plan"])
+                self.assertEqual("Do it.", ledger["current_objective"])
+                persisted = store.thread("thread")
+                self.assertEqual("complete", persisted["latest_checkpoint"]["node"])
+                self.assertEqual([], persisted["goal_ledger"]["unresolved_items"])
+                nodes = [
+                    row[0] for row in database.fetchall(
+                        "SELECT graph_node FROM agent_execution_checkpoints "
+                        "WHERE turn_id='turn-2' ORDER BY sequence"
+                    )
+                ]
+                self.assertEqual(["prepare", "infer", "verify", "complete"], nodes)
+            finally:
+                database.close()
+
+    def test_running_turn_resumes_from_durable_action_boundary(self):
+        metrics = InferenceMetrics("model", 0, 0, 1, 1)
+        with tempfile.TemporaryDirectory() as directory:
+            database = ProductionDatabase(StorageSettings(
+                Path(directory) / "state.sqlite3", os.geteuid(),
+            ))
+            database.open()
+            try:
+                store = SQLiteAgentTurnStore(database, "/workspace")
+                store.begin_turn(
+                    "thread", "turn", "Create reports.",
+                    AgentAuthorityProfile.WORKSPACE,
+                )
+                call = AgentToolCall(
+                    "create-1-1-1", "create_directory", {"path": "reports"},
+                    "Create the requested directory.",
+                )
+                result = AgentToolResult(
+                    call.call_id, call.tool_id, True, "created reports", {
+                        "verified": True, "exists": True,
+                        "kind": "directory", "path": "reports",
+                    },
+                )
+                store.record_call("thread", "turn", call)
+                store.record_result("thread", "turn", result)
+                store.checkpoint(AgentExecutionCheckpoint(
+                    "thread", "turn", 4, AgentGraphNode.OBSERVE, 1,
+                    "exploration", {"call_id": call.call_id},
+                ))
+                runtime = _NativeRuntime([
+                    InferenceResponse("Created reports.", metrics),
+                ])
+
+                outcome = IterativeModelAgent(
+                    runtime, IterativeAgentSettings("model"),
+                    AgentToolRegistry(), store,
+                ).run(
+                    thread_id="thread", turn_id="turn",
+                    objective="Create reports.",
+                    profile=AgentAuthorityProfile.WORKSPACE,
+                )
+
+                self.assertEqual(2, outcome.model_steps)
+                self.assertEqual((result,), outcome.tool_results)
+                self.assertEqual(MessageRole.TOOL, runtime.requests[0].messages[-1].role)
+                self.assertEqual("create-1-1-1", runtime.requests[0].messages[-1].tool_call_id)
+                persisted = store.thread("thread")
+                self.assertEqual("completed", persisted["turns"][0]["status"])
+                self.assertGreater(persisted["latest_checkpoint"]["sequence"], 4)
+            finally:
+                database.close()
+
+    def test_resume_does_not_replay_call_with_unknown_interrupted_outcome(self):
+        with tempfile.TemporaryDirectory() as directory:
+            database = ProductionDatabase(StorageSettings(
+                Path(directory) / "state.sqlite3", os.geteuid(),
+            ))
+            database.open()
+            try:
+                store = SQLiteAgentTurnStore(database, "/workspace")
+                store.begin_turn(
+                    "thread", "turn", "Move a file.",
+                    AgentAuthorityProfile.WORKSPACE,
+                )
+                call = AgentToolCall(
+                    "move-1", "move_path",
+                    {"source": "a", "destination": "b"}, "Move it.",
+                )
+                store.record_call("thread", "turn", call)
+                store.checkpoint(AgentExecutionCheckpoint(
+                    "thread", "turn", 2, AgentGraphNode.EXECUTE, 1,
+                    "implementation", {"call_id": call.call_id},
+                ))
+
+                restored = store.restore_turn("thread", "turn")
+
+                self.assertEqual(call, restored[0][0])
+                self.assertFalse(restored[0][1].succeeded)
+                self.assertIn("unknown after interruption", restored[0][1].output)
             finally:
                 database.close()
 
@@ -395,6 +659,40 @@ class IterativeAgentTests(unittest.TestCase):
         self.assertEqual(2, len(calls))
         self.assertEqual("The optional tool is unavailable; used existing evidence.",
                          outcome.response.content)
+
+    def test_typed_recovery_retry_limit_is_enforced_per_action(self):
+        repeated = {
+            "type": "tool_call", "tool": "run_command",
+            "arguments": {"command": ["missing"]},
+            "reason": "Retry the missing executable.",
+        }
+        runtime = _Runtime([
+            repeated, repeated, repeated,
+            {"type": "final", "content": "Stopped retrying the missing executable."},
+        ])
+        calls = []
+        tools = AgentToolRegistry()
+
+        def missing(_arguments):
+            calls.append(True)
+            raise RuntimeError("execvp missing: No such file or directory")
+
+        tools.register(_tool("run_command", AgentToolEffect.COMMAND), missing)
+
+        outcome = IterativeModelAgent(
+            runtime, IterativeAgentSettings("model"), tools, _Store(),
+        ).run(
+            thread_id="thread", turn_id="turn", objective="Try the command.",
+            profile=AgentAuthorityProfile.WORKSPACE,
+        )
+
+        self.assertEqual(2, len(calls))
+        self.assertIn("loop detected", outcome.tool_results[2].output.lower())
+        recovery = json.loads(
+            outcome.tool_results[0].output.split("structured_recovery=", 1)[1]
+        )
+        self.assertEqual("missing_executable", recovery["category"])
+        self.assertEqual(1, recovery["retry_limit"])
 
     def test_owner_guidance_is_injected_before_the_next_model_step(self):
         runtime = _Runtime([

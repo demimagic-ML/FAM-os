@@ -96,14 +96,40 @@ class WorkspaceCommandTools:
             IsolationLevel.BUBBLEWRAP,
         )
         if result.status is not SandboxStatus.COMPLETED:
-            return (
+            raise RuntimeError(
                 f"status={result.status.value}\nreason={result.reason}\n"
                 f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
             )
-        return (
+        output = (
             f"status=completed\nexit_code={result.exit_code}\n"
             f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
         )
+        if result.exit_code != 0:
+            if "execvp" in result.stderr and "No such file" in result.stderr:
+                hints = _executable_hints(command[0])
+                if hints:
+                    output += "\navailable_executable_examples=" + ",".join(hints)
+            raise RuntimeError(output)
+        return output
+
+
+def _executable_hints(requested: str) -> tuple[str, ...]:
+    """Return bounded real sandbox-visible alternatives for a missing executable."""
+    name = Path(requested).name
+    stem = name.rstrip("0123456789.-") or name
+    values = []
+    for directory in (Path("/usr/bin"), Path("/bin")):
+        try:
+            entries = directory.iterdir()
+        except OSError:
+            continue
+        for path in entries:
+            if (
+                path.name.startswith(stem) and path.is_file()
+                and path.stat().st_mode & 0o111
+            ):
+                values.append(str(path))
+    return tuple(sorted(dict.fromkeys(values))[:8])
 
 
 def _bubblewrap_command(

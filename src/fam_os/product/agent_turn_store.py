@@ -7,7 +7,10 @@ from datetime import datetime, timezone
 
 from fam_os.core.agent import (
     AgentAuthorityProfile,
+    AgentExecutionCheckpoint,
     AgentFinalResponse,
+    AgentGoalLedger,
+    AgentGraphNode,
     AgentToolCall,
     AgentToolResult,
 )
@@ -26,6 +29,18 @@ class SQLiteAgentTurnStore:
     ) -> None:
         now = _now()
         with self._database.transaction() as connection:
+            existing_turn = connection.execute(
+                "SELECT objective,authority_profile,status FROM agent_turns "
+                "WHERE thread_id=? AND turn_id=?", (thread_id, turn_id),
+            ).fetchone()
+            if existing_turn is not None:
+                if (
+                    existing_turn[0] != objective
+                    or existing_turn[1] != profile.value
+                    or existing_turn[2] != "running"
+                ):
+                    raise RuntimeError("agent turn identity cannot be reused")
+                return
             row = connection.execute(
                 "SELECT workspace_root,authority_profile FROM agent_threads "
                 "WHERE thread_id=?", (thread_id,),
@@ -49,6 +64,109 @@ class SQLiteAgentTurnStore:
                 "status,created_at) VALUES(?,?,?,?,?,?)",
                 (turn_id, thread_id, objective, profile.value, "running", now),
             )
+            ledger = connection.execute(
+                "SELECT 1 FROM agent_goal_ledgers WHERE thread_id=?", (thread_id,),
+            ).fetchone()
+            if ledger is None:
+                connection.execute(
+                    "INSERT INTO agent_goal_ledgers(thread_id,original_request,"
+                    "current_objective,unresolved_items_json,created_at,updated_at) "
+                    "VALUES(?,?,?,?,?,?)",
+                    (thread_id, objective, objective, json.dumps([objective]), now, now),
+                )
+            else:
+                connection.execute(
+                    "UPDATE agent_goal_ledgers SET current_objective=?,"
+                    "unresolved_items_json=?,updated_at=? WHERE thread_id=?",
+                    (objective, json.dumps([objective]), now, thread_id),
+                )
+
+    def restore_turn(
+        self, thread_id: str, turn_id: str,
+    ) -> tuple[tuple[AgentToolCall, AgentToolResult], ...]:
+        rows = self._database.fetchall(
+            "SELECT call_id,tool_id,event_kind,payload_json FROM agent_tool_events "
+            "WHERE thread_id=? AND turn_id=? ORDER BY event_id",
+            (thread_id, turn_id),
+        )
+        calls: dict[str, AgentToolCall] = {}
+        restored: list[tuple[AgentToolCall, AgentToolResult]] = []
+        for call_id, tool_id, kind, payload_json in rows:
+            payload = json.loads(payload_json)
+            if kind == "call":
+                calls[call_id] = AgentToolCall(
+                    call_id, tool_id, payload["arguments"], payload["reason"],
+                )
+            elif kind == "result" and call_id in calls:
+                restored.append((calls.pop(call_id), AgentToolResult(
+                    call_id, tool_id, bool(payload["succeeded"]),
+                    payload["output"], payload.get("postcondition"),
+                )))
+        for call in calls.values():
+            restored.append((call, AgentToolResult(
+                call.call_id, call.tool_id, False,
+                "Execution outcome is unknown after interruption. Observe the "
+                "requested postcondition before deciding whether to retry; do not "
+                "blindly replay this mutation.",
+            )))
+        return tuple(restored)
+
+    def goal_ledger(self, thread_id: str) -> AgentGoalLedger:
+        row = self._database.fetchone(
+            "SELECT original_request,accepted_plan,current_objective,"
+            "completed_objectives_json,unresolved_items_json "
+            "FROM agent_goal_ledgers WHERE thread_id=?", (thread_id,),
+        )
+        if row is None:
+            raise LookupError("agent goal ledger is unavailable")
+        return AgentGoalLedger(
+            row[0], row[1], row[2], tuple(json.loads(row[3])), tuple(json.loads(row[4])),
+        )
+
+    def context_state(self, thread_id: str) -> tuple[int, int]:
+        row = self._database.fetchone(
+            "SELECT context_generation,compaction_count FROM agent_goal_ledgers "
+            "WHERE thread_id=?", (thread_id,),
+        )
+        return (0, 0) if row is None else (int(row[0]), int(row[1]))
+
+    def record_compaction(self, thread_id: str, generation: int) -> None:
+        self._database.execute(
+            "UPDATE agent_goal_ledgers SET context_generation=?,compaction_count="
+            "compaction_count+1,updated_at=? WHERE thread_id=?",
+            (generation, _now(), thread_id),
+        )
+
+    def checkpoint(
+        self, checkpoint: AgentExecutionCheckpoint,
+    ) -> None:
+        self._database.execute(
+            "INSERT INTO agent_execution_checkpoints(thread_id,turn_id,sequence,"
+            "graph_node,model_step,phase,state_json,created_at) VALUES(?,?,?,?,?,?,?,?)",
+            (
+                checkpoint.thread_id, checkpoint.turn_id, checkpoint.sequence,
+                checkpoint.node.value, checkpoint.step, checkpoint.phase,
+                json.dumps(checkpoint.state, sort_keys=True, separators=(",", ":")),
+                _now(),
+            ),
+        )
+
+    def latest_checkpoint(
+        self, thread_id: str, turn_id: str | None = None,
+    ) -> AgentExecutionCheckpoint | None:
+        clause = "thread_id=?" if turn_id is None else "thread_id=? AND turn_id=?"
+        parameters = (thread_id,) if turn_id is None else (thread_id, turn_id)
+        row = self._database.fetchone(
+            "SELECT turn_id,sequence,graph_node,model_step,phase,state_json "
+            f"FROM agent_execution_checkpoints WHERE {clause} "
+            "ORDER BY checkpoint_id DESC LIMIT 1", parameters,
+        )
+        if row is None:
+            return None
+        return AgentExecutionCheckpoint(
+            thread_id, row[0], int(row[1]), AgentGraphNode(row[2]), int(row[3]),
+            row[4], json.loads(row[5]),
+        )
 
     def conversation_context(self, thread_id: str) -> str:
         rows = self._database.fetchall(
@@ -86,13 +204,32 @@ class SQLiteAgentTurnStore:
     def complete_turn(
         self, thread_id: str, turn_id: str, response: AgentFinalResponse,
     ) -> None:
-        cursor = self._database.execute(
-            "UPDATE agent_turns SET status='completed',final_response=?,completed_at=? "
-            "WHERE thread_id=? AND turn_id=? AND status='running'",
-            (response.content, _now(), thread_id, turn_id),
-        )
-        if cursor.rowcount != 1:
-            raise RuntimeError("agent turn completion state changed")
+        now = _now()
+        with self._database.transaction() as connection:
+            row = connection.execute(
+                "SELECT objective FROM agent_turns WHERE thread_id=? AND turn_id=? "
+                "AND status='running'", (thread_id, turn_id),
+            ).fetchone()
+            if row is None:
+                raise RuntimeError("agent turn completion state changed")
+            connection.execute(
+                "UPDATE agent_turns SET status='completed',final_response=?,completed_at=? "
+                "WHERE thread_id=? AND turn_id=?",
+                (response.content, now, thread_id, turn_id),
+            )
+            ledger = connection.execute(
+                "SELECT completed_objectives_json FROM agent_goal_ledgers "
+                "WHERE thread_id=?", (thread_id,),
+            ).fetchone()
+            completed = [] if ledger is None else json.loads(ledger[0])
+            if row[0] not in completed:
+                completed.append(row[0])
+            connection.execute(
+                "UPDATE agent_goal_ledgers SET accepted_plan=?,"
+                "completed_objectives_json=?,unresolved_items_json='[]',updated_at=? "
+                "WHERE thread_id=?",
+                (response.content, json.dumps(completed[-32:]), now, thread_id),
+            )
 
     def fail_turn(self, thread_id: str, turn_id: str, failure: str) -> None:
         cursor = self._database.execute(
@@ -161,6 +298,10 @@ class SQLiteAgentTurnStore:
             "authority_profile": row[1],
             "created_at": row[2],
             "updated_at": row[3],
+            "goal_ledger": self._ledger_dict(thread_id),
+            "latest_checkpoint": self._checkpoint_dict(
+                self.latest_checkpoint(thread_id),
+            ),
             "turns": [{
                 "turn_id": item[0], "objective": item[1],
                 "authority_profile": item[2], "status": item[3],
@@ -168,6 +309,32 @@ class SQLiteAgentTurnStore:
                 "created_at": item[6], "completed_at": item[7],
                 "events": self.events(item[0]),
             } for item in turns],
+        }
+
+    def _ledger_dict(self, thread_id: str) -> dict[str, object] | None:
+        try:
+            ledger = self.goal_ledger(thread_id)
+        except LookupError:
+            return None
+        return {
+            "original_request": ledger.original_request,
+            "accepted_plan": ledger.accepted_plan,
+            "current_objective": ledger.current_objective,
+            "completed_objectives": list(ledger.completed_objectives),
+            "unresolved_items": list(ledger.unresolved_items),
+        }
+
+    @staticmethod
+    def _checkpoint_dict(checkpoint) -> dict[str, object] | None:
+        if checkpoint is None:
+            return None
+        return {
+            "turn_id": checkpoint.turn_id,
+            "sequence": checkpoint.sequence,
+            "node": checkpoint.node.value,
+            "step": checkpoint.step,
+            "phase": checkpoint.phase,
+            "state": checkpoint.state,
         }
 
     def events(self, turn_id: str) -> list[dict[str, object]]:

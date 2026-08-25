@@ -1,5 +1,6 @@
 """Startup-path bounds and partial-composition cleanup regressions."""
 
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -9,6 +10,7 @@ from fam_os.adapters.codex_subscription import CodexSubscriptionSettings
 from fam_os.product.service import (
     LocalProductService, ProductServiceSettings, _engineering_model_ref,
 )
+from fam_os.product.agent_model_scorecard import SCORECARD_VERSION
 
 
 class ProductServiceStartupSafetyTests(unittest.TestCase):
@@ -28,6 +30,31 @@ class ProductServiceStartupSafetyTests(unittest.TestCase):
             "custom-agent:latest",
             _engineering_model_ref(Mock(), "fallback", "custom-agent:latest"),
         )
+
+    def test_complete_measured_scorecard_overrides_static_preference(self) -> None:
+        runtime = Mock()
+        runtime.available_models.return_value = (
+            "qwen3.8:27b", "devstral-small-2:latest",
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            scorecard = Path(temporary) / "scorecard.json"
+            scorecard.write_text(json.dumps({
+                "version": SCORECARD_VERSION,
+                "models": [{
+                    "model_ref": "qwen3.8:27b", "passed_cases": 5,
+                    "total_cases": 8, "median_seconds": 4.0,
+                    "evaluated_at": "2026-08-25T10:00:00Z",
+                }, {
+                    "model_ref": "devstral-small-2:latest", "passed_cases": 7,
+                    "total_cases": 8, "median_seconds": 8.0,
+                    "evaluated_at": "2026-08-25T10:00:00Z",
+                }],
+            }), "utf-8")
+
+            self.assertEqual(
+                "devstral-small-2:latest",
+                _engineering_model_ref(runtime, "fallback", None, scorecard),
+            )
 
     def test_runtime_root_rejects_linux_unix_socket_overflow(self) -> None:
         runtime_root = Path("/tmp") / ("x" * 100)
