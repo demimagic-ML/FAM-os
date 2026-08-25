@@ -104,6 +104,46 @@ class AgentWorkspaceToolsTests(unittest.TestCase):
             self.assertFalse(linked.succeeded)
             self.assertFalse((outside / "x").exists())
 
+    def test_absolute_paths_inside_selected_workspace_are_canonicalized(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "workspace"
+            reports = root / "reports"
+            reports.mkdir(parents=True)
+            registry = AgentToolRegistry()
+            WorkspaceAgentTools(root).register(registry)
+
+            listed_root = _invoke(
+                registry, "list_directory", {"path": root.as_posix()},
+            )
+            created = _invoke(registry, "write_file", {
+                "path": (reports / "alpha.txt").as_posix(),
+                "content": "ALPHA", "expected_sha256": None,
+            })
+
+            self.assertTrue(listed_root.succeeded, listed_root.output)
+            self.assertIn("directory\treports", listed_root.output)
+            self.assertTrue(created.succeeded, created.output)
+            self.assertEqual("reports/alpha.txt", created.postcondition["path"])
+            self.assertEqual("ALPHA", (reports / "alpha.txt").read_text())
+
+    def test_absolute_path_outside_selected_workspace_is_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "workspace"
+            outside = Path(directory) / "outside"
+            root.mkdir()
+            outside.mkdir()
+            registry = AgentToolRegistry()
+            WorkspaceAgentTools(root).register(registry)
+
+            escaped = _invoke(registry, "write_file", {
+                "path": (outside / "x").as_posix(),
+                "content": "x", "expected_sha256": None,
+            })
+
+            self.assertFalse(escaped.succeeded)
+            self.assertIn("must stay inside", escaped.output)
+            self.assertFalse((outside / "x").exists())
+
 
 def _invoke(registry, tool, arguments):
     return registry.invoke(

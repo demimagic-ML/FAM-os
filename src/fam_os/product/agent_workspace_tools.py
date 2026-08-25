@@ -303,10 +303,18 @@ class WorkspaceAgentTools:
         return process.returncode == 0 and process.stdout.strip() == b"true"
 
     def _path(self, relative: str, *, must_exist: bool) -> Path:
+        value = PurePosixPath(relative)
+        if value.is_absolute():
+            try:
+                value = value.relative_to(PurePosixPath(self.root.as_posix()))
+            except ValueError as error:
+                raise PermissionError(
+                    "agent path must stay inside the workspace"
+                ) from error
+            relative = value.as_posix() or "."
         if relative == ".":
             return self.root
-        value = PurePosixPath(relative)
-        if value.is_absolute() or ".." in value.parts or not value.parts:
+        if ".." in value.parts or not value.parts:
             raise PermissionError("agent path must stay inside the workspace")
         path = self.root.joinpath(*value.parts)
         parent = path if path.exists() and path.is_dir() else path.parent
