@@ -709,9 +709,10 @@ function renderGoalTelemetry(goal) {
   panel.classList.toggle("hidden", !live);
   if (!live) return;
   panel.dataset.active = ["queued", "running", "pause_requested", "cancel_requested"].includes(goal.status) ? "true" : "false";
+  const terminal = ["completed", "failed", "cancelled", "waiting_approval"].includes(goal.status);
   $("#goal-live-phase").textContent = (live.phase || live.node || goal.status).replaceAll("_", " ");
-  $("#goal-live-step").textContent = String(live.step || 0).padStart(2, "0");
-  $("#goal-live-model").textContent = compactModelName(live.model_ref);
+  $("#goal-live-step").textContent = live.step ? String(live.step).padStart(2, "0") : terminal ? "—" : "00";
+  $("#goal-live-model").textContent = live.model_ref ? compactModelName(live.model_ref) : terminal ? "Session ended" : "Warming up";
   $("#goal-live-age").textContent = relativeAge(live.last_activity);
   const paths = live.changed_files || [];
   $("#goal-files").classList.toggle("hidden", paths.length === 0);
