@@ -132,6 +132,15 @@ const FamGoalMode = (() => {
     if (action === "resume") watch();
   }
 
+  async function guide(content) {
+    if (!current || !content.trim()) return;
+    const goal = await api(`/api/v1/goals/${encodeURIComponent(current.goal.goal_id)}/control`, {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({action: "guide", content: content.trim()}),
+    });
+    renderGoal(goal);
+  }
+
   function watch() {
     clearInterval(timer);
     timer = setInterval(() => refresh().catch(hooks.fail), 1000);
@@ -155,5 +164,5 @@ const FamGoalMode = (() => {
     byId("prompt").focus();
   }
 
-  return {configure, prepare, restore, control};
+  return {configure, prepare, restore, control, guide};
 })();

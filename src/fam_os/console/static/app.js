@@ -689,6 +689,12 @@ function renderGoalActivity(goal, control) {
   $("#goal-pause").onclick = () => control("pause").catch(fail);
   $("#goal-resume").onclick = () => control("resume").catch(fail);
   $("#goal-cancel").onclick = () => control("cancel").catch(fail);
+  $("#goal-guide").disabled = goal.status !== "running";
+  $("#goal-guidance").disabled = goal.status !== "running";
+  $("#goal-guide").onclick = () => {
+    const input = $("#goal-guidance");
+    FamGoalMode.guide(input.value).then(() => { input.value = ""; }).catch(fail);
+  };
 }
 
 document.querySelectorAll(".nav-item").forEach(

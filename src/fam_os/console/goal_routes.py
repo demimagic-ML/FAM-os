@@ -58,9 +58,11 @@ def handle_goal_post(handler, path: str, document: dict, session_id: str) -> boo
             service.owner_id, goal_id, confirmed=document["confirmed"],
         )
     elif operation == "control":
-        _exact(document, {"action"})
+        if set(document) not in ({"action"}, {"action", "content"}):
+            raise ValueError("goal control fields are invalid")
         response = service.control(
             service.owner_id, goal_id, _text(document["action"]),
+            str(document.get("content", "")),
         )
     else:
         raise ValueError("goal mutation operation is invalid")

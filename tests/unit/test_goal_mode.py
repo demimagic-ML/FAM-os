@@ -115,6 +115,31 @@ class GoalModeTests(unittest.TestCase):
             self.assertEqual("cancelled", cancelled["status"])
             service.stop()
 
+    def test_running_goal_accepts_guidance_for_the_next_model_step(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            api = _NaturalEngineering()
+            service = GoalModeService(
+                root / "goals.sqlite3", api, _Runtime(), "model",
+            )
+            goal = service.prepare(
+                "owner", "Build a complete browser game", str(root),
+                AgentAuthorityProfile.WORKSPACE, "session",
+            )
+            service._database.execute(
+                "UPDATE engineering_goals SET status='running' WHERE goal_id=?",
+                (goal["goal_id"],),
+            )
+            service._database.commit()
+
+            service.control(
+                "owner", goal["goal_id"], "guide", "Prioritize mobile controls.",
+            )
+
+            self.assertEqual("steer", api.controls[-1][0])
+            self.assertIn("mobile controls", api.controls[-1][1])
+            service.stop()
+
 
 def _wait(service, goal_id, expected):
     deadline = time.monotonic() + 2

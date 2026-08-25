@@ -752,6 +752,9 @@ main {
 .goal-controls { margin-top: 18px; padding: 16px; border: 1px solid var(--line); background: #f1f4f4; }
 .goal-controls strong { display: block; margin: 5px 0 12px; text-transform: capitalize; }
 .goal-controls div { display: flex; flex-wrap: wrap; gap: 8px; }
+.goal-controls label { display: block; margin: 14px 0 6px; font-size: 10px; font-weight: 700; }
+.goal-controls .goal-guidance { display: grid; grid-template-columns: minmax(0, 1fr) auto; }
+.goal-guidance input { min-width: 0; border: 1px solid var(--line); padding: 9px 10px; background: white; }
 .goal-controls > p:last-child { margin: 12px 0 0; color: var(--muted); font-size: 10px; line-height: 1.5; }
 
 @media (max-width: 700px) {

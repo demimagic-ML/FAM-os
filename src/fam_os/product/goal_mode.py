@@ -134,15 +134,24 @@ class GoalModeService:
         return self.inspect(owner_id, goal_id)
 
     def control(
-        self, owner_id: str, goal_id: str, action: str,
+        self, owner_id: str, goal_id: str, action: str, content: str = "",
     ) -> dict[str, object]:
         self._require_owner(owner_id)
-        if action not in {"pause", "resume", "cancel"}:
+        if action not in {"pause", "resume", "cancel", "guide"}:
             raise ValueError("goal control action is unsupported")
         goal = self.inspect(owner_id, goal_id)
         status = str(goal["status"])
         if status in _TERMINAL:
             raise RuntimeError("completed goal cannot be controlled")
+        if action == "guide":
+            if status != "running":
+                raise RuntimeError("guidance requires a running goal")
+            instruction = _text(content, "guidance")
+            self._api.control_thread(
+                owner_id, str(goal["session_id"]), str(goal["workspace_root"]),
+                "steer", instruction,
+            )
+            return self.inspect(owner_id, goal_id)
         if action == "resume":
             return self.activate(owner_id, goal_id, confirmed=True)
         target = "pause_requested" if action == "pause" else "cancel_requested"
