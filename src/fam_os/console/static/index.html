@@ -124,6 +124,20 @@
           <p>The plan, expert, application access, approvals, and verification will appear here.</p>
         </div>
         <ol class="spine hidden" id="spine"></ol>
+        <section class="goal-live hidden" id="goal-live" aria-label="Live goal telemetry">
+          <div class="goal-signal" aria-hidden="true"><i></i><span></span></div>
+          <div class="goal-telemetry">
+            <span><small>Phase</small><strong id="goal-live-phase">Starting</strong></span>
+            <span><small>Model step</small><strong id="goal-live-step">0</strong></span>
+            <span><small>Model</small><strong id="goal-live-model">—</strong></span>
+            <span><small>Last signal</small><strong id="goal-live-age">Now</strong></span>
+          </div>
+          <div class="goal-files hidden" id="goal-files">
+            <div><p class="kicker">Candidate changes</p><span id="goal-file-count">0 files</span></div>
+            <ol id="goal-file-list"></ol>
+            <p>Isolated from your workspace until verification succeeds.</p>
+          </div>
+        </section>
         <section class="agent-control hidden" id="agent-control">
           <p class="kicker">Guide this run</p>
           <label for="agent-guidance">Add context without restarting</label>

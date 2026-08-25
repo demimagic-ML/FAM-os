@@ -664,14 +664,19 @@ function renderGoalActivity(goal, control) {
   $("#spine").classList.remove("hidden");
   $("#goal-controls").classList.remove("hidden");
   $("#task-title").textContent = goal.title;
+  $("#task-title").title = goal.title;
   const running = ["queued", "running", "pause_requested", "cancel_requested"].includes(goal.status);
   const completed = goal.status === "completed";
   const failed = ["failed", "cancelled"].includes(goal.status);
+  const live = goal.live || {};
+  const node = live.node || (goal.status === "queued" ? "prepare" : "");
+  const executionDone = completed || ["verify", "complete"].includes(node);
+  const verificationActive = node === "verify";
   const rows = [
     ["succeeded", "Plan and completion criteria accepted", `${goal.plan.length} steps`],
-    [completed ? "succeeded" : failed ? "failed" : running ? "running" : "waiting", "Implement through the background supervisor", `epoch ${goal.epochs}`],
-    [completed ? "succeeded" : failed ? "not-taken" : "waiting", "Verify every completion criterion", `${goal.acceptance_criteria.length} checks`],
-    [completed ? "succeeded" : failed ? "not-taken" : "waiting", "Apply the verified workspace result", goal.status.replaceAll("_", " ")],
+    [executionDone ? "succeeded" : failed ? "failed" : running ? "active" : "waiting", "Build in an isolated candidate", live.step ? `model step ${live.step} · ${live.phase || node}` : `execution epoch ${goal.epochs}`],
+    [completed ? "succeeded" : failed ? "not_taken" : verificationActive ? "active" : "waiting", "Verify the completion criteria", verificationActive ? `${live.result_count || 0} observations collected` : `${goal.acceptance_criteria.length} checks`],
+    [completed ? "succeeded" : failed ? "not_taken" : "waiting", "Apply the verified result", completed ? "workspace updated" : "only after every check passes"],
   ];
   $("#spine").replaceChildren(...rows.map((row, index) => {
     const fragment = $("#step-template").content.cloneNode(true);
@@ -682,6 +687,7 @@ function renderGoalActivity(goal, control) {
     item.querySelector("p").textContent = row[2];
     return item;
   }));
+  renderGoalTelemetry(goal);
   $("#goal-control-status").textContent = goal.status.replaceAll("_", " ");
   $("#goal-pause").disabled = !["queued", "running"].includes(goal.status);
   $("#goal-resume").disabled = goal.status !== "paused";
@@ -695,6 +701,63 @@ function renderGoalActivity(goal, control) {
     const input = $("#goal-guidance");
     FamGoalMode.guide(input.value).then(() => { input.value = ""; }).catch(fail);
   };
+}
+
+function renderGoalTelemetry(goal) {
+  const panel = $("#goal-live");
+  const live = goal.live;
+  panel.classList.toggle("hidden", !live);
+  if (!live) return;
+  panel.dataset.active = ["queued", "running", "pause_requested", "cancel_requested"].includes(goal.status) ? "true" : "false";
+  $("#goal-live-phase").textContent = (live.phase || live.node || goal.status).replaceAll("_", " ");
+  $("#goal-live-step").textContent = String(live.step || 0).padStart(2, "0");
+  $("#goal-live-model").textContent = compactModelName(live.model_ref);
+  $("#goal-live-age").textContent = relativeAge(live.last_activity);
+  const paths = live.changed_files || [];
+  $("#goal-files").classList.toggle("hidden", paths.length === 0);
+  $("#goal-file-count").textContent = `${paths.length} ${paths.length === 1 ? "file" : "files"}`;
+  $("#goal-file-list").replaceChildren(...paths.slice(0, 6).map(path => {
+    const item = document.createElement("li");
+    item.textContent = path;
+    item.title = path;
+    return item;
+  }));
+  renderGoalToolEvents(live.events || []);
+}
+
+function renderGoalToolEvents(events) {
+  const calls = new Map(events.filter(event => event.event_kind === "call").map(event => [event.call_id, event]));
+  const rows = events.filter(event => event.event_kind === "result").slice(-6).map(event => {
+    const call = calls.get(event.call_id);
+    const item = document.createElement("li");
+    item.dataset.status = event.payload.succeeded ? "verified" : "failed";
+    const head = document.createElement("header");
+    const label = document.createElement("strong");
+    label.textContent = event.tool_id.replaceAll("_", " ");
+    const status = document.createElement("span");
+    status.textContent = event.payload.succeeded ? "observed" : "failed";
+    const output = document.createElement("pre");
+    const reason = call?.payload?.reason ? `${call.payload.reason}\n` : "";
+    output.textContent = `${reason}${event.payload.output || "Postcondition recorded."}`.slice(0, 1600);
+    head.append(label, status);
+    item.append(head, output);
+    return item;
+  });
+  if (rows.length) $("#tool-activity").replaceChildren(...rows);
+}
+
+function compactModelName(model) {
+  if (!model) return "Warming up";
+  return model.replace(/^.*\//, "").replace(":", " · ");
+}
+
+function relativeAge(value) {
+  const time = Date.parse(value || "");
+  if (!Number.isFinite(time)) return "Now";
+  const seconds = Math.max(0, Math.round((Date.now() - time) / 1000));
+  if (seconds < 5) return "Live";
+  if (seconds < 60) return `${seconds}s ago`;
+  return `${Math.floor(seconds / 60)}m ago`;
 }
 
 document.querySelectorAll(".nav-item").forEach(

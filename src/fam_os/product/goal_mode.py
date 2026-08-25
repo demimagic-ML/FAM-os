@@ -183,7 +183,9 @@ class GoalModeService:
             ).fetchone()
         if row is None:
             raise KeyError("goal was not found")
-        return _document(row)
+        document = _document(row)
+        document["live"] = self._live_progress(document)
+        return document
 
     def list(self, owner_id: str, *, workspace_root: str | None = None) -> dict[str, object]:
         self._require_owner(owner_id)
@@ -361,6 +363,57 @@ class GoalModeService:
         if owner_id != self.owner_id:
             raise PermissionError("goal owner is invalid")
 
+    def _live_progress(self, goal: dict[str, object]) -> dict[str, object] | None:
+        if goal["status"] == "draft":
+            return None
+        try:
+            thread = self._api.thread(
+                self.owner_id,
+                str(goal["session_id"]), str(goal["workspace_root"]),
+            )
+        except (
+            AttributeError, KeyError, LookupError, PermissionError,
+            RuntimeError, ValueError,
+        ):
+            return None
+        if not isinstance(thread, dict):
+            return None
+        turns = thread.get("turns", [])
+        if not turns:
+            return None
+        active = next(
+            (turn for turn in reversed(turns) if turn.get("status") == "running"),
+            turns[-1],
+        )
+        checkpoint = thread.get("latest_checkpoint") or {}
+        raw_events = active.get("events", [])[-16:]
+        events = [_compact_event(event) for event in raw_events]
+        changed_files = sorted({
+            path for event in raw_events
+            for path in _event_paths(event)
+        })[:24]
+        state = checkpoint.get("state") or {}
+        last_activity = (
+            raw_events[-1].get("created_at") if raw_events
+            else goal.get("updated_at")
+        )
+        return {
+            "turn_id": active.get("turn_id"),
+            "turn_status": active.get("status"),
+            "node": checkpoint.get("node"),
+            "phase": checkpoint.get("phase"),
+            "step": checkpoint.get("step", 0),
+            "sequence": checkpoint.get("sequence", 0),
+            "model_ref": state.get("model_ref"),
+            "escalated": bool(state.get("escalated")),
+            "context_generation": state.get("context_generation", 0),
+            "result_count": state.get("result_count", 0),
+            "tool_count": state.get("tool_count", 0),
+            "last_activity": last_activity,
+            "changed_files": changed_files,
+            "events": events,
+        }
+
 
 def _document(row: sqlite3.Row) -> dict[str, object]:
     result = None if row["result_json"] is None else json.loads(row["result_json"])
@@ -376,6 +429,40 @@ def _document(row: sqlite3.Row) -> dict[str, object]:
         "created_at": row["created_at"], "updated_at": row["updated_at"],
         "engineering_task": task,
     }
+
+
+def _compact_event(event: dict[str, object]) -> dict[str, object]:
+    payload = dict(event.get("payload") or {})
+    output = payload.get("output")
+    if isinstance(output, str) and len(output) > 1_200:
+        payload["output"] = output[:1_200].rstrip() + "\n… output compacted"
+    return {
+        "call_id": event.get("call_id"), "tool_id": event.get("tool_id"),
+        "event_kind": event.get("event_kind"), "payload": payload,
+        "created_at": event.get("created_at"),
+    }
+
+
+def _event_paths(event: dict[str, object]) -> set[str]:
+    payload = event.get("payload") or {}
+    if not isinstance(payload, dict):
+        return set()
+    postcondition = payload.get("postcondition")
+    if not isinstance(postcondition, dict):
+        return set()
+    paths: set[str] = set()
+    pending = [postcondition]
+    while pending:
+        value = pending.pop()
+        if isinstance(value, dict):
+            for key, item in value.items():
+                if key in {"path", "relative_path"} and isinstance(item, str):
+                    paths.add(item)
+                elif isinstance(item, (dict, list)):
+                    pending.append(item)
+        elif isinstance(value, list):
+            pending.extend(item for item in value if isinstance(item, (dict, list)))
+    return paths
 
 
 def _string_list(value, minimum: int, maximum: int) -> bool:

@@ -749,7 +749,7 @@ main {
 .goal-consent { margin: 0 26px; padding: 14px; border-left: 3px solid var(--signal); background: #edf3f2; color: var(--muted); font-size: 11px; line-height: 1.5; }
 .goal-dialog-actions { display: flex; justify-content: flex-end; gap: 10px; padding: 20px 26px 24px; }
 
-.goal-controls { margin-top: 18px; padding: 16px; border: 1px solid var(--line); background: #f1f4f4; }
+.goal-controls { margin-top: 14px; padding: 15px; border: 1px solid var(--line); background: #f1f4f4; }
 .goal-controls strong { display: block; margin: 5px 0 12px; text-transform: capitalize; }
 .goal-controls div { display: flex; flex-wrap: wrap; gap: 8px; }
 .goal-controls label { display: block; margin: 14px 0 6px; font-size: 10px; font-weight: 700; }
@@ -802,6 +802,10 @@ main {
   min-width: 0;
   font: 500 24px/1.15 "Noto Serif Display", Georgia, serif;
   overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .execution-head > div { min-width: 0; }
@@ -926,6 +930,28 @@ main {
 .spine small { color: var(--muted); font: 700 8px "Noto Sans Mono", monospace; text-transform: uppercase; }
 .spine h3 { margin: 4px 0; font-size: 13px; }
 .spine p { margin: 0; color: var(--muted); font-size: 11px; }
+
+.goal-live { margin-top: 4px; border: 1px solid var(--line); background: #edf2f3; overflow: hidden; }
+.goal-signal { position: relative; height: 3px; overflow: hidden; background: var(--line-soft); }
+.goal-signal i { position: absolute; inset: 0 auto 0 0; width: 34%; background: var(--signal); transform: translateX(-105%); }
+.goal-live[data-active="true"] .goal-signal i { animation: goal-scan 1.8s linear infinite; }
+.goal-signal span { position: absolute; top: -2px; right: 12px; width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 4px #21736118; }
+@keyframes goal-scan { to { transform: translateX(395%); } }
+
+.goal-telemetry { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: var(--line-soft); }
+.goal-telemetry > span { min-width: 0; padding: 11px 12px; background: #f7f9f8; }
+.goal-telemetry small, .goal-telemetry strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: "Noto Sans Mono", monospace; }
+.goal-telemetry small { color: var(--muted); font-size: 7px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; }
+.goal-telemetry strong { margin-top: 4px; color: var(--signal); font-size: 10px; text-transform: capitalize; }
+
+.goal-files { padding: 12px; border-top: 1px solid var(--line-soft); }
+.goal-files > div { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.goal-files .kicker { margin: 0; }
+.goal-files > div > span { color: var(--signal); font: 700 8px "Noto Sans Mono", monospace; text-transform: uppercase; }
+.goal-files ol { display: grid; gap: 5px; margin: 10px 0 0; padding: 0; list-style: none; }
+.goal-files li { overflow: hidden; color: var(--ink); text-overflow: ellipsis; white-space: nowrap; font: 10px/1.35 "Noto Sans Mono", monospace; }
+.goal-files li::before { content: "↳"; margin-right: 7px; color: var(--green); }
+.goal-files > p { margin: 10px 0 0; color: var(--muted); font-size: 9px; }
 
 .approval {
   border: 1px solid var(--amber);
@@ -1064,4 +1090,5 @@ main {
 @media (prefers-reduced-motion: reduce) {
   .transcript { scroll-behavior: auto; }
   .answer-shell.typing .typing-caret { animation: none; }
+  .goal-live[data-active="true"] .goal-signal i { animation: none; transform: translateX(0); }
 }

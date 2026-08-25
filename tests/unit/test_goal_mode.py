@@ -25,6 +25,7 @@ class _NaturalEngineering:
         self.activations = 0
         self.applied = []
         self.controls = []
+        self.thread_document = None
 
     def propose(self, owner_id, prompt, workspace, **kwargs):
         return {"proposal_id": "proposal-1"}
@@ -44,6 +45,11 @@ class _NaturalEngineering:
 
     def control_thread(self, owner_id, session_id, workspace, kind, content):
         self.controls.append((kind, content))
+
+    def thread(self, owner_id, session_id, workspace):
+        if self.thread_document is None:
+            raise LookupError("no active thread")
+        return self.thread_document
 
 
 class GoalModeTests(unittest.TestCase):
@@ -138,6 +144,51 @@ class GoalModeTests(unittest.TestCase):
 
             self.assertEqual("steer", api.controls[-1][0])
             self.assertIn("mobile controls", api.controls[-1][1])
+            service.stop()
+
+    def test_inspect_exposes_compact_live_agent_progress(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            api = _NaturalEngineering()
+            service = GoalModeService(
+                root / "goals.sqlite3", api, _Runtime(), "model",
+            )
+            goal = service.prepare(
+                "owner", "Build a complete browser game", str(root),
+                AgentAuthorityProfile.WORKSPACE, "session",
+            )
+            service._database.execute(
+                "UPDATE engineering_goals SET status='running' WHERE goal_id=?",
+                (goal["goal_id"],),
+            )
+            service._database.commit()
+            api.thread_document = {
+                "latest_checkpoint": {
+                    "node": "execute", "phase": "implementation", "step": 7,
+                    "sequence": 22, "state": {
+                        "model_ref": "qwen:27b", "escalated": True,
+                        "result_count": 3, "tool_count": 4,
+                    },
+                },
+                "turns": [{
+                    "turn_id": "turn-1", "status": "running",
+                    "events": [{
+                        "call_id": "call-1", "tool_id": "write_file",
+                        "event_kind": "result", "created_at": "now",
+                        "payload": {
+                            "succeeded": True, "output": "created",
+                            "postcondition": {"path": "src/game.js", "exists": True},
+                        },
+                    }],
+                }],
+            }
+
+            inspected = service.inspect("owner", goal["goal_id"])
+
+            self.assertEqual(7, inspected["live"]["step"])
+            self.assertEqual("qwen:27b", inspected["live"]["model_ref"])
+            self.assertEqual(["src/game.js"], inspected["live"]["changed_files"])
+            self.assertEqual(1, len(inspected["live"]["events"]))
             service.stop()
 
 

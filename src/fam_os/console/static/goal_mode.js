@@ -102,7 +102,7 @@ const FamGoalMode = (() => {
     const labels = {
       draft: "Plan ready for activation.",
       queued: "Goal queued. The background supervisor is preparing the workspace.",
-      running: `Goal running in background · execution epoch ${goal.epochs}.`,
+      running: liveSentence(goal),
       pause_requested: "Pausing safely after the current model step…",
       paused: "Goal paused. Resume when you are ready.",
       cancel_requested: "Cancelling safely after the current model step…",
@@ -120,6 +120,15 @@ const FamGoalMode = (() => {
     current.turn.assurance.textContent = "DURABLE GOAL";
     current.turn.evidence.textContent = `${goal.plan.length} PLAN STEPS · ${goal.acceptance_criteria.length} COMPLETION CHECKS`;
     hooks.goalActivity(goal, control);
+  }
+
+  function liveSentence(goal) {
+    const live = goal.live;
+    if (!live) return `Goal running in background · execution epoch ${goal.epochs}.`;
+    const phase = (live.phase || live.node || "working").replaceAll("_", " ");
+    const model = live.model_ref ? ` with ${live.model_ref}` : "";
+    const evidence = live.result_count ? ` · ${live.result_count} observations retained` : "";
+    return `Working in the isolated candidate · ${phase} · model step ${live.step || 0}${model}${evidence}.`;
   }
 
   async function control(action) {
