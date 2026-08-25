@@ -165,6 +165,12 @@ class ProductEngineeringLoopApi:
         self._validate_lifecycle_grant(task_id, definition.task.grant_id, instant)
         if len(definition.task.workspace_roots) != 1:
             raise ValueError("single-repository preparation requires one workspace root")
+        existing = self._preparations.load(task_id)
+        if existing is not None:
+            response = self.inspect(owner_id, task_id)
+            response["repository_bundle_id"] = existing.evidence.bundle_id
+            response["architecture_proposal_id"] = existing.proposal.proposal_id
+            return response
         workspace = Path(definition.task.workspace_roots[0])
         candidates = CandidateWorkspaceAdapter(workspace, self._candidate_root)
         result = EngineeringPreparationOrchestrator(

@@ -189,6 +189,12 @@ class ProductEngineeringLoopApiTests(unittest.TestCase):
             result = api.prepare("owner-1", definition.task.task_id)
             self.assertEqual("candidate_ready", result["stage"])
             self.assertTrue(result["repository_bundle_id"].startswith("repository-bundle-"))
+            resumed = api.prepare("owner-1", definition.task.task_id)
+            self.assertEqual(result["repository_bundle_id"], resumed["repository_bundle_id"])
+            self.assertEqual(
+                result["architecture_proposal_id"],
+                resumed["architecture_proposal_id"],
+            )
             self.assertEqual(
                 result["candidate_id"],
                 api.preparation("owner-1", definition.task.task_id).candidate.candidate_id,
