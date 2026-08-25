@@ -49,8 +49,9 @@ const FamGoalMode = (() => {
   async function restore(workspaceRoot, scope) {
     if (!workspaceRoot) return;
     const payload = await api(`/api/v1/goals?workspace_root=${encodeURIComponent(workspaceRoot)}`);
-    const goal = (payload.goals || []).find(item => !["cancelled"].includes(item.status));
+    let goal = (payload.goals || []).find(item => !["cancelled"].includes(item.status));
     if (!goal || current?.goal?.goal_id === goal.goal_id) return;
+    goal = await api(`/api/v1/goals/${encodeURIComponent(goal.goal_id)}/inspect`);
     const turn = hooks.startTurn(goal.prompt, `Goal mode · ${scope}`, goal.goal_id);
     current = {goal, turn};
     renderGoal(goal);
