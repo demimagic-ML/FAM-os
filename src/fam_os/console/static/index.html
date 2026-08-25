@@ -51,11 +51,26 @@
           <span id="workspace-path">Folder access is explicit and task-scoped.</span>
           <button class="quiet hidden" id="use-workspace-root" type="button">Use folder</button>
         </section>
-        <section class="workspace-files" aria-labelledby="workspace-files-heading">
+        <nav class="workspace-lens hidden" id="workspace-lens" aria-label="Workspace view">
+          <button class="active" id="workspace-owner-tab" type="button">Your folder</button>
+          <button id="workspace-candidate-tab" type="button">Candidate <span id="candidate-change-count">0</span></button>
+        </nav>
+        <section class="workspace-files" id="owner-workspace-files" aria-labelledby="workspace-files-heading">
           <div class="tool-section-head"><h3 id="workspace-files-heading">Files</h3><span id="workspace-file-count">—</span></div>
           <div class="workspace-file-list" id="workspace-file-list">
             <p>Open a folder to inspect its bounded local contents.</p>
           </div>
+        </section>
+        <section class="candidate-workspace hidden" id="candidate-workspace" aria-labelledby="candidate-workspace-heading">
+          <div class="candidate-head">
+            <div><p class="kicker">Isolated working copy</p><h3 id="candidate-workspace-heading">Candidate workspace</h3></div>
+            <span id="candidate-state">Isolated</span>
+          </div>
+          <p class="candidate-path" id="candidate-path"></p>
+          <div class="candidate-actions"><button class="quiet" id="copy-candidate-path" type="button">Copy path</button><span id="candidate-path-status" role="status"></span></div>
+          <div class="candidate-summary" id="candidate-summary"></div>
+          <ol class="candidate-tree" id="candidate-tree"></ol>
+          <p class="candidate-note" id="candidate-note">Your folder remains unchanged until verification succeeds.</p>
         </section>
         <section class="tool-terminal" aria-labelledby="tool-terminal-heading">
           <div class="tool-section-head"><h3 id="tool-terminal-heading">Tool terminal</h3><span>Real evidence</span></div>

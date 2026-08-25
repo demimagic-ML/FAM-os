@@ -208,6 +208,7 @@ class GoalModeService:
             raise KeyError("goal was not found")
         document = _document(row)
         document["live"] = self._live_progress(document)
+        document["candidate"] = self._candidate_progress(document)
         return document
 
     def list(self, owner_id: str, *, workspace_root: str | None = None) -> dict[str, object]:
@@ -646,6 +647,26 @@ class GoalModeService:
             "changed_files": changed_files,
             "events": events,
         }
+
+    def _candidate_progress(
+        self, goal: dict[str, object],
+    ) -> dict[str, object] | None:
+        reader = getattr(self._api, "candidate_workspace", None)
+        if not callable(reader):
+            return None
+        try:
+            candidate = reader(self.owner_id, str(goal["proposal_id"]))
+        except (
+            AttributeError, KeyError, LookupError, OSError,
+            PermissionError, RuntimeError, ValueError,
+        ):
+            return None
+        candidate["state"] = (
+            "applied" if goal["status"] == "completed"
+            else "ready" if goal["status"] == "waiting_approval"
+            else "isolated"
+        )
+        return candidate
 
 
 def _document(row: sqlite3.Row) -> dict[str, object]:

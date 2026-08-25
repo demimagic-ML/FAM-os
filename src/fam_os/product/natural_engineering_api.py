@@ -132,6 +132,52 @@ class ProductNaturalEngineeringApi:
             owner_id, transport_session_id, str(canonical),
         )
 
+    def candidate_workspace(
+        self, owner_id: str, proposal_id: str,
+    ) -> dict[str, object]:
+        """Return a bounded, owner-visible view of the real isolated candidate."""
+        self._require_owner(owner_id)
+        proposal = self._require_proposal(proposal_id)
+        task_id = proposal.definition.task.task_id
+        preparation = self._loop.preparation(owner_id, task_id)
+        candidate = self._loop.current_candidate(owner_id, task_id)
+        baseline = {item.path: item for item in preparation.candidate.entries}
+        current = {item.path: item for item in candidate.entries}
+        entries = []
+        counts = {"created": 0, "modified": 0, "deleted": 0, "unchanged": 0}
+        for path in sorted(set(baseline) | set(current))[:2_000]:
+            before, after = baseline.get(path), current.get(path)
+            if before is None:
+                status = "created"
+            elif after is None:
+                status = "deleted"
+            elif (
+                before.kind != after.kind
+                or before.content_sha256 != after.content_sha256
+                or before.executable != after.executable
+            ):
+                status = "modified"
+            else:
+                status = "unchanged"
+            counts[status] += 1
+            item = after or before
+            entries.append({
+                "path": path,
+                "kind": item.kind.value,
+                "status": status,
+                "size_bytes": item.size_bytes,
+            })
+        return {
+            "candidate_id": candidate.candidate_id,
+            "task_id": task_id,
+            "owner_workspace": candidate.owner_workspace,
+            "candidate_workspace": candidate.candidate_workspace,
+            "isolated": candidate.owner_workspace != candidate.candidate_workspace,
+            "entries": entries,
+            "counts": counts,
+            "truncated": len(set(baseline) | set(current)) > len(entries),
+        }
+
     def control_thread(
         self, owner_id: str, transport_session_id: str, workspace_root: str,
         kind: str, content: str,

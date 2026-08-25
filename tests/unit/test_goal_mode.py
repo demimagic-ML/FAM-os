@@ -37,6 +37,7 @@ class _NaturalEngineering:
         self.thread_document = None
         self.activation_failures = 0
         self.apply_failures = 0
+        self.candidate_document = None
 
     def propose(self, owner_id, prompt, workspace, **kwargs):
         return {"proposal_id": "proposal-1"}
@@ -68,8 +69,49 @@ class _NaturalEngineering:
             raise LookupError("no active thread")
         return self.thread_document
 
+    def candidate_workspace(self, owner_id, proposal_id):
+        if self.candidate_document is None:
+            raise LookupError("no candidate")
+        return dict(self.candidate_document)
+
 
 class GoalModeTests(unittest.TestCase):
+    def test_inspect_exposes_real_isolated_candidate_workspace(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            api = _NaturalEngineering()
+            api.candidate_document = {
+                "candidate_id": "candidate-1", "task_id": "task-1",
+                "owner_workspace": str(root),
+                "candidate_workspace": str(root / "candidate"),
+                "isolated": True,
+                "entries": [{
+                    "path": "src/App.jsx", "kind": "file",
+                    "status": "created", "size_bytes": 120,
+                }],
+                "counts": {
+                    "created": 1, "modified": 0,
+                    "deleted": 0, "unchanged": 0,
+                },
+                "truncated": False,
+            }
+            service = GoalModeService(
+                root / "goals.sqlite3", api, _Runtime(), "model",
+            )
+            goal = service.prepare(
+                "owner", "Build a complete browser game", str(root),
+                AgentAuthorityProfile.WORKSPACE, "session",
+            )
+
+            inspected = service.inspect("owner", goal["goal_id"])
+
+            self.assertTrue(inspected["candidate"]["isolated"])
+            self.assertEqual(
+                "src/App.jsx", inspected["candidate"]["entries"][0]["path"],
+            )
+            self.assertEqual("isolated", inspected["candidate"]["state"])
+            service.stop()
+
     def test_planning_recovers_from_transient_model_disconnect(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

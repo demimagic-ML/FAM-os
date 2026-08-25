@@ -3,6 +3,7 @@
 from urllib.parse import parse_qs, urlsplit
 
 from fam_os.core.agent import AgentAuthorityProfile
+from fam_os.console.goal_events import stream_goal_events
 
 
 _PREFIX = "/api/v1/goals"
@@ -25,6 +26,9 @@ def handle_goal_get(handler, path: str) -> bool:
         handler._json(200, service.list(service.owner_id, workspace_root=workspace))
         return True
     goal_id, operation = _parts(path)
+    if operation == "events":
+        stream_goal_events(handler, service, goal_id)
+        return True
     if operation != "inspect":
         raise ValueError("goal read operation is invalid")
     try:

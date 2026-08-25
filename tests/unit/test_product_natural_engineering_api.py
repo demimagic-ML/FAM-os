@@ -27,6 +27,36 @@ NOW = datetime(2026, 7, 19, 9, 0, tzinfo=timezone.utc)
 
 
 class ProductNaturalEngineeringApiTests(unittest.TestCase):
+    def test_candidate_workspace_view_classifies_real_tree_changes(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            workspace = Path(temporary) / "project"
+            candidate_root = Path(temporary) / "candidate"
+            workspace.mkdir()
+            candidate_root.mkdir()
+            loop = _CandidateViewLoop(workspace, candidate_root)
+            api = ProductNaturalEngineeringApi(
+                "owner-1",
+                SQLiteNaturalEngineeringProposalStore(Path(temporary) / "p.sqlite3"),
+                _Authentication(), _Authorizer(), loop, _Observer(),
+                clock=lambda: NOW, identifier=lambda: "candidate-view",
+            )
+            proposal = api.propose(
+                "owner-1", "Implement the interface.", str(workspace),
+            )
+
+            result = api.candidate_workspace(
+                "owner-1", proposal["proposal_id"],
+            )
+
+            statuses = {item["path"]: item["status"] for item in result["entries"]}
+            self.assertEqual({
+                "deleted.py": "deleted", "modified.py": "modified",
+                "new.py": "created", "stable.py": "unchanged",
+            }, statuses)
+            self.assertTrue(result["isolated"])
+            self.assertEqual(1, result["counts"]["created"])
+            api.close()
+
     def test_full_os_profile_requires_and_activates_exact_break_glass_evidence(self):
         with tempfile.TemporaryDirectory() as temporary:
             workspace = Path(temporary) / "project"
@@ -383,6 +413,35 @@ class _Loop:
 
     def database_postapply_receipts(self, owner_id, task_id):
         return ()
+
+
+class _CandidateViewLoop(_Loop):
+    def __init__(self, owner_workspace, candidate_workspace):
+        kind = SimpleNamespace(value="file")
+        self.baseline = (
+            SimpleNamespace(path="deleted.py", kind=kind, content_sha256="a", executable=False, size_bytes=1),
+            SimpleNamespace(path="modified.py", kind=kind, content_sha256="b", executable=False, size_bytes=1),
+            SimpleNamespace(path="stable.py", kind=kind, content_sha256="c", executable=False, size_bytes=1),
+        )
+        self.current = (
+            SimpleNamespace(path="modified.py", kind=kind, content_sha256="changed", executable=False, size_bytes=2),
+            SimpleNamespace(path="new.py", kind=kind, content_sha256="new", executable=False, size_bytes=3),
+            SimpleNamespace(path="stable.py", kind=kind, content_sha256="c", executable=False, size_bytes=1),
+        )
+        self.candidate = SimpleNamespace(
+            candidate_id="candidate-1", task_id="task-candidate-view",
+            owner_workspace=str(owner_workspace),
+            candidate_workspace=str(candidate_workspace), entries=self.baseline,
+        )
+
+    def preparation(self, owner_id, task_id):
+        return SimpleNamespace(candidate=self.candidate)
+
+    def current_candidate(self, owner_id, task_id):
+        return SimpleNamespace(**{
+            name: getattr(self.candidate, name)
+            for name in ("candidate_id", "task_id", "owner_workspace", "candidate_workspace")
+        }, entries=self.current)
 
 
 class _AuthorizingLoop(_Loop):

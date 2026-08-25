@@ -5,6 +5,7 @@ const FamGoalMode = (() => {
   let hooks = null;
   let current = null;
   let timer = null;
+  let events = null;
 
   const byId = id => document.getElementById(id);
 
@@ -169,8 +170,15 @@ const FamGoalMode = (() => {
   }
 
   function watch() {
+    if (events) events.close();
+    events = new EventSource(`/api/v1/goals/${encodeURIComponent(current.goal.goal_id)}/events`);
+    events.addEventListener("goal", event => renderGoal(JSON.parse(event.data)));
+    events.onerror = () => {
+      events?.close();
+      events = null;
+    };
     clearInterval(timer);
-    timer = setInterval(() => refresh().catch(hooks.fail), 1000);
+    timer = setInterval(() => refresh().catch(hooks.fail), 3000);
     refresh().catch(hooks.fail);
   }
 
@@ -181,6 +189,8 @@ const FamGoalMode = (() => {
     if (["completed", "cancelled", "failed", "paused", "waiting_approval"].includes(goal.status)) {
       clearInterval(timer);
       timer = null;
+      events?.close();
+      events = null;
     }
   }
 

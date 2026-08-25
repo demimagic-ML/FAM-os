@@ -706,6 +706,7 @@ function renderGoalActivity(goal, control) {
 function renderGoalTelemetry(goal) {
   const panel = $("#goal-live");
   const live = goal.live;
+  renderCandidateWorkspace(goal.candidate, goal.status);
   panel.classList.toggle("hidden", !live);
   if (!live) return;
   panel.dataset.active = ["queued", "running", "retry_wait", "pause_requested", "cancel_requested"].includes(goal.status) ? "true" : "false";
@@ -737,24 +738,93 @@ function renderGoalTelemetry(goal) {
 }
 
 function renderGoalToolEvents(events) {
-  const calls = new Map(events.filter(event => event.event_kind === "call").map(event => [event.call_id, event]));
-  const rows = events.filter(event => event.event_kind === "result").slice(-6).map(event => {
-    const call = calls.get(event.call_id);
+  const results = new Map(events.filter(event => event.event_kind === "result").map(event => [event.call_id, event]));
+  const rows = events.filter(event => event.event_kind === "call").slice(-8).map(call => {
+    const event = results.get(call.call_id);
     const item = document.createElement("li");
-    item.dataset.status = event.payload.succeeded ? "verified" : "failed";
+    item.dataset.status = !event ? "running" : event.payload.succeeded ? "verified" : "failed";
     const head = document.createElement("header");
     const label = document.createElement("strong");
-    label.textContent = event.tool_id.replaceAll("_", " ");
+    label.textContent = toolEventLabel(call);
     const status = document.createElement("span");
-    status.textContent = event.payload.succeeded ? "observed" : "failed";
+    status.textContent = !event ? "running" : event.payload.succeeded ? "completed" : "failed";
     const output = document.createElement("pre");
-    const reason = call?.payload?.reason ? `${call.payload.reason}\n` : "";
-    output.textContent = `${reason}${event.payload.output || "Postcondition recorded."}`.slice(0, 1600);
+    output.textContent = !event
+      ? "Waiting for a durable tool result…"
+      : String(event.payload.output || "Postcondition recorded.").slice(0, 1600);
     head.append(label, status);
     item.append(head, output);
     return item;
   });
   if (rows.length) $("#tool-activity").replaceChildren(...rows);
+}
+
+function toolEventLabel(call) {
+  const args = call.payload?.arguments || {};
+  if (call.tool_id === "run_command" && Array.isArray(args.command)) {
+    return `$ ${args.command.join(" ")}`;
+  }
+  if (["write_file", "read_file", "create_directory"].includes(call.tool_id) && args.path) {
+    return `${call.tool_id.replaceAll("_", " ")} · ${args.path}`;
+  }
+  return call.tool_id.replaceAll("_", " ");
+}
+
+function renderCandidateWorkspace(candidate, goalStatus) {
+  const lens = $("#workspace-lens");
+  lens.classList.toggle("hidden", !candidate);
+  if (!candidate) return;
+  const changed = candidate.entries.filter(item => item.status !== "unchanged");
+  $("#candidate-change-count").textContent = String(changed.length);
+  $("#candidate-state").textContent = candidate.state;
+  $("#candidate-state").dataset.state = candidate.state;
+  $("#candidate-path").textContent = candidate.candidate_workspace;
+  $("#candidate-path").title = candidate.candidate_workspace;
+  $("#candidate-note").textContent = candidate.state === "applied"
+    ? "Verified candidate changes are now present in your folder."
+    : goalStatus === "paused"
+      ? "Paused safely. Candidate files and command evidence are preserved."
+      : "Your folder remains unchanged until verification succeeds.";
+  const labels = [
+    ["created", candidate.counts.created], ["modified", candidate.counts.modified],
+    ["deleted", candidate.counts.deleted], ["total", candidate.entries.length],
+  ];
+  $("#candidate-summary").replaceChildren(...labels.map(([label, value]) => {
+    const span = document.createElement("span");
+    span.innerHTML = `<strong>${value}</strong><small>${label}</small>`;
+    return span;
+  }));
+  const visible = [...changed, ...candidate.entries.filter(item => item.status === "unchanged")].slice(0, 160);
+  $("#candidate-tree").replaceChildren(...visible.map(entry => {
+    const item = document.createElement("li");
+    item.dataset.status = entry.status;
+    const mark = document.createElement("i");
+    mark.textContent = entry.kind === "directory" ? "D" : entry.status === "created" ? "+" : entry.status === "modified" ? "~" : entry.status === "deleted" ? "−" : "F";
+    const path = document.createElement("b");
+    path.textContent = entry.path;
+    path.title = entry.path;
+    const detail = document.createElement("small");
+    detail.textContent = entry.status;
+    item.append(mark, path, detail);
+    return item;
+  }));
+  $("#copy-candidate-path").onclick = async () => {
+    await navigator.clipboard.writeText(candidate.candidate_workspace);
+    $("#candidate-path-status").textContent = "Copied";
+    setTimeout(() => { $("#candidate-path-status").textContent = ""; }, 1400);
+  };
+  const show = candidateView => {
+    $("#workspace-owner-tab").classList.toggle("active", !candidateView);
+    $("#workspace-candidate-tab").classList.toggle("active", candidateView);
+    $("#owner-workspace-files").classList.toggle("hidden", candidateView);
+    $("#candidate-workspace").classList.toggle("hidden", !candidateView);
+  };
+  $("#workspace-owner-tab").onclick = () => show(false);
+  $("#workspace-candidate-tab").onclick = () => show(true);
+  if (!lens.dataset.initialized) {
+    lens.dataset.initialized = "true";
+    show(true);
+  }
 }
 
 function compactModelName(model) {
