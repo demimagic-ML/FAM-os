@@ -92,6 +92,10 @@
               <label class="verify"><input id="verify" type="checkbox"><span>Require deterministic verification</span></label>
             </div>
           </details>
+          <label class="goal-mode-toggle" for="goal-mode">
+            <input id="goal-mode" type="checkbox">
+            <span><strong>Goal mode</strong><small>Plan it, then keep working in the background until it is verified.</small></span>
+          </label>
           <div class="composer-row">
             <label class="sr-only" for="prompt">Describe the outcome</label>
             <textarea id="prompt" name="prompt" rows="2" required placeholder="What should FAM do?" aria-describedby="composer-hint"></textarea>
@@ -100,6 +104,14 @@
           <p class="submission-status hidden" id="submission-status" role="status" aria-live="polite"></p>
           <p class="composer-hint" id="composer-hint"><kbd>Ctrl</kbd><span>+</span><kbd>Enter</kbd> to send · actions still require approval</p>
         </form>
+        <dialog class="goal-dialog" id="goal-dialog" aria-labelledby="goal-dialog-title">
+          <div class="goal-dialog-head"><div><p class="kicker">Ready for long-running work</p><h2 id="goal-dialog-title">Review the goal</h2></div><button class="quiet" id="goal-close" type="button">Close</button></div>
+          <p class="goal-objective" id="goal-objective"></p>
+          <div class="goal-plan-grid"><section><h3>Execution plan</h3><ol id="goal-plan"></ol></section><section><h3>Done means</h3><ul id="goal-criteria"></ul></section></div>
+          <div class="goal-budget"><span>Up to 2 hours</span><span>Up to 256 model steps</span><span>Runs after this tab closes</span></div>
+          <p class="goal-consent">Activating authorizes FAM to edit and verify this selected workspace and apply the verified changes. Publishing, secrets, network access, and broader OS authority still require their own scope.</p>
+          <div class="goal-dialog-actions"><button class="quiet" id="goal-revise" type="button">Revise request</button><button class="primary" id="goal-activate" type="button">Activate goal</button></div>
+        </dialog>
       </div>
 
       <aside class="execution" aria-live="polite" aria-label="Live task activity">
@@ -117,6 +129,12 @@
           <label for="agent-guidance">Add context without restarting</label>
           <div><input id="agent-guidance" type="text" placeholder="Keep the public API unchanged"><button class="quiet" id="steer-agent" type="button">Send guidance</button></div>
           <p id="agent-control-status" role="status"></p>
+        </section>
+        <section class="goal-controls hidden" id="goal-controls">
+          <p class="kicker">Long-running goal</p>
+          <strong id="goal-control-status">Running in the background</strong>
+          <div><button class="quiet" id="goal-pause" type="button">Pause</button><button class="quiet" id="goal-resume" type="button">Resume</button><button class="danger quiet" id="goal-cancel" type="button">Cancel goal</button></div>
+          <p>You can close this tab. FAM will keep the plan, checkpoints, and latest verified evidence.</p>
         </section>
         <section class="approval hidden" id="approval">
           <p class="kicker">Your decision</p><h3 id="approval-summary"></h3>
@@ -300,6 +318,7 @@
   <script src="/conversation.js"></script>
   <script src="/workspace.js"></script>
   <script src="/natural_engineering.js"></script>
+  <script src="/goal_mode.js"></script>
   <script src="/useful_tasks.js"></script>
   <script src="/integration_center.js"></script>
   <script src="/productivity.js"></script>

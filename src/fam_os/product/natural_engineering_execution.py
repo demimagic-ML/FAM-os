@@ -40,6 +40,7 @@ class NaturalEngineeringExecutionCoordinator:
 
     def execute(
         self, owner_id: str, definition, *, session_id: str, principal_id: str,
+        goal_mode: bool = False,
     ) -> dict:
         task = definition.task
         preparation = self._loop.preparation(owner_id, task.task_id)
@@ -111,6 +112,7 @@ class NaturalEngineeringExecutionCoordinator:
                 agent_result = self._agent.execute(
                     owner_id, definition, preparation,
                     session_id=session_id, principal_id=principal_id,
+                    maximum_steps=256 if goal_mode else None,
                 )
             except (OSError, PermissionError, RuntimeError, ValueError) as error:
                 return _failure(

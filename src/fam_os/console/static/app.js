@@ -269,7 +269,9 @@ function setComposerBusy(busy, label = "") {
   const button = $("#send-task");
   button.disabled = busy;
   button.classList.toggle("is-busy", busy);
-  button.querySelector("span:first-child").textContent = label || (busy ? "Task running" : "Send task");
+  button.querySelector("span:first-child").textContent = label || (
+    busy ? "Task running" : $("#goal-mode")?.checked ? "Prepare goal" : "Send task"
+  );
   form.setAttribute("aria-busy", String(busy));
 }
 
@@ -284,10 +286,25 @@ async function createTask(event) {
   event.preventDefault();
   const prompt = $("#prompt").value.trim();
   if (!prompt || $("#send-task").disabled) return;
-  setComposerBusy(true, "Sending…");
+  setComposerBusy(true, $("#goal-mode").checked ? "Preparing…" : "Sending…");
   setSubmissionStatus("Task accepted locally. Resolving the request…", "pending");
   const selected = selectedTaskContext();
   const workspacePath = FamWorkspace.selectedPath();
+  if ($("#goal-mode").checked) {
+    if (!workspacePath) {
+      setComposerBusy(false);
+      setSubmissionStatus("Choose a workspace folder before using Goal mode.", "failed");
+      throw new Error("Choose a workspace folder before using Goal mode.");
+    }
+    await FamGoalMode.prepare(
+      prompt, workspacePath, $("#agent-profile").value,
+      contextLabel(selected, workspacePath),
+    );
+    $("#prompt").value = "";
+    resizePrompt();
+    selectView("work");
+    return;
+  }
   let resolved;
   try {
     resolved = await request("/api/v1/conversation/resolve", {
@@ -630,6 +647,9 @@ function selectWorkspaceResource(context, resource) {
     FamNaturalEngineering.restore(
       workspacePath, contextLabel(context, workspacePath),
     ).catch(fail);
+    FamGoalMode.restore(
+      workspacePath, contextLabel(context, workspacePath),
+    ).catch(fail);
   }
   $("#prompt").focus();
 }
@@ -637,6 +657,38 @@ function selectWorkspaceResource(context, resource) {
 function fail(error) {
   $("#connection").textContent = error.message || "Local request failed.";
   $(".runtime").classList.remove("live");
+}
+
+function renderGoalActivity(goal, control) {
+  $("#empty-activity").classList.add("hidden");
+  $("#spine").classList.remove("hidden");
+  $("#goal-controls").classList.remove("hidden");
+  $("#task-title").textContent = goal.title;
+  const running = ["queued", "running", "pause_requested", "cancel_requested"].includes(goal.status);
+  const completed = goal.status === "completed";
+  const failed = ["failed", "cancelled"].includes(goal.status);
+  const rows = [
+    ["succeeded", "Plan and completion criteria accepted", `${goal.plan.length} steps`],
+    [completed ? "succeeded" : failed ? "failed" : running ? "running" : "waiting", "Implement through the background supervisor", `epoch ${goal.epochs}`],
+    [completed ? "succeeded" : failed ? "not-taken" : "waiting", "Verify every completion criterion", `${goal.acceptance_criteria.length} checks`],
+    [completed ? "succeeded" : failed ? "not-taken" : "waiting", "Apply the verified workspace result", goal.status.replaceAll("_", " ")],
+  ];
+  $("#spine").replaceChildren(...rows.map((row, index) => {
+    const fragment = $("#step-template").content.cloneNode(true);
+    const item = fragment.querySelector("li");
+    item.dataset.state = row[0];
+    item.querySelector("small").textContent = `${String(index + 1).padStart(2, "0")} / ${row[0]}`;
+    item.querySelector("h3").textContent = row[1];
+    item.querySelector("p").textContent = row[2];
+    return item;
+  }));
+  $("#goal-control-status").textContent = goal.status.replaceAll("_", " ");
+  $("#goal-pause").disabled = !["queued", "running"].includes(goal.status);
+  $("#goal-resume").disabled = goal.status !== "paused";
+  $("#goal-cancel").disabled = ["completed", "failed", "cancelled"].includes(goal.status);
+  $("#goal-pause").onclick = () => control("pause").catch(fail);
+  $("#goal-resume").onclick = () => control("resume").catch(fail);
+  $("#goal-cancel").onclick = () => control("cancel").catch(fail);
 }
 
 document.querySelectorAll(".nav-item").forEach(
@@ -662,6 +714,12 @@ $("#context").onchange = updateScopeSummary;
 $("#agent-profile").onchange = updateScopeSummary;
 $("#resource").oninput = updateScopeSummary;
 $("#verify").onchange = updateScopeSummary;
+$("#goal-mode").onchange = () => {
+  setComposerBusy(false);
+  $("#composer-hint").lastChild.textContent = $("#goal-mode").checked
+    ? " to prepare · review the plan before activation"
+    : " to send · actions still require approval";
+};
 $("#prompt").oninput = resizePrompt;
 $("#prompt").onkeydown = event => {
   if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
@@ -673,6 +731,10 @@ FamWorkspace.configure(request, {onSelected: selectWorkspaceResource});
   FamNaturalEngineering.configure(request, {
     startTurn, setBusy: setComposerBusy,
     resetTranscript: resetEngineeringTranscript,
+  });
+  FamGoalMode.configure(request, {
+    startTurn, setBusy: setComposerBusy, status: setSubmissionStatus,
+    goalActivity: renderGoalActivity, fail,
   });
   FamUsefulTasks.configure(request);
   FamIntegrationCenter.configure(request);

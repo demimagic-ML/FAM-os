@@ -394,6 +394,8 @@ class ConsoleHttpTests(unittest.TestCase):
                 self.assertIn(b"Workspace \xe2\x80\x94 edit and test here", page)
                 self.assertIn(b"Tool terminal", page)
                 self.assertIn(b'id="submission-status"', page)
+                self.assertIn(b'id="goal-mode"', page)
+                self.assertIn(b'id="goal-dialog"', page)
                 application = urllib.request.urlopen(base + "/app.js").read()
                 self.assertIn(b"citation.source_locator", application)
                 self.assertIn(b"citation.quoted_text", application)
@@ -418,7 +420,7 @@ class ConsoleHttpTests(unittest.TestCase):
                 self.assertIn(b"Task accepted locally. Resolving the request", application)
                 self.assertIn(b'form.setAttribute("aria-busy"', application)
                 self.assertLess(
-                    application.index(b'setComposerBusy(true, "Sending'),
+                    application.index(b'setComposerBusy(true, $("#goal-mode")'),
                     application.index(b'await request("/api/v1/conversation/resolve"'),
                 )
                 styles = urllib.request.urlopen(base + "/styles.css").read()
@@ -445,6 +447,10 @@ class ConsoleHttpTests(unittest.TestCase):
                 self.assertIn(b"workspace_root", natural)
                 self.assertIn(b'authorities.every', natural)
                 self.assertIn(b"The approved task could not start", natural)
+                goal_mode = urllib.request.urlopen(base + "/goal_mode.js").read()
+                self.assertIn(b"Activate goal", goal_mode)
+                self.assertIn(b"continuing in the background", goal_mode)
+                self.assertIn(b'control("pause")', application)
                 workspace_style = urllib.request.urlopen(base + "/workspace.css")
                 self.assertEqual("text/css", workspace_style.headers.get_content_type())
                 memory_ui = urllib.request.urlopen(base + "/memory.js").read()

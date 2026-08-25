@@ -59,7 +59,7 @@ class NaturalEngineeringAgentService:
     def execute(
         self, owner_id: str, definition, preparation, *,
         session_id: str, principal_id: str, objective: str | None = None,
-        turn_suffix: str = "implementation",
+        turn_suffix: str = "implementation", maximum_steps: int | None = None,
     ) -> NaturalEngineeringAgentResult:
         workspace = preparation.candidate.candidate_workspace
         profile = (
@@ -93,7 +93,7 @@ class NaturalEngineeringAgentService:
         agent = IterativeModelAgent(
             self._runtime,
             _agent_settings(
-                self._model_ref, self._maximum_steps,
+                self._model_ref, maximum_steps or self._maximum_steps,
                 objective or definition.task.intent,
                 fallback_model_ref=self._fallback_model_ref,
             ),

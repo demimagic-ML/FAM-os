@@ -45,6 +45,7 @@ from fam_os.console.integration_center_routes import (
     handle_integration_center_get, handle_integration_center_post,
 )
 from fam_os.console.automation_routes import handle_automation_get, handle_automation_post
+from fam_os.console.goal_routes import handle_goal_get, handle_goal_post
 from fam_os.console.recipe_routes import handle_recipe_get, handle_recipe_post
 from fam_os.console.tasks import task_document
 from fam_os.console.workspaces import ConsoleWorkspaceApi
@@ -68,6 +69,7 @@ class ConsoleHttpServer(ThreadingHTTPServer):
         automation_service=None,
         recipe_library=None,
         conversation_turn_api=None,
+        goal_mode_service=None,
     ):
         if not ipaddress.ip_address(address[0]).is_loopback:
             raise ValueError("FAM Console must bind only to loopback")
@@ -88,6 +90,7 @@ class ConsoleHttpServer(ThreadingHTTPServer):
         self.automation_service = automation_service
         self.recipe_library = recipe_library
         self.conversation_turn_api = conversation_turn_api
+        self.goal_mode_service = goal_mode_service
         self.workspace_api = workspace_api or ConsoleWorkspaceApi(Path.home())
         super().__init__(address, ConsoleRequestHandler)
 
@@ -135,6 +138,9 @@ class ConsoleRequestHandler(BaseHTTPRequestHandler):
         elif path.startswith("/api/v1/automations") or path == "/api/v1/notifications":
             if not handle_automation_get(self, path):
                 self.send_error(404)
+        elif path.startswith("/api/v1/goals"):
+            if not handle_goal_get(self, path):
+                self.send_error(404)
         elif path.startswith("/api/v1/recipes"):
             if not handle_recipe_get(self, path):
                 self.send_error(404)
@@ -180,6 +186,8 @@ class ConsoleRequestHandler(BaseHTTPRequestHandler):
             self._static("workspace.js", "text/javascript; charset=utf-8")
         elif path == "/natural_engineering.js":
             self._static("natural_engineering.js", "text/javascript; charset=utf-8")
+        elif path == "/goal_mode.js":
+            self._static("goal_mode.js", "text/javascript; charset=utf-8")
         elif path == "/useful_tasks.js":
             self._static("useful_tasks.js", "text/javascript; charset=utf-8")
         elif path == "/integration_center.js":
@@ -224,6 +232,8 @@ class ConsoleRequestHandler(BaseHTTPRequestHandler):
             if handle_automation_post(self, path, document):
                 return
             if handle_recipe_post(self, path, document):
+                return
+            if handle_goal_post(self, path, document, session.session_id):
                 return
             if handle_natural_engineering_post(
                 self, path, document, session.session_id,

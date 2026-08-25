@@ -333,7 +333,7 @@ class ProductNaturalEngineeringApi:
 
     def activate(
         self, owner_id: str, proposal_id: str, transport_session_id: str,
-        *, confirmed: bool,
+        *, confirmed: bool, goal_mode: bool = False,
     ) -> dict:
         self._require_owner(owner_id)
         if confirmed is not True:
@@ -370,6 +370,7 @@ class ProductNaturalEngineeringApi:
                 prepared = self._executor.execute(
                     owner_id, proposal.definition,
                     session_id=transport_session_id, principal_id=owner_id,
+                    **({"goal_mode": True} if goal_mode else {}),
                 )
                 if prepared.get("outcome") == "independent_review_blocked":
                     reviews = self._loop.reviews_for_task(

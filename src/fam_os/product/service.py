@@ -87,6 +87,7 @@ from fam_os.product.natural_engineering_execution import (
 from fam_os.product.natural_engineering_agent import (
     NaturalEngineeringAgentService,
 )
+from fam_os.product.goal_mode import GoalModeService
 from fam_os.product.natural_engineering_documentation import (
     NaturalEngineeringDocumentationCoordinator,
     UnavailableNaturalEngineeringDocumentationCoordinator,
@@ -336,6 +337,7 @@ class LocalProductService:
         self.useful_task_api: UsefulTaskApi | None = None
         self.integration_center: IntegrationCenter | None = None
         self.automation_service: AutomationService | None = None
+        self.goal_mode_service: GoalModeService | None = None
         self.recipe_library: RecipeLibrary | None = None
 
     def start(self) -> None:
@@ -492,6 +494,7 @@ class LocalProductService:
                     ),
                 )
             ),
+            goal_mode_service=self.goal_mode_service,
         )
         self.shell_server.open()
         self.application_fabric.open()
@@ -507,6 +510,8 @@ class LocalProductService:
         self._application_thread.start()
         if self.automation_service is not None:
             self.automation_service.start()
+        if self.goal_mode_service is not None:
+            self.goal_mode_service.start()
         if self.settings.ready_file is not None:
             self.settings.ready_file.write_text("ready\n")
 
@@ -518,6 +523,9 @@ class LocalProductService:
         if self.automation_service is not None:
             self.automation_service.stop()
             self.automation_service = None
+        if self.goal_mode_service is not None:
+            self.goal_mode_service.stop()
+            self.goal_mode_service = None
         if self.useful_task_api is not None:
             self.useful_task_api.close()
             self.useful_task_api = None
@@ -877,6 +885,11 @@ class LocalProductService:
                 self.settings.git_publication_credential_ref
             ),
             grant_reader=self._storage_unit.engineering_grants,
+        )
+        self.goal_mode_service = GoalModeService(
+            self.settings.state_root / "state/engineering-goals.sqlite3",
+            self.natural_engineering_api, engineering_inference.runtime,
+            engineering_inference.model_ref,
         )
         self.engineering_secret_api = ProductEngineeringSecretApi(
             local_owner_id(os.geteuid()),
