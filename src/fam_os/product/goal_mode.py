@@ -447,10 +447,21 @@ def _event_paths(event: dict[str, object]) -> set[str]:
     payload = event.get("payload") or {}
     if not isinstance(payload, dict):
         return set()
+    paths: set[str] = set()
+    output = payload.get("output")
+    if isinstance(output, str):
+        for line in output.splitlines():
+            operation, separator, path = line.partition("\t")
+            if (
+                separator and operation in {
+                    "create_file", "patch_file", "delete_file",
+                    "create_directory", "delete_directory",
+                } and path.strip()
+            ):
+                paths.add(path.strip().removeprefix("./"))
     postcondition = payload.get("postcondition")
     if not isinstance(postcondition, dict):
-        return set()
-    paths: set[str] = set()
+        return paths
     pending = [postcondition]
     while pending:
         value = pending.pop()

@@ -715,7 +715,7 @@ function renderGoalTelemetry(goal) {
   $("#goal-live-age").textContent = relativeAge(live.last_activity);
   const paths = live.changed_files || [];
   $("#goal-files").classList.toggle("hidden", paths.length === 0);
-  $("#goal-file-count").textContent = `${paths.length} ${paths.length === 1 ? "file" : "files"}`;
+  $("#goal-file-count").textContent = `${paths.length} ${paths.length === 1 ? "change" : "changes"}`;
   $("#goal-file-list").replaceChildren(...paths.slice(0, 6).map(path => {
     const item = document.createElement("li");
     item.textContent = path;

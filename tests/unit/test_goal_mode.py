@@ -176,8 +176,19 @@ class GoalModeTests(unittest.TestCase):
                         "call_id": "call-1", "tool_id": "write_file",
                         "event_kind": "result", "created_at": "now",
                         "payload": {
-                            "succeeded": True, "output": "created",
+                            "succeeded": True,
+                            "output": "create_file\tsrc/game.js",
                             "postcondition": {"path": "src/game.js", "exists": True},
+                        },
+                    }, {
+                        "call_id": "call-2", "tool_id": "run_command",
+                        "event_kind": "result", "created_at": "later",
+                        "payload": {
+                            "succeeded": True,
+                            "output": "status=completed\nrecorded_filesystem_effects:"
+                                      "\ncreate_file\tpackage-lock.json"
+                                      "\npatch_file\tpackage.json",
+                            "postcondition": None,
                         },
                     }],
                 }],
@@ -187,8 +198,11 @@ class GoalModeTests(unittest.TestCase):
 
             self.assertEqual(7, inspected["live"]["step"])
             self.assertEqual("qwen:27b", inspected["live"]["model_ref"])
-            self.assertEqual(["src/game.js"], inspected["live"]["changed_files"])
-            self.assertEqual(1, len(inspected["live"]["events"]))
+            self.assertEqual(
+                ["package-lock.json", "package.json", "src/game.js"],
+                inspected["live"]["changed_files"],
+            )
+            self.assertEqual(2, len(inspected["live"]["events"]))
             service.stop()
 
 

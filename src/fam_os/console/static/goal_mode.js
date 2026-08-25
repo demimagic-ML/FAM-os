@@ -109,7 +109,7 @@ const FamGoalMode = (() => {
       cancelled: "Goal cancelled. Completed evidence remains available.",
       waiting_approval: "Goal needs an owner decision before it can continue.",
       completed: "Goal completed and the verified changes were applied.",
-      failed: `Goal stopped: ${goal.error || "the requested outcome was not verified"}`,
+      failed: failureSentence(goal),
     };
     current.turn.answer.textContent = labels[goal.status] || `Goal status: ${goal.status}`;
     current.turn.state.textContent = goal.status.replaceAll("_", " ");
@@ -129,6 +129,14 @@ const FamGoalMode = (() => {
     const model = live.model_ref ? ` with ${live.model_ref}` : "";
     const evidence = live.result_count ? ` · ${live.result_count} observations retained` : "";
     return `Working in the isolated candidate · ${phase} · model step ${live.step || 0}${model}${evidence}.`;
+  }
+
+  function failureSentence(goal) {
+    const failure = goal.error || "the requested outcome was not verified";
+    if (failure.includes("OllamaTransportError")) {
+      return "Goal stopped during verification because the local model connection was interrupted. Candidate work is preserved, and nothing was applied to your workspace.";
+    }
+    return `Goal stopped before apply: ${failure}. Candidate work is preserved, and the owner workspace remains unchanged.`;
   }
 
   async function control(action) {
