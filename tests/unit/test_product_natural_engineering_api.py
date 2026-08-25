@@ -443,6 +443,9 @@ class _CandidateViewLoop(_Loop):
             for name in ("candidate_id", "task_id", "owner_workspace", "candidate_workspace")
         }, entries=self.current)
 
+    def observe_candidate(self, owner_id, task_id):
+        return self.current_candidate(owner_id, task_id)
+
 
 class _AuthorizingLoop(_Loop):
     def __init__(self, authorizer):

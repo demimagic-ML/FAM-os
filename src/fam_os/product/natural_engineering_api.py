@@ -140,7 +140,10 @@ class ProductNaturalEngineeringApi:
         proposal = self._require_proposal(proposal_id)
         task_id = proposal.definition.task.task_id
         preparation = self._loop.preparation(owner_id, task_id)
-        candidate = self._loop.current_candidate(owner_id, task_id)
+        observer = getattr(self._loop, "observe_candidate", None)
+        if observer is None:
+            observer = self._loop.current_candidate
+        candidate = observer(owner_id, task_id)
         baseline = {item.path: item for item in preparation.candidate.entries}
         current = {item.path: item for item in candidate.entries}
         entries = []

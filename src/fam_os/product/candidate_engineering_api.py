@@ -191,6 +191,20 @@ class ProductCandidateEngineeringApi:
             entries=adapter.current_entries(preparation.candidate),
         )
 
+    def observe_candidate(self, owner_id: str, task_id: str):
+        """Observe a durable candidate without granting mutation authority."""
+        self._require_owner(owner_id)
+        preparation = self._preparations.load(task_id)
+        if preparation is None:
+            raise KeyError("engineering preparation is unavailable")
+        adapter = CandidateWorkspaceAdapter(
+            Path(preparation.candidate.owner_workspace), self._candidate_root,
+        )
+        return replace(
+            preparation.candidate,
+            entries=adapter.current_entries(preparation.candidate),
+        )
+
     def apply(self, owner_id: str, task_id: str, changeset_id: str, decision: CheckpointDecision, *, session_id: str, principal_id: str):
         self._require_owner(owner_id)
         if self._changesets is None:

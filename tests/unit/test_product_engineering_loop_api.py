@@ -269,6 +269,12 @@ class ProductEngineeringLoopApiTests(unittest.TestCase):
                 result["candidate_id"],
                 restarted.preparation("owner-1", definition.task.task_id).candidate.candidate_id,
             )
+            self.assertEqual(
+                result["candidate_id"],
+                restarted.observe_candidate(
+                    "owner-1", definition.task.task_id,
+                ).candidate_id,
+            )
             self.assertEqual(1, len(restarted.candidate_edits("owner-1", definition.task.task_id)))
             self.assertEqual(2, len(restarted.candidate_verifications(
                 "owner-1", definition.task.task_id,

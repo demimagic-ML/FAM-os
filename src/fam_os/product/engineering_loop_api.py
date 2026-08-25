@@ -330,6 +330,9 @@ class ProductEngineeringLoopApi:
     def current_candidate(self, owner_id: str, task_id: str):
         return self._candidates.current_candidate(owner_id, task_id)
 
+    def observe_candidate(self, owner_id: str, task_id: str):
+        return self._candidates.observe_candidate(owner_id, task_id)
+
     def apply_candidate(self, owner_id: str, task_id: str, changeset_id: str, decision, *, session_id: str, principal_id: str):
         changesets = tuple(
             item for item in self._candidates.changesets(owner_id, task_id)
