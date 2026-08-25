@@ -9,6 +9,10 @@ from typing import Protocol
 from fam_os.telemetry.contracts import InferenceMetrics
 
 
+class TransientInferenceError(RuntimeError):
+    """A provider interruption that may be retried from a durable checkpoint."""
+
+
 class MessageRole(StrEnum):
     SYSTEM = "system"
     USER = "user"

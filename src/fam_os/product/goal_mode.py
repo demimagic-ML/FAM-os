@@ -3,20 +3,26 @@
 from __future__ import annotations
 
 import json
+import hashlib
+import queue
 import sqlite3
 import threading
-from datetime import datetime, timezone
+import time
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from uuid import uuid4
 
 from fam_os.core.agent import AgentAuthorityProfile
 from fam_os.core.ports.inference import (
     InferenceMessage, InferenceRequest, MessageRole,
+    TransientInferenceError,
 )
 
 
 _TERMINAL = {"completed", "cancelled", "failed"}
-_CONTROLLABLE = {"queued", "running", "pause_requested", "paused"}
+_CONTROLLABLE = {
+    "queued", "running", "retry_wait", "pause_requested", "paused",
+}
 
 
 class GoalModeService:
@@ -24,8 +30,18 @@ class GoalModeService:
 
     def __init__(
         self, path: Path, natural_engineering, runtime, model_ref: str, *,
-        poll_seconds: float = 0.5,
+        poll_seconds: float = 0.5, maximum_recovery_attempts: int = 10,
+        maximum_recovery_seconds: float = 1_800,
+        retry_base_seconds: float = 2.0, retry_max_seconds: float = 60.0,
+        watchdog_seconds: float = 240.0, provider_recover=None,
+        sleeper=time.sleep,
     ) -> None:
+        if maximum_recovery_attempts < 1 or maximum_recovery_seconds <= 0:
+            raise ValueError("goal recovery budget must be positive")
+        if retry_base_seconds <= 0 or retry_max_seconds < retry_base_seconds:
+            raise ValueError("goal retry timing is invalid")
+        if watchdog_seconds <= 0:
+            raise ValueError("goal watchdog timing must be positive")
         path.parent.mkdir(parents=True, exist_ok=True)
         self._database = sqlite3.connect(path, check_same_thread=False)
         self._database.row_factory = sqlite3.Row
@@ -37,6 +53,13 @@ class GoalModeService:
         self._runtime = runtime
         self._model_ref = model_ref
         self._poll_seconds = poll_seconds
+        self._maximum_recovery_attempts = maximum_recovery_attempts
+        self._maximum_recovery_seconds = maximum_recovery_seconds
+        self._retry_base_seconds = retry_base_seconds
+        self._retry_max_seconds = retry_max_seconds
+        self._watchdog_seconds = watchdog_seconds
+        self._provider_recover = provider_recover
+        self._sleep = sleeper
         self._prepare()
 
     @property
@@ -159,7 +182,7 @@ class GoalModeService:
             changed = self._database.execute(
                 "UPDATE engineering_goals SET status=?,control=?,updated_at=? "
                 "WHERE goal_id=? AND owner_id=? AND status IN ("
-                "'queued','running','pause_requested','paused')",
+                "'queued','running','retry_wait','pause_requested','paused')",
                 (target, action, _now(), goal_id, owner_id),
             ).rowcount
         if changed != 1:
@@ -211,14 +234,17 @@ class GoalModeService:
     def _claim(self):
         with self._lock, self._database:
             row = self._database.execute(
-                "SELECT goal_id FROM engineering_goals WHERE status='queued' "
+                "SELECT goal_id FROM engineering_goals WHERE status='queued' OR "
+                "(status='retry_wait' AND next_retry_at<=?) "
                 "ORDER BY created_at LIMIT 1",
+                (_now(),),
             ).fetchone()
             if row is None:
                 return None
             changed = self._database.execute(
                 "UPDATE engineering_goals SET status='running',epochs=epochs+1,"
-                "updated_at=? WHERE goal_id=? AND status='queued'",
+                "next_retry_at=NULL,updated_at=? WHERE goal_id=? AND "
+                "status IN ('queued','retry_wait')",
                 (_now(), row[0]),
             ).rowcount
             if changed != 1:
@@ -230,10 +256,18 @@ class GoalModeService:
     def _execute(self, row) -> None:
         goal_id = row["goal_id"]
         try:
-            result = self._api.activate(
-                row["owner_id"], row["proposal_id"], row["session_id"],
-                confirmed=True, goal_mode=True,
-            )
+            if int(row["retry_attempts"]):
+                self._recover_provider()
+            if row["execution_stage"] == "apply":
+                result = json.loads(row["result_json"] or "{}")
+            else:
+                result = self._watched_call(
+                    row,
+                    lambda: self._api.activate(
+                        row["owner_id"], row["proposal_id"], row["session_id"],
+                        confirmed=True, goal_mode=True,
+                    ),
+                )
         except BaseException as error:
             with self._lock:
                 current = self._database.execute(
@@ -244,16 +278,20 @@ class GoalModeService:
             }:
                 self._settle_control(goal_id)
                 return
-            with self._lock, self._database:
-                self._database.execute(
-                    "UPDATE engineering_goals SET status='failed',error=?,updated_at=? "
-                    "WHERE goal_id=?",
-                    (f"{type(error).__name__}: {str(error)[:2000]}", _now(), goal_id),
-                )
+            self._record_failure(row, error)
             return
         task = result.get("engineering_task", {})
         pending_changeset = task.get("pending_changeset_id")
         if pending_changeset:
+            with self._lock, self._database:
+                self._database.execute(
+                    "UPDATE engineering_goals SET execution_stage='apply',"
+                    "pending_changeset_id=?,result_json=?,updated_at=? WHERE goal_id=?",
+                    (
+                        pending_changeset, json.dumps(result, sort_keys=True),
+                        _now(), goal_id,
+                    ),
+                )
             try:
                 result = self._api.approve_changeset(
                     row["owner_id"], row["proposal_id"], pending_changeset,
@@ -261,16 +299,7 @@ class GoalModeService:
                 )
                 task = result.get("engineering_task", {})
             except BaseException as error:
-                with self._lock, self._database:
-                    self._database.execute(
-                        "UPDATE engineering_goals SET status='failed',error=?,"
-                        "result_json=?,updated_at=? WHERE goal_id=?",
-                        (
-                            f"Final verified changes could not be applied: "
-                            f"{type(error).__name__}: {str(error)[:1800]}",
-                            json.dumps(result, sort_keys=True), _now(), goal_id,
-                        ),
-                    )
+                self._record_failure(row, error, result=result, stage="apply")
                 return
         outcome = str(task.get("outcome", ""))
         status = (
@@ -288,7 +317,8 @@ class GoalModeService:
                 self._settle_control(goal_id)
                 return
             self._database.execute(
-                "UPDATE engineering_goals SET status=?,result_json=?,error=?,updated_at=? "
+                "UPDATE engineering_goals SET status=?,result_json=?,error=?,"
+                "execution_stage='complete',next_retry_at=NULL,updated_at=? "
                 "WHERE goal_id=?",
                 (
                     status, json.dumps(result, sort_keys=True),
@@ -313,6 +343,166 @@ class GoalModeService:
                 (target, _now(), goal_id),
             )
 
+    def _record_failure(self, row, error, *, result=None, stage=None) -> None:
+        goal_id = row["goal_id"]
+        failure = f"{type(error).__name__}: {str(error)[:2_000]}"
+        if not _transient(error):
+            with self._lock, self._database:
+                self._database.execute(
+                    "UPDATE engineering_goals SET status='failed',error=?,"
+                    "result_json=COALESCE(?,result_json),updated_at=? WHERE goal_id=?",
+                    (
+                        failure,
+                        None if result is None else json.dumps(result, sort_keys=True),
+                        _now(), goal_id,
+                    ),
+                )
+            return
+        now = datetime.now(timezone.utc)
+        with self._lock:
+            current = self._database.execute(
+                "SELECT retry_attempts,recovery_started_at,last_checkpoint_sequence,"
+                "last_result_count,execution_stage "
+                "FROM engineering_goals WHERE goal_id=?", (goal_id,),
+            ).fetchone()
+        sequence, result_count = self._checkpoint_progress(row)
+        progressed = (
+            result_count > int(current["last_result_count"] or 0)
+            or (stage == "apply" and current["execution_stage"] != "apply")
+        )
+        started = (
+            now if progressed or not current["recovery_started_at"]
+            else datetime.fromisoformat(current["recovery_started_at"])
+        )
+        attempts = 1 if progressed else int(current["retry_attempts"]) + 1
+        exhausted = (
+            attempts > self._maximum_recovery_attempts
+            or (now - started).total_seconds() >= self._maximum_recovery_seconds
+        )
+        if exhausted:
+            with self._lock, self._database:
+                self._database.execute(
+                    "UPDATE engineering_goals SET status='failed',error=?,"
+                    "retry_attempts=?,last_checkpoint_sequence=?,last_result_count=?,"
+                    "updated_at=? "
+                    "WHERE goal_id=?",
+                    (
+                        f"recovery_budget_exhausted: {failure}", attempts,
+                        sequence, result_count, now.isoformat(), goal_id,
+                    ),
+                )
+            return
+        delay = self._retry_delay(goal_id, attempts)
+        next_retry = now + timedelta(seconds=delay)
+        with self._lock, self._database:
+            self._database.execute(
+                "UPDATE engineering_goals SET status='retry_wait',error=?,"
+                "retry_attempts=?,recovery_started_at=?,next_retry_at=?,"
+                "last_checkpoint_sequence=?,last_result_count=?,"
+                "execution_stage=COALESCE(?,execution_stage),"
+                "result_json=COALESCE(?,result_json),updated_at=? WHERE goal_id=?",
+                (
+                    failure, attempts, started.isoformat(), next_retry.isoformat(),
+                    sequence, result_count, stage,
+                    None if result is None else json.dumps(result, sort_keys=True),
+                    now.isoformat(), goal_id,
+                ),
+            )
+        self._wake.set()
+
+    def _checkpoint_sequence(self, row) -> int:
+        return self._checkpoint_progress(row)[0]
+
+    def _checkpoint_progress(self, row) -> tuple[int, int]:
+        try:
+            thread = self._api.thread(
+                row["owner_id"], row["session_id"], row["workspace_root"],
+            )
+        except (AttributeError, KeyError, LookupError, PermissionError, RuntimeError):
+            return 0, 0
+        checkpoint = thread.get("latest_checkpoint") if isinstance(thread, dict) else None
+        state = (checkpoint or {}).get("state") or {}
+        return (
+            int((checkpoint or {}).get("sequence") or 0),
+            int(state.get("result_count") or 0),
+        )
+
+    def _retry_delay(self, goal_id: str, attempt: int) -> float:
+        base = min(
+            self._retry_max_seconds,
+            self._retry_base_seconds * (2 ** max(0, attempt - 1)),
+        )
+        digest = hashlib.sha256(f"{goal_id}:{attempt}".encode()).digest()[0]
+        jitter = .85 + (digest / 255) * .3
+        return round(base * jitter, 3)
+
+    def _recover_provider(self) -> None:
+        loaded = getattr(self._runtime, "loaded_models", None)
+        prewarm = getattr(self._runtime, "prewarm", None)
+        if not callable(loaded):
+            return
+        try:
+            models = loaded()
+        except TransientInferenceError:
+            if not callable(self._provider_recover):
+                raise
+            self._provider_recover()
+            models = loaded()
+        if (
+            callable(prewarm)
+            and not any(item.model_ref == self._model_ref for item in models)
+        ):
+            prewarm(self._model_ref, "30m")
+
+    def _watched_call(self, row, operation):
+        outcomes: queue.Queue = queue.Queue(maxsize=1)
+
+        def run_operation():
+            try:
+                outcomes.put((True, operation()))
+            except BaseException as error:
+                outcomes.put((False, error))
+
+        worker = threading.Thread(
+            target=run_operation, daemon=True,
+            name=f"fam-goal-operation-{row['goal_id'][-8:]}",
+        )
+        worker.start()
+        sequence = self._checkpoint_sequence(row)
+        progress_at = time.monotonic()
+        watchdog_tripped = False
+        while True:
+            try:
+                succeeded, value = outcomes.get(timeout=self._poll_seconds)
+                if succeeded:
+                    return value
+                raise value
+            except queue.Empty:
+                current = self._checkpoint_sequence(row)
+                if current > sequence:
+                    sequence, progress_at = current, time.monotonic()
+                    watchdog_tripped = False
+                if (
+                    not watchdog_tripped
+                    and time.monotonic() - progress_at >= self._watchdog_seconds
+                ):
+                    watchdog_tripped = True
+                    with self._lock, self._database:
+                        self._database.execute(
+                            "UPDATE engineering_goals SET watchdog_trips="
+                            "watchdog_trips+1,error=?,updated_at=? WHERE goal_id=?",
+                            (
+                                "watchdog detected a stalled model request; "
+                                "recovering the inference provider",
+                                _now(), row["goal_id"],
+                            ),
+                        )
+                    if callable(self._provider_recover):
+                        try:
+                            self._provider_recover()
+                        except (OSError, RuntimeError, ValueError):
+                            pass
+
     def _plan(self, prompt: str, workspace: str) -> dict[str, object]:
         request = InferenceRequest(
             model_ref=self._model_ref,
@@ -331,7 +521,30 @@ class GoalModeService:
             context_tokens=16_384, max_output_tokens=2_048,
             keep_alive="30m", json_output=True, temperature=0.0, seed=44,
         )
-        response = self._runtime.chat(request)
+        response = None
+        recovery_started = time.monotonic()
+        for attempt in range(1, self._maximum_recovery_attempts + 2):
+            try:
+                response = self._runtime.chat(request)
+                break
+            except BaseException as error:
+                exhausted = (
+                    attempt > self._maximum_recovery_attempts
+                    or time.monotonic() - recovery_started
+                    >= self._maximum_recovery_seconds
+                )
+                if not _transient(error) or exhausted:
+                    raise
+                try:
+                    self._recover_provider()
+                except (OSError, RuntimeError, ValueError):
+                    pass
+                self._sleep(min(
+                    self._retry_max_seconds,
+                    self._retry_base_seconds * (2 ** (attempt - 1)),
+                ))
+        if response is None:
+            raise RuntimeError("goal planner did not produce a response")
         try:
             value = json.loads(response.content)
         except (json.JSONDecodeError, TypeError) as error:
@@ -358,6 +571,26 @@ class GoalModeService:
                 "result_json TEXT,error TEXT,epochs INTEGER NOT NULL,"
                 "created_at TEXT NOT NULL,updated_at TEXT NOT NULL)"
             )
+            columns = {
+                row[1] for row in self._database.execute(
+                    "PRAGMA table_info(engineering_goals)"
+                ).fetchall()
+            }
+            additions = {
+                "retry_attempts": "INTEGER NOT NULL DEFAULT 0",
+                "recovery_started_at": "TEXT",
+                "next_retry_at": "TEXT",
+                "last_checkpoint_sequence": "INTEGER NOT NULL DEFAULT 0",
+                "last_result_count": "INTEGER NOT NULL DEFAULT 0",
+                "execution_stage": "TEXT NOT NULL DEFAULT 'activation'",
+                "pending_changeset_id": "TEXT",
+                "watchdog_trips": "INTEGER NOT NULL DEFAULT 0",
+            }
+            for name, definition in additions.items():
+                if name not in columns:
+                    self._database.execute(
+                        f"ALTER TABLE engineering_goals ADD COLUMN {name} {definition}"
+                    )
 
     def _require_owner(self, owner_id: str) -> None:
         if owner_id != self.owner_id:
@@ -428,6 +661,13 @@ def _document(row: sqlite3.Row) -> dict[str, object]:
         "epochs": row["epochs"], "error": row["error"],
         "created_at": row["created_at"], "updated_at": row["updated_at"],
         "engineering_task": task,
+        "recovery": {
+            "attempt": row["retry_attempts"],
+            "next_retry_at": row["next_retry_at"],
+            "started_at": row["recovery_started_at"],
+            "watchdog_trips": row["watchdog_trips"],
+            "stage": row["execution_stage"],
+        },
     }
 
 
@@ -481,6 +721,17 @@ def _string_list(value, minimum: int, maximum: int) -> bool:
         isinstance(value, list) and minimum <= len(value) <= maximum
         and all(isinstance(item, str) and item.strip() for item in value)
     )
+
+
+def _transient(error: BaseException) -> bool:
+    current: BaseException | None = error
+    inspected = 0
+    while current is not None and inspected < 8:
+        if isinstance(current, (TransientInferenceError, TimeoutError, ConnectionError)):
+            return True
+        current = current.__cause__ or current.__context__
+        inspected += 1
+    return False
 
 
 def _text(value: str, name: str) -> str:

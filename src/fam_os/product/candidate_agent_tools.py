@@ -58,6 +58,12 @@ class AuthorizedCandidateAgentTools:
         self.applied_edits: list[object] = []
         self.successful_verifications: list[str] = []
 
+    def restore(self, edits, successful_verifications) -> None:
+        """Rehydrate durable candidate effects before a resumed model turn."""
+        self.applied_edits[:] = list(edits)
+        self.successful_verifications[:] = list(successful_verifications)
+        self._sequence = len(self.applied_edits)
+
     def register(self, registry: AgentToolRegistry) -> None:
         _register(registry, "list_directory", "List one candidate directory.",
                   AgentToolEffect.OBSERVE, self._workspace.list_directory,

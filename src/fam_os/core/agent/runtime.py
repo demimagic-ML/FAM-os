@@ -34,6 +34,7 @@ from fam_os.core.ports.inference import (
     InferenceToolCall,
     MessageRole,
 )
+from fam_os.core.ports.inference import TransientInferenceError
 
 
 class AgentTurnStore(Protocol):
@@ -286,6 +287,29 @@ class IterativeModelAgent:
             self._checkpoint(
                 thread_id, turn_id, checkpoint_sequence, AgentGraphNode.FAILED,
                 0, _agent_phase(results), {"cancelled": True, "reason": str(error)},
+            )
+            raise
+        except TransientInferenceError as error:
+            interrupted = (
+                latest_reader(thread_id, turn_id)
+                if callable(latest_reader) else None
+            )
+            interrupted_step = (
+                interrupted.step if interrupted is not None
+                else max(0, start_step - 1)
+            )
+            self._checkpoint(
+                thread_id, turn_id, checkpoint_sequence, AgentGraphNode.RECOVER,
+                interrupted_step, _agent_phase(results), {
+                    "transient": True,
+                    "failure_type": type(error).__name__,
+                    "failure": str(error)[:2_000],
+                    "result_count": len(results),
+                    "model_ref": (
+                        interrupted.state.get("model_ref")
+                        if interrupted is not None else self._settings.model_ref
+                    ),
+                },
             )
             raise
         except Exception as error:

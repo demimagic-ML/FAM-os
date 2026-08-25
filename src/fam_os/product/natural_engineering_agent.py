@@ -82,6 +82,29 @@ class NaturalEngineeringAgentService:
                 AgentToolEffect.COMMAND
             ),
         )
+        turn_store = SQLiteAgentTurnStore(
+            self._database, preparation.candidate.owner_workspace,
+        )
+        prior_edits = tuple(
+            item for item in self._loop.candidate_edits(
+                owner_id, definition.task.task_id,
+            )
+            if getattr(getattr(item, "status", None), "value", None) == "applied"
+        )
+        restored = turn_store.restore_turn(
+            _thread_id(
+                owner_id, session_id, preparation.candidate.owner_workspace,
+            ),
+            f"agent-turn-{definition.task.task_id}-{turn_suffix}",
+        )
+        prior_verifications = tuple(
+            result.output for call, result in restored
+            if result.succeeded and (
+                call.tool_id == "verify_command"
+                or bool((result.postcondition or {}).get("verified"))
+            )
+        )
+        candidate_tools.restore(prior_edits, prior_verifications)
         candidate_tools.register(registry)
         ApplicationAgentTools(
             self._application_provider, owner_id,
@@ -98,9 +121,7 @@ class NaturalEngineeringAgentService:
                 fallback_model_ref=self._fallback_model_ref,
             ),
             registry,
-            SQLiteAgentTurnStore(
-                self._database, preparation.candidate.owner_workspace,
-            ),
+            turn_store,
             completion_validator=lambda _results: (
                 None
                 if candidate_tools.applied_edits

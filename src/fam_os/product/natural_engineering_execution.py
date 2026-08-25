@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import hashlib
 
+from fam_os.core.ports.inference import TransientInferenceError
+
 from fam_os.core.engineering import (
     CandidateChangesetStatus, CandidateEditStatus,
     CandidateGenerationService, CandidateGenerationStatus,
@@ -114,6 +116,8 @@ class NaturalEngineeringExecutionCoordinator:
                     session_id=session_id, principal_id=principal_id,
                     maximum_steps=256 if goal_mode else None,
                 )
+            except TransientInferenceError:
+                raise
             except (OSError, PermissionError, RuntimeError, ValueError) as error:
                 return _failure(
                     self._loop, owner_id,

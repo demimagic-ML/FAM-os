@@ -17,7 +17,7 @@ from fam_os.core.agent import (
     IterativeAgentSettings,
     IterativeModelAgent,
 )
-from fam_os.core.ports.inference import InferenceResponse
+from fam_os.core.ports.inference import InferenceResponse, TransientInferenceError
 from fam_os.core.ports.inference import InferenceToolCall, MessageRole
 from fam_os.product.agent_turn_store import SQLiteAgentTurnStore
 from fam_os.product.storage.database import ProductionDatabase, StorageSettings
@@ -50,7 +50,119 @@ class _NativeRuntime:
         return self.responses.pop(0)
 
 
+class _DisconnectingRuntime:
+    supports_native_tools = True
+
+    def chat(self, request):
+        raise TransientInferenceError("provider connection dropped")
+
+
+class _SequencedRuntime(_NativeRuntime):
+    def chat(self, request):
+        response = super().chat(request)
+        if isinstance(response, BaseException):
+            raise response
+        return response
+
+
 class IterativeAgentTests(unittest.TestCase):
+    def test_transient_inference_failure_preserves_running_turn_for_resume(self):
+        metrics = InferenceMetrics("model", 0, 0, 1, 1)
+        with tempfile.TemporaryDirectory() as directory:
+            database = ProductionDatabase(StorageSettings(
+                Path(directory) / "state.sqlite3", os.geteuid(),
+            ))
+            database.open()
+            try:
+                store = SQLiteAgentTurnStore(database, "/workspace")
+                with self.assertRaises(TransientInferenceError):
+                    IterativeModelAgent(
+                        _DisconnectingRuntime(), IterativeAgentSettings("model"),
+                        AgentToolRegistry(), store,
+                    ).run(
+                        thread_id="thread", turn_id="turn",
+                        objective="Continue durable work.",
+                        profile=AgentAuthorityProfile.WORKSPACE,
+                    )
+                interrupted = store.thread("thread")
+                self.assertEqual("running", interrupted["turns"][0]["status"])
+                self.assertEqual("recover", interrupted["latest_checkpoint"]["node"])
+                self.assertEqual(1, interrupted["latest_checkpoint"]["step"])
+
+                outcome = IterativeModelAgent(
+                    _NativeRuntime([
+                        InferenceResponse("Recovered and completed.", metrics),
+                    ]),
+                    IterativeAgentSettings("model"), AgentToolRegistry(), store,
+                ).run(
+                    thread_id="thread", turn_id="turn",
+                    objective="Continue durable work.",
+                    profile=AgentAuthorityProfile.WORKSPACE,
+                )
+                self.assertEqual("Recovered and completed.", outcome.response.content)
+                self.assertEqual("completed", store.thread("thread")["turns"][0]["status"])
+            finally:
+                database.close()
+
+    def test_edit_effect_is_not_repeated_after_provider_disconnect(self):
+        self._assert_confirmed_effect_survives_disconnect(
+            "write_file", AgentToolEffect.WORKSPACE_WRITE,
+        )
+
+    def test_verification_effect_is_not_repeated_after_provider_disconnect(self):
+        self._assert_confirmed_effect_survives_disconnect(
+            "verify_command", AgentToolEffect.COMMAND,
+        )
+
+    def _assert_confirmed_effect_survives_disconnect(self, tool_id, effect):
+        metrics = InferenceMetrics("model", 0, 0, 1, 1)
+        invocations = []
+        tools = AgentToolRegistry()
+        tools.register(
+            _tool(tool_id, effect),
+            lambda arguments: invocations.append(dict(arguments)) or "confirmed",
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            database = ProductionDatabase(StorageSettings(
+                Path(directory) / "state.sqlite3", os.geteuid(),
+            ))
+            database.open()
+            try:
+                store = SQLiteAgentTurnStore(database, "/workspace")
+                interrupted_runtime = _SequencedRuntime([
+                    InferenceResponse("", metrics, (
+                        InferenceToolCall("effect-1", tool_id, {}),
+                    )),
+                    TransientInferenceError("disconnect after confirmed effect"),
+                ])
+                with self.assertRaises(TransientInferenceError):
+                    IterativeModelAgent(
+                        interrupted_runtime, IterativeAgentSettings("model"),
+                        tools, store,
+                    ).run(
+                        thread_id="thread", turn_id="turn",
+                        objective="Make and verify the requested change.",
+                        profile=AgentAuthorityProfile.WORKSPACE,
+                    )
+                self.assertEqual([{}], invocations)
+
+                outcome = IterativeModelAgent(
+                    _NativeRuntime([
+                        InferenceResponse("Recovered and completed.", metrics),
+                    ]),
+                    IterativeAgentSettings("model"), tools, store,
+                ).run(
+                    thread_id="thread", turn_id="turn",
+                    objective="Make and verify the requested change.",
+                    profile=AgentAuthorityProfile.WORKSPACE,
+                )
+
+                self.assertEqual([{}], invocations)
+                self.assertEqual(1, len(outcome.tool_results))
+                self.assertEqual(tool_id, outcome.tool_results[0].tool_id)
+            finally:
+                database.close()
+
     def test_semantic_filesystem_postcondition_completes_without_verify_command(self):
         metrics = InferenceMetrics("model", 0, 0, 1, 1)
         runtime = _NativeRuntime([

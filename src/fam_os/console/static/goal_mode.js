@@ -58,7 +58,7 @@ const FamGoalMode = (() => {
     if (goal.status === "draft") {
       renderPlan(goal);
       byId("goal-dialog").showModal();
-    } else if (["queued", "running", "pause_requested", "cancel_requested"].includes(goal.status)) {
+    } else if (["queued", "running", "retry_wait", "pause_requested", "cancel_requested"].includes(goal.status)) {
       watch();
     }
   }
@@ -103,6 +103,7 @@ const FamGoalMode = (() => {
     const labels = {
       draft: "Plan ready for activation.",
       queued: "Goal queued. The background supervisor is preparing the workspace.",
+      retry_wait: recoverySentence(goal),
       running: liveSentence(goal),
       pause_requested: "Pausing safely after the current model step…",
       paused: "Goal paused. Resume when you are ready.",
@@ -115,7 +116,7 @@ const FamGoalMode = (() => {
     current.turn.answer.textContent = labels[goal.status] || `Goal status: ${goal.status}`;
     current.turn.state.textContent = goal.status.replaceAll("_", " ");
     current.turn.answerShell.classList.toggle("pending", [
-      "queued", "running", "pause_requested", "cancel_requested",
+      "queued", "running", "retry_wait", "pause_requested", "cancel_requested",
     ].includes(goal.status));
     current.turn.meta.classList.remove("hidden");
     current.turn.assurance.textContent = "DURABLE GOAL";
@@ -138,6 +139,14 @@ const FamGoalMode = (() => {
       return "Goal stopped during verification because the local model connection was interrupted. Candidate work is preserved, and nothing was applied to your workspace.";
     }
     return `Goal stopped before apply: ${failure}. Candidate work is preserved, and the owner workspace remains unchanged.`;
+  }
+
+  function recoverySentence(goal) {
+    const recovery = goal.recovery || {};
+    const seconds = Math.max(0, Math.ceil(
+      (Date.parse(recovery.next_retry_at || "") - Date.now()) / 1000,
+    ));
+    return `Recovering from a temporary model interruption · attempt ${recovery.attempt || 1} · next retry in ${seconds}s. Candidate work and checkpoints are preserved.`;
   }
 
   async function control(action) {

@@ -890,6 +890,10 @@ class LocalProductService:
             self.settings.state_root / "state/engineering-goals.sqlite3",
             self.natural_engineering_api, engineering_inference.runtime,
             engineering_inference.model_ref,
+            provider_recover=(
+                None if self._runtime_unit is None
+                else self._runtime_unit.recover
+            ),
         )
         self.engineering_secret_api = ProductEngineeringSecretApi(
             local_owner_id(os.geteuid()),

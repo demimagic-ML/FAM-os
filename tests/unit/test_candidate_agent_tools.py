@@ -54,6 +54,39 @@ class _Loop:
 
 
 class CandidateAgentToolsTests(unittest.TestCase):
+    def test_resume_continues_edit_identity_after_durable_candidate_effects(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            owner, transactions = root / "owner", root / "transactions"
+            owner.mkdir()
+            adapter = CandidateWorkspaceAdapter(owner, transactions)
+            candidate = adapter.create("task-resume")
+            loop = _Loop(adapter, candidate)
+            definition = SimpleNamespace(task=SimpleNamespace(
+                task_id="task-resume", max_changed_files=128,
+                max_changed_bytes=64 * 1024**2,
+            ))
+            tools = AuthorizedCandidateAgentTools(
+                loop, "owner", "task-resume", "session", "principal",
+                definition, SimpleNamespace(candidate=candidate),
+                _CommandTools(Path(candidate.candidate_workspace)),
+            )
+            tools.restore(
+                (SimpleNamespace(edit_id="prior-1"), SimpleNamespace(edit_id="prior-2")),
+                ("prior verification",),
+            )
+            registry = AgentToolRegistry()
+            tools.register(registry)
+
+            result = _invoke(registry, "write_file", {
+                "path": "continued.txt", "content": "continued\n",
+            })
+
+            self.assertTrue(result.succeeded, result.output)
+            self.assertEqual("agent-edit-task-resume-3", loop.records[-1].edit_id)
+            self.assertEqual(3, len(tools.applied_edits))
+            self.assertEqual(["prior verification"], tools.successful_verifications)
+
     def test_writes_and_command_mutations_are_replayed_as_candidate_edits(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

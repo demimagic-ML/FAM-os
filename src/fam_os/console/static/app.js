@@ -665,7 +665,7 @@ function renderGoalActivity(goal, control) {
   $("#goal-controls").classList.remove("hidden");
   $("#task-title").textContent = goal.title;
   $("#task-title").title = goal.title;
-  const running = ["queued", "running", "pause_requested", "cancel_requested"].includes(goal.status);
+  const running = ["queued", "running", "retry_wait", "pause_requested", "cancel_requested"].includes(goal.status);
   const completed = goal.status === "completed";
   const failed = ["failed", "cancelled"].includes(goal.status);
   const live = goal.live || {};
@@ -689,7 +689,7 @@ function renderGoalActivity(goal, control) {
   }));
   renderGoalTelemetry(goal);
   $("#goal-control-status").textContent = goal.status.replaceAll("_", " ");
-  $("#goal-pause").disabled = !["queued", "running"].includes(goal.status);
+  $("#goal-pause").disabled = !["queued", "running", "retry_wait"].includes(goal.status);
   $("#goal-resume").disabled = goal.status !== "paused";
   $("#goal-cancel").disabled = ["completed", "failed", "cancelled"].includes(goal.status);
   $("#goal-pause").onclick = () => control("pause").catch(fail);
@@ -708,12 +708,22 @@ function renderGoalTelemetry(goal) {
   const live = goal.live;
   panel.classList.toggle("hidden", !live);
   if (!live) return;
-  panel.dataset.active = ["queued", "running", "pause_requested", "cancel_requested"].includes(goal.status) ? "true" : "false";
+  panel.dataset.active = ["queued", "running", "retry_wait", "pause_requested", "cancel_requested"].includes(goal.status) ? "true" : "false";
   const terminal = ["completed", "failed", "cancelled", "waiting_approval"].includes(goal.status);
   $("#goal-live-phase").textContent = (live.phase || live.node || goal.status).replaceAll("_", " ");
   $("#goal-live-step").textContent = live.step ? String(live.step).padStart(2, "0") : terminal ? "—" : "00";
   $("#goal-live-model").textContent = live.model_ref ? compactModelName(live.model_ref) : terminal ? "Session ended" : "Warming up";
   $("#goal-live-age").textContent = relativeAge(live.last_activity);
+  const recovery = goal.recovery || {};
+  const recovering = goal.status === "retry_wait";
+  const recoveryLine = $("#goal-recovery");
+  recoveryLine.classList.toggle("hidden", !recovering);
+  if (recovering) {
+    const seconds = Math.max(0, Math.ceil(
+      (Date.parse(recovery.next_retry_at || "") - Date.now()) / 1000,
+    ));
+    recoveryLine.textContent = `Recovering · attempt ${recovery.attempt || 1} · next retry in ${seconds}s`;
+  }
   const paths = live.changed_files || [];
   $("#goal-files").classList.toggle("hidden", paths.length === 0);
   $("#goal-file-count").textContent = `${paths.length} ${paths.length === 1 ? "change" : "changes"}`;

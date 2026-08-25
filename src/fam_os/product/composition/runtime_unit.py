@@ -66,6 +66,13 @@ class ProductRuntimeUnit:
     def stop(self) -> None:
         self._service.stop()
 
+    def recover(self) -> OllamaRuntime:
+        """Reconcile the managed daemon and return a healthy runtime handle."""
+        self._service.reconcile()
+        if self.runtime is None:
+            self.runtime = OllamaRuntime(OllamaSettings(self.settings.base_url, 180))
+        return self.runtime
+
     def resource_snapshot(self) -> ResourceSnapshot | None:
         return self._resource_observer.observe(self._service.settings.service_id)
 
