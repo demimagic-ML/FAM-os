@@ -144,12 +144,19 @@ class IterativeAgentSettings:
     context_tokens: int = 32_768
     maximum_output_tokens: int = 4_096
     maximum_tool_message_bytes: int = 16_384
+    keep_alive: str = "30m"
+    fallback_model_ref: str | None = None
 
     def __post_init__(self) -> None:
         if (
             not self.model_ref.strip() or not 1 <= self.maximum_steps <= 256
             or not 1_024 <= self.context_tokens
             or not 1_024 <= self.maximum_tool_message_bytes <= 65_536
+            or not self.keep_alive.strip()
+            or (
+                self.fallback_model_ref is not None
+                and not self.fallback_model_ref.strip()
+            )
         ):
             raise ValueError("iterative agent settings are invalid")
 
@@ -205,6 +212,7 @@ class IterativeModelAgent:
         results: list[AgentToolResult] = []
         decision_counts: dict[str, int] = {}
         retry_limits: dict[str, int] = {}
+        escalated = [False]
         checkpoint_sequence = [0]
         start_step = 1
         latest_reader = getattr(self._store, "latest_checkpoint", None)
@@ -267,7 +275,7 @@ class IterativeModelAgent:
                 thread_id, turn_id, objective, profile, messages, results,
                 decision_counts, native_tools, ledger, prior_context, history,
                 checkpoint_sequence, retry_limits,
-                start_step,
+                start_step, escalated,
             )
         except AgentTurnCancelled as error:
             cancel = getattr(self._store, "cancel_turn", None)
@@ -317,7 +325,7 @@ class IterativeModelAgent:
         self, thread_id, turn_id, objective, profile, messages, results,
         decision_counts, native_tools, ledger, prior_context, history,
         checkpoint_sequence, retry_limits,
-        start_step,
+        start_step, escalated,
     ):
         context_reader = getattr(self._store, "context_state", None)
         generation, compaction_count = (
@@ -345,6 +353,9 @@ class IterativeModelAgent:
                 self._tools.descriptors(), results, capabilities_expanded,
             )
             phase = _agent_phase(results)
+            active_model_ref = _active_model_ref(
+                self._settings, results, escalated[0],
+            )
             phased = _messages_with_phase(messages, phase)
             compiled = self._context_compiler.compile(
                 system=phased[0].content, ledger=ledger, profile=profile.value,
@@ -356,6 +367,10 @@ class IterativeModelAgent:
                 generation=generation, compaction_count=compaction_count,
             )
             request_messages = compiled.messages
+            request_context_tokens = _request_context_tokens(
+                request_messages, self._settings.context_tokens,
+                self._settings.maximum_output_tokens,
+            )
             if compiled.compacted and compiled.generation != generation:
                 generation = compiled.generation
                 compaction_count += 1
@@ -370,13 +385,17 @@ class IterativeModelAgent:
                     "clean_reset": compiled.reset,
                     "tool_count": len(descriptors),
                     "result_count": len(results),
+                    "model_ref": active_model_ref,
+                    "escalated": active_model_ref != self._settings.model_ref,
+                    "request_context_tokens": request_context_tokens,
                 },
             )
             response = self._runtime.chat(InferenceRequest(
-                model_ref=self._settings.model_ref,
+                model_ref=active_model_ref,
                 messages=request_messages,
-                context_tokens=self._settings.context_tokens,
+                context_tokens=request_context_tokens,
                 max_output_tokens=self._settings.maximum_output_tokens,
+                keep_alive=self._settings.keep_alive,
                 json_output=not native_tools,
                 temperature=0.0,
                 seed=42,
@@ -385,8 +404,8 @@ class IterativeModelAgent:
                     if native_tools else ()
                 ),
                 tool_choice="auto" if native_tools and descriptors else None,
-                reasoning_effort=_reasoning_effort(self._settings.model_ref, phase),
-                preserve_reasoning=_preserve_reasoning(self._settings.model_ref),
+                reasoning_effort=_reasoning_effort(active_model_ref, phase),
+                preserve_reasoning=_preserve_reasoning(active_model_ref),
             ))
             if not response.content and not response.tool_calls:
                 signature = "model:empty_visible_response"
@@ -399,7 +418,7 @@ class IterativeModelAgent:
                     MessageRole.ASSISTANT, "No visible action or answer was emitted.",
                     reasoning_content=(
                         response.reasoning_content
-                        if _preserve_reasoning(self._settings.model_ref) else None
+                        if _preserve_reasoning(active_model_ref) else None
                     ),
                 ))
                 messages.append(InferenceMessage(
@@ -420,6 +439,8 @@ class IterativeModelAgent:
                     },
                 )
                 capabilities_expanded = True
+                if self._settings.fallback_model_ref is not None:
+                    escalated[0] = True
                 continue
             if native_tools and response.tool_calls:
                 messages.append(InferenceMessage(
@@ -427,7 +448,7 @@ class IterativeModelAgent:
                     tool_calls=response.tool_calls,
                     reasoning_content=(
                         response.reasoning_content
-                        if _preserve_reasoning(self._settings.model_ref) else None
+                        if _preserve_reasoning(active_model_ref) else None
                     ),
                 ))
                 for index, native_call in enumerate(response.tool_calls, 1):
@@ -469,7 +490,7 @@ class IterativeModelAgent:
                 MessageRole.ASSISTANT, response.content,
                 reasoning_content=(
                     response.reasoning_content
-                    if _preserve_reasoning(self._settings.model_ref) else None
+                    if _preserve_reasoning(active_model_ref) else None
                 ),
             ))
             if isinstance(decision, AgentFinalResponse):
@@ -509,6 +530,8 @@ class IterativeModelAgent:
                         }, sort_keys=True, separators=(",", ":")),
                     ))
                     capabilities_expanded = True
+                    if self._settings.fallback_model_ref is not None:
+                        escalated[0] = True
                     continue
                 self._store.complete_turn(thread_id, turn_id, decision)
                 self._checkpoint(
@@ -768,6 +791,26 @@ def _agent_phase(results) -> str:
     if any(item.succeeded for item in results):
         return "implementation"
     return "exploration"
+
+
+def _active_model_ref(
+    settings: IterativeAgentSettings, results, escalated: bool,
+) -> str:
+    fallback = settings.fallback_model_ref
+    if fallback is None or fallback.casefold() == settings.model_ref.casefold():
+        return settings.model_ref
+    failed_actions = sum(not item.succeeded for item in results)
+    return fallback if escalated or failed_actions >= 2 else settings.model_ref
+
+
+def _request_context_tokens(messages, maximum: int, output_tokens: int) -> int:
+    prompt_bytes = sum(len(item.content.encode("utf-8")) for item in messages)
+    estimated_prompt_tokens = (prompt_bytes + 2) // 3
+    required = estimated_prompt_tokens + output_tokens + 2_048
+    for bucket in (8_192, 16_384, 32_768, 65_536, 131_072):
+        if required <= bucket:
+            return min(bucket, maximum)
+    return maximum
 
 
 def _phase_tools(descriptors, results, expand=False):

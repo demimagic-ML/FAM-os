@@ -212,6 +212,23 @@ class IterativeAgentTests(unittest.TestCase):
         self.assertEqual(2, outcome.model_steps)
         self.assertIn("model_response_repair", runtime.requests[1].messages[-1].content)
 
+    def test_agent_request_preserves_configured_model_residency(self):
+        metrics = InferenceMetrics("model", 0, 0, 1, 1)
+        runtime = _NativeRuntime([
+            InferenceResponse("Done.", metrics),
+        ])
+
+        IterativeModelAgent(
+            runtime, IterativeAgentSettings("model", keep_alive="45m"),
+            AgentToolRegistry(), _Store(),
+        ).run(
+            thread_id="thread", turn_id="turn", objective="Answer.",
+            profile=AgentAuthorityProfile.ASK,
+        )
+
+        self.assertEqual("45m", runtime.requests[0].keep_alive)
+        self.assertEqual(8_192, runtime.requests[0].context_tokens)
+
     def test_successful_verification_enters_tool_free_finalization(self):
         metrics = InferenceMetrics("model", 0, 0, 1, 1)
         runtime = _NativeRuntime([
@@ -290,6 +307,34 @@ class IterativeAgentTests(unittest.TestCase):
         )
         self.assertIn(
             "special_tool_8", {item.name for item in runtime.requests[1].tools},
+        )
+
+    def test_rejected_completion_escalates_to_fallback_model(self):
+        metrics = InferenceMetrics("fast-model", 0, 0, 1, 1)
+        runtime = _NativeRuntime([
+            InferenceResponse("Finished without evidence.", metrics),
+            InferenceResponse("Recovered with grounded evidence.", metrics),
+        ])
+
+        outcome = IterativeModelAgent(
+            runtime,
+            IterativeAgentSettings(
+                "fast-model", fallback_model_ref="quality-model",
+            ),
+            AgentToolRegistry(), _Store(),
+            completion_validator=lambda results: (
+                None if runtime.requests[-1].model_ref == "quality-model"
+                else "Escalate and retry with the quality model."
+            ),
+        ).run(
+            thread_id="thread", turn_id="turn", objective="Answer correctly.",
+            profile=AgentAuthorityProfile.ASK,
+        )
+
+        self.assertEqual("Recovered with grounded evidence.", outcome.response.content)
+        self.assertEqual(
+            ["fast-model", "quality-model"],
+            [item.model_ref for item in runtime.requests],
         )
 
     def test_large_conversation_history_is_compacted_before_inference(self):

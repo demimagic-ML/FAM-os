@@ -860,6 +860,12 @@ class LocalProductService:
                     engineering_inference.model_ref,
                     storage.database,
                     self.engineering_loop_api,
+                    fallback_model_ref=(
+                        self.settings.model_ref
+                        if self.settings.model_ref.casefold()
+                        != engineering_inference.model_ref.casefold()
+                        else None
+                    ),
                     application_provider=lambda: (
                         None if self.application_services is None
                         else self.application_services.provider

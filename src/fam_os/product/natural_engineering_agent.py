@@ -45,6 +45,7 @@ class NaturalEngineeringAgentResult:
 class NaturalEngineeringAgentService:
     def __init__(
         self, runtime, model_ref: str, database, loop, *, maximum_steps: int = 64,
+        fallback_model_ref: str | None = None,
         application_provider=lambda: None,
     ) -> None:
         self._runtime = runtime
@@ -52,6 +53,7 @@ class NaturalEngineeringAgentService:
         self._database = database
         self._loop = loop
         self._maximum_steps = maximum_steps
+        self._fallback_model_ref = fallback_model_ref
         self._application_provider = application_provider
 
     def execute(
@@ -90,7 +92,11 @@ class NaturalEngineeringAgentService:
         turn_id = f"agent-turn-{definition.task.task_id}-{turn_suffix}"
         agent = IterativeModelAgent(
             self._runtime,
-            _agent_settings(self._model_ref, self._maximum_steps),
+            _agent_settings(
+                self._model_ref, self._maximum_steps,
+                objective or definition.task.intent,
+                fallback_model_ref=self._fallback_model_ref,
+            ),
             registry,
             SQLiteAgentTurnStore(
                 self._database, preparation.candidate.owner_workspace,
@@ -137,7 +143,10 @@ class NaturalEngineeringAgentService:
         thread_id = _thread_id(owner_id, session_id, workspace)
         agent = IterativeModelAgent(
             self._runtime,
-            _agent_settings(self._model_ref, self._maximum_steps),
+            _agent_settings(
+                self._model_ref, self._maximum_steps, definition.task.intent,
+                fallback_model_ref=self._fallback_model_ref,
+            ),
             registry,
             SQLiteAgentTurnStore(self._database, workspace),
             completion_validator=lambda results: (
@@ -197,6 +206,7 @@ class NaturalEngineeringAgentService:
             ),
             context_tokens=32_768,
             max_output_tokens=512,
+            keep_alive="30m",
             json_output=True,
             temperature=0.0,
             seed=43,
@@ -271,7 +281,10 @@ def _thread_id(owner_id: str, session_id: str, workspace: str) -> str:
     return f"agent-thread-{digest}"
 
 
-def _agent_settings(model_ref: str, maximum_steps: int) -> IterativeAgentSettings:
+def _agent_settings(
+    model_ref: str, maximum_steps: int, objective: str = "",
+    *, fallback_model_ref: str | None = None,
+) -> IterativeAgentSettings:
     normalized = model_ref.casefold()
     small_local = any(
         marker in normalized for marker in (":7b", "-7b", ":3b", ":1.7b")
@@ -285,6 +298,8 @@ def _agent_settings(model_ref: str, maximum_steps: int) -> IterativeAgentSetting
         maximum_output_tokens=(
             2_048 if small_local else 8_192 if qwen38 else 4_096
         ),
+        keep_alive="30m",
+        fallback_model_ref=fallback_model_ref,
     )
 
 

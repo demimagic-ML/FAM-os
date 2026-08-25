@@ -30,6 +30,25 @@ class AgentModelScorecardTests(unittest.TestCase):
         )
         self.assertIsNone(select_measured_model(("qwen3.8:27b",), (evaluation,)))
 
+    def test_equally_reliable_execution_model_is_selected_by_latency(self):
+        evaluations = (
+            AgentModelEvaluation(
+                "qwen3.8:27b", 8, 8, 25.6, "2026-08-25T10:00:00Z",
+            ),
+            AgentModelEvaluation(
+                "nemotron-3.5-lightning:latest", 8, 8, 8.2,
+                "2026-08-25T10:00:00Z",
+            ),
+        )
+
+        self.assertEqual(
+            "nemotron-3.5-lightning:latest",
+            select_measured_model(
+                ("qwen3.8:27b", "nemotron-3.5-lightning:latest"),
+                evaluations,
+            ),
+        )
+
     def test_loads_only_versioned_valid_records(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "scorecard.json"

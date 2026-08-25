@@ -46,6 +46,22 @@ scorecard and ranks models by measured completion rate, then pass count and
 latency. Static preferences are used only when no complete eight-case result is
 available.
 
+The selected measured model is the normal execution model. When a second local
+model was explicitly configured as the service model, FAM retains it as a
+quality fallback. A rejected completion, an empty model response, or repeated
+failed tool actions escalates the same durable turn to that fallback; the goal
+ledger and tool evidence cross the model boundary, so mutations are not
+replayed. This keeps the fast model on the common path without allowing it to
+loop indefinitely on work it cannot complete.
+
+Agent requests keep the active model resident for thirty minutes. Context is
+allocated from the actual compiled prompt and output allowance rather than
+keywords or the model maximum. Each step selects the smallest 8K, 16K, 32K, or
+65K bucket that fits its durable goal, conversation summary, current evidence,
+and output headroom. Qwen3.8 can grow to 65K when the accumulated work requires
+it; small local models remain capped at 8K. The context compiler compacts before
+growth when older detail can be represented by the typed goal and evidence.
+
 Qwen3.8 uses Ollama's native `thinking` field. FAM_OS requests phase-scaled
 reasoning effort, preserves useful reasoning only in the provider-native
 assistant/tool exchange, and excludes it from ordinary conversation history.
