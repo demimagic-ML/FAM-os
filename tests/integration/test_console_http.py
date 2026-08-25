@@ -393,6 +393,7 @@ class ConsoleHttpTests(unittest.TestCase):
                 self.assertIn(b"Open folder", page)
                 self.assertIn(b"Workspace \xe2\x80\x94 edit and test here", page)
                 self.assertIn(b"Tool terminal", page)
+                self.assertIn(b'id="submission-status"', page)
                 application = urllib.request.urlopen(base + "/app.js").read()
                 self.assertIn(b"citation.source_locator", application)
                 self.assertIn(b"citation.quoted_text", application)
@@ -414,6 +415,15 @@ class ConsoleHttpTests(unittest.TestCase):
                 )
                 self.assertIn(b"Console session expired / reopen from launcher", application)
                 self.assertIn(b"error.status === 401", application)
+                self.assertIn(b"Task accepted locally. Resolving the request", application)
+                self.assertIn(b'form.setAttribute("aria-busy"', application)
+                self.assertLess(
+                    application.index(b'setComposerBusy(true, "Sending'),
+                    application.index(b'await request("/api/v1/conversation/resolve"'),
+                )
+                styles = urllib.request.urlopen(base + "/styles.css").read()
+                self.assertIn(b".composer-send.is-busy", styles)
+                self.assertIn(b"@keyframes composer-spin", styles)
                 task_updates = urllib.request.urlopen(
                     base + "/task_updates.js",
                 ).read()

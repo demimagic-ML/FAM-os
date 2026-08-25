@@ -685,6 +685,31 @@ main {
   align-items: center;
 }
 
+.composer-send.is-busy span:last-child {
+  width: 14px;
+  height: 14px;
+  border: 2px solid #ffffff66;
+  border-top-color: currentColor;
+  border-radius: 50%;
+  font-size: 0;
+  animation: composer-spin 800ms linear infinite;
+}
+
+@keyframes composer-spin {
+  to { transform: rotate(360deg); }
+}
+
+.submission-status {
+  margin: 0;
+  padding: 0 18px 8px;
+  color: var(--signal);
+  font: 700 10px/1.4 "Noto Sans Mono", monospace;
+}
+
+.submission-status[data-state="failed"] {
+  color: var(--red);
+}
+
 .composer-hint {
   margin: 0;
   padding: 0 18px 11px;

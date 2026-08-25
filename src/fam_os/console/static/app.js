@@ -223,6 +223,7 @@ function scrollToTurn(turn, reducedMotion = false) {
 
 function startTurn(prompt, scope, taskId) {
   finishTyping();
+  setSubmissionStatus("");
   FamWorkspace.resetActivity();
   const fragment = $("#turn-template").content.cloneNode(true);
   const user = fragment.querySelector(".user-turn");
@@ -263,27 +264,46 @@ function resetEngineeringTranscript() {
   FamWorkspace.resetActivity();
 }
 
-function setComposerBusy(busy) {
+function setComposerBusy(busy, label = "") {
+  const form = $("#task-form");
   const button = $("#send-task");
   button.disabled = busy;
-  button.querySelector("span:first-child").textContent = busy ? "Task running" : "Send task";
+  button.classList.toggle("is-busy", busy);
+  button.querySelector("span:first-child").textContent = label || (busy ? "Task running" : "Send task");
+  form.setAttribute("aria-busy", String(busy));
+}
+
+function setSubmissionStatus(message, state = "") {
+  const status = $("#submission-status");
+  status.textContent = message;
+  status.dataset.state = state;
+  status.classList.toggle("hidden", !message);
 }
 
 async function createTask(event) {
   event.preventDefault();
   const prompt = $("#prompt").value.trim();
   if (!prompt || $("#send-task").disabled) return;
+  setComposerBusy(true, "Sending…");
+  setSubmissionStatus("Task accepted locally. Resolving the request…", "pending");
   const selected = selectedTaskContext();
   const workspacePath = FamWorkspace.selectedPath();
-  const resolved = await request("/api/v1/conversation/resolve", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({prompt}),
-  });
+  let resolved;
+  try {
+    resolved = await request("/api/v1/conversation/resolve", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({prompt}),
+    });
+  } catch (error) {
+    setComposerBusy(false);
+    setSubmissionStatus(`Task was not accepted: ${error.message || "request failed"}`, "failed");
+    throw error;
+  }
+  setSubmissionStatus("Request understood. Starting the local agent…", "pending");
   if (workspacePath) {
     stopTaskWatch();
     state.task = null;
-    setComposerBusy(true);
     try {
       await FamNaturalEngineering.start(
         resolved.resolved_request,
@@ -292,6 +312,7 @@ async function createTask(event) {
       );
     } catch (error) {
       setComposerBusy(false);
+      setSubmissionStatus(`The local agent could not start: ${error.message || "request failed"}`, "failed");
       throw error;
     }
     $("#prompt").value = "";
@@ -301,6 +322,8 @@ async function createTask(event) {
     return;
   }
   if (resolved?.disposition === "repository_change") {
+    setComposerBusy(false);
+    setSubmissionStatus("Choose a folder before starting this workspace task.", "failed");
     throw new Error("Choose a folder for this workspace task.");
   }
   const context = selected ? {
@@ -331,7 +354,6 @@ async function createTask(event) {
     contexts,
     verification_required: $("#verify").checked,
   };
-  setComposerBusy(true);
   try {
     state.task = await request("/api/v1/tasks", {
       method: "POST",
@@ -340,6 +362,7 @@ async function createTask(event) {
     });
   } catch (error) {
     setComposerBusy(false);
+    setSubmissionStatus(`The task could not start: ${error.message || "request failed"}`, "failed");
     throw error;
   }
   startTurn(prompt, contextLabel(selected, explicitResource), state.task.session_id);
