@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from fam_os.core.agent import (
-    AgentAuthorityProfile,
+    AgentAuthorityProfile, AgentFinalResponse,
     AgentToolEffect,
     AgentToolRegistry,
     AgentTurnOutcome,
@@ -126,6 +126,61 @@ class NaturalEngineeringAgentService:
             owner_id, session_id, preparation.candidate.owner_workspace,
         )
         turn_id = f"agent-turn-{definition.task.task_id}-{turn_suffix}"
+        native_executor = getattr(self._runtime, "execute_engineering_agent", None)
+        if callable(native_executor):
+            before = candidate_tools.capture_workspace()
+            try:
+                native = native_executor(
+                    _native_agent_prompt(
+                        objective or definition.task.intent,
+                        _context(preparation), profile,
+                    ),
+                    Path(workspace), writable=True,
+                )
+                candidate_tools.reconcile_workspace(
+                    before, summary="Codex native agent changed candidate files.",
+                )
+            except Exception:
+                try:
+                    candidate_tools.reconcile_workspace(
+                        before,
+                        summary="Codex native agent preserved interrupted work.",
+                    )
+                except Exception:
+                    candidate_tools.discard_workspace_changes(before)
+                if application_tools is not None:
+                    application_tools.cleanup(interrupted=True)
+                raise
+            candidate_tools.record_native_verifications(native.successful_commands)
+            application_test = None
+            if (
+                not candidate_tools.applied_edits
+                and profile is AgentAuthorityProfile.APPLICATION_TEST
+                and candidate_tools.successful_verifications
+            ):
+                application_test = {
+                    "status": "passed", "provider": "codex-native",
+                    "successful_commands": list(native.successful_commands),
+                }
+            elif not candidate_tools.applied_edits:
+                raise ValueError(
+                    "Codex engineering agent completed without candidate changes"
+                )
+            if not candidate_tools.successful_verifications:
+                raise ValueError(
+                    "Codex engineering agent completed without successful command evidence"
+                )
+            if application_tools is not None:
+                application_tools.cleanup(interrupted=False)
+            return NaturalEngineeringAgentResult(
+                AgentTurnOutcome(
+                    thread_id, turn_id, AgentFinalResponse(native.content), (),
+                    native.model_steps,
+                ),
+                tuple(candidate_tools.applied_edits),
+                tuple(candidate_tools.successful_verifications),
+                application_test,
+            )
         agent = IterativeModelAgent(
             self._runtime,
             _agent_settings(
@@ -199,6 +254,16 @@ class NaturalEngineeringAgentService:
             profile=AgentAuthorityProfile.ASK,
         ).register(registry)
         thread_id = _thread_id(owner_id, session_id, workspace)
+        native_executor = getattr(self._runtime, "execute_engineering_agent", None)
+        if callable(native_executor):
+            native = native_executor(
+                _native_answer_prompt(definition.task.intent, _context(preparation)),
+                Path(workspace), writable=False,
+            )
+            return AgentTurnOutcome(
+                thread_id, f"agent-turn-{definition.task.task_id}-ask",
+                AgentFinalResponse(native.content), (), native.model_steps,
+            )
         agent = IterativeModelAgent(
             self._runtime,
             _agent_settings(
@@ -381,6 +446,31 @@ def _thread_id(owner_id: str, session_id: str, workspace: str) -> str:
         f"{owner_id}\0{session_id}\0{workspace}".encode(),
     ).hexdigest()[:32]
     return f"agent-thread-{digest}"
+
+
+def _native_agent_prompt(
+    objective: str, prior_context: str, profile: AgentAuthorityProfile,
+) -> str:
+    return (
+        "Work as the primary coding agent in the workspace you were given. "
+        "Inspect the real project, implement the complete objective, run relevant "
+        "tests, builds, and runtime checks, diagnose failures, and keep correcting "
+        "the work until it is genuinely complete. Use your native filesystem, shell, "
+        "search, planning, web, and other available coding tools. Do not merely "
+        "propose a patch. Do not stage, commit, push, or modify Git metadata; FAM owns "
+        "final verification and delivery. Keep filesystem changes inside the current "
+        f"candidate workspace. Authority profile: {profile.value}.\n\n"
+        f"Objective:\n{objective}\n\nFAM context:\n{prior_context}"
+    )
+
+
+def _native_answer_prompt(objective: str, prior_context: str) -> str:
+    return (
+        "Inspect the workspace directly with your native read, search, and reasoning "
+        "tools, then answer from concrete source evidence. This is a read-only turn: "
+        "do not edit files, install dependencies, or run mutating commands.\n\n"
+        f"Question:\n{objective}\n\nFAM context:\n{prior_context}"
+    )
 
 
 def _agent_settings(

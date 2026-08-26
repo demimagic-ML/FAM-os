@@ -64,6 +64,35 @@ class AuthorizedCandidateAgentTools:
         self.successful_verifications[:] = list(successful_verifications)
         self._sequence = len(self.applied_edits)
 
+    def capture_workspace(self) -> dict[str, bytes | None]:
+        """Capture the source tree before an external native agent runs."""
+        return _snapshot(self._workspace.root)
+
+    def reconcile_workspace(
+        self, before: dict[str, bytes | None], *, summary: str,
+    ) -> tuple[object, ...]:
+        """Record native-agent filesystem effects through FAM candidate edits."""
+        after = _snapshot(self._workspace.root)
+        operations = _snapshot_operations(before, after)
+        if not operations:
+            return ()
+        _restore(self._workspace.root, before, after)
+        previous = len(self.applied_edits)
+        self._apply(operations, summary)
+        return tuple(self.applied_edits[previous:])
+
+    def discard_workspace_changes(
+        self, before: dict[str, bytes | None],
+    ) -> None:
+        """Restore unrecorded native-agent mutations after an interrupted turn."""
+        _restore(self._workspace.root, before, _snapshot(self._workspace.root))
+
+    def record_native_verifications(self, commands: tuple[str, ...]) -> None:
+        """Retain successful command evidence emitted by the Codex runtime."""
+        self.successful_verifications.extend(
+            f"native-codex-command:exit=0:{command}" for command in commands
+        )
+
     def register(self, registry: AgentToolRegistry) -> None:
         _register(registry, "list_directory", "List one candidate directory.",
                   AgentToolEffect.OBSERVE, self._workspace.list_directory,

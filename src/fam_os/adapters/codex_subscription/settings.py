@@ -18,10 +18,10 @@ class CodexSubscriptionSettings:
     home: Path
     model_ref: str = "gpt-5.6-sol"
     reasoning_effort: str = "medium"
-    timeout_seconds: float = 600.0
+    timeout_seconds: float = 7_200.0
     maximum_prompt_bytes: int = 131_072
-    maximum_stdout_bytes: int = 2_097_152
-    maximum_stderr_bytes: int = 65_536
+    maximum_stdout_bytes: int = 33_554_432
+    maximum_stderr_bytes: int = 2_097_152
 
     def __post_init__(self) -> None:
         if not self.executable.is_absolute():

@@ -18,6 +18,15 @@ class CodexTurnResult:
     output_tokens: int
 
 
+@dataclass(frozen=True, slots=True)
+class CodexAgentTurnResult:
+    content: str
+    input_tokens: int
+    output_tokens: int
+    model_steps: int
+    successful_commands: tuple[str, ...]
+
+
 def parse_effect_free_turn(payload: str) -> CodexTurnResult:
     messages: list[str] = []
     usage = None
@@ -50,6 +59,63 @@ def parse_effect_free_turn(payload: str) -> CodexTurnResult:
     if not saw_turn or usage is None or not messages:
         raise CodexSubscriptionError("codex_turn_incomplete")
     return CodexTurnResult(messages[-1], *usage)
+
+
+def parse_agent_turn(payload: str) -> CodexAgentTurnResult:
+    """Parse a native Codex agent turn while retaining its execution evidence."""
+    messages: list[str] = []
+    successful_commands: list[str] = []
+    usage = None
+    saw_turn = False
+    model_steps = 0
+    for line in payload.splitlines():
+        if not line.strip():
+            continue
+        event = _event(line)
+        event_type = event.get("type")
+        if event_type == "turn.started":
+            saw_turn = True
+        elif event_type in {"item.started", "item.updated", "item.completed"}:
+            item = event.get("item")
+            if not isinstance(item, dict):
+                raise CodexSubscriptionError("codex_event_invalid")
+            if event_type != "item.completed":
+                continue
+            item_type = item.get("type")
+            if item_type == "agent_message":
+                text = item.get("text")
+                if isinstance(text, str) and text.strip():
+                    messages.append(text)
+                    model_steps += 1
+            elif item_type == "command_execution":
+                command = item.get("command")
+                exit_code = item.get("exit_code")
+                status = item.get("status")
+                if (
+                    isinstance(command, str) and command.strip()
+                    and (
+                        exit_code == 0
+                        or (exit_code is None and status == "completed")
+                    )
+                ):
+                    successful_commands.append(command)
+            # File changes, reasoning, plans, MCP calls, and other native Codex
+            # activity are valid here. FAM reconciles actual candidate effects
+            # from the filesystem instead of trusting event descriptions.
+        elif event_type == "turn.completed":
+            usage = _usage(event.get("usage"))
+        elif event_type in {"thread.started", "turn.failed", "error"}:
+            continue
+        else:
+            # Codex adds passive progress event types over time. The native-agent
+            # path is intentionally forward compatible; the effect-free parser
+            # above remains strict for legacy text-only inference.
+            continue
+    if not saw_turn or usage is None or not messages:
+        raise CodexSubscriptionError("codex_turn_incomplete")
+    return CodexAgentTurnResult(
+        messages[-1], *usage, max(1, model_steps), tuple(successful_commands),
+    )
 
 
 def _event(line: str) -> dict:

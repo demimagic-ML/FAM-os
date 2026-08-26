@@ -58,6 +58,40 @@ class _Loop:
 
 
 class CandidateAgentToolsTests(unittest.TestCase):
+    def test_native_workspace_changes_are_replayed_through_candidate_edits(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            owner, transactions = root / "owner", root / "transactions"
+            owner.mkdir()
+            (owner / "app.py").write_text("value = 1\n")
+            adapter = CandidateWorkspaceAdapter(owner, transactions)
+            candidate = adapter.create("task-native")
+            loop = _Loop(adapter, candidate)
+            definition = SimpleNamespace(task=SimpleNamespace(
+                task_id="task-native", max_changed_files=128,
+                max_changed_bytes=64 * 1024**2,
+            ))
+            tools = AuthorizedCandidateAgentTools(
+                loop, "owner", "task-native", "session", "principal",
+                definition, SimpleNamespace(candidate=candidate),
+                _CommandTools(Path(candidate.candidate_workspace)),
+            )
+            workspace = Path(candidate.candidate_workspace)
+            before = tools.capture_workspace()
+            (workspace / "app.py").write_text("value = 2\n")
+            (workspace / "new.py").write_text("created = True\n")
+
+            records = tools.reconcile_workspace(
+                before, summary="Native Codex edit.",
+            )
+            tools.record_native_verifications(("python -m unittest",))
+
+            self.assertEqual(2, len(records))
+            self.assertEqual("value = 2\n", (workspace / "app.py").read_text())
+            self.assertEqual("created = True\n", (workspace / "new.py").read_text())
+            self.assertEqual(2, len(loop.records))
+            self.assertEqual(1, len(tools.successful_verifications))
+
     def test_resume_continues_edit_identity_after_durable_candidate_effects(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

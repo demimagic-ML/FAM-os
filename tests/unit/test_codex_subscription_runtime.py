@@ -15,6 +15,51 @@ from fam_os.core.ports.inference import (
 
 
 class CodexSubscriptionRuntimeTests(unittest.TestCase):
+    def test_native_agent_uses_workspace_tools_and_accepts_execution_events(self):
+        events = "\n".join((
+            json.dumps({"type": "thread.started", "thread_id": "thread-1"}),
+            json.dumps({"type": "turn.started"}),
+            json.dumps({
+                "type": "item.completed",
+                "item": {
+                    "type": "command_execution", "command": "npm test",
+                    "exit_code": 0, "status": "completed",
+                },
+            }),
+            json.dumps({
+                "type": "item.completed",
+                "item": {"type": "file_change", "changes": []},
+            }),
+            json.dumps({
+                "type": "item.completed",
+                "item": {"type": "agent_message", "text": "Implemented and tested."},
+            }),
+            json.dumps({
+                "type": "turn.completed",
+                "usage": {"input_tokens": 42, "output_tokens": 9},
+            }),
+        ))
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            workspace = root / "candidate"
+            workspace.mkdir()
+            runner = _Runner(BoundedCommandResult(0, events, ""))
+            runtime = CodexSubscriptionRuntime(_settings(root), runner)
+
+            result = runtime.execute_engineering_agent(
+                "finish the app", workspace, writable=True,
+            )
+
+            command, cwd, environment, prompt = runner.calls[0]
+            self.assertEqual(workspace.resolve(), cwd)
+            self.assertIn("--sandbox", command)
+            self.assertIn("workspace-write", command)
+            self.assertNotIn("--ignore-user-config", command)
+            self.assertIn("npm test", result.successful_commands)
+            self.assertEqual("Implemented and tested.", result.content)
+            self.assertEqual(b"finish the app", prompt)
+            self.assertNotIn("OPENAI_API_KEY", environment)
+
     def test_returns_last_effect_free_message_with_usage(self):
         with tempfile.TemporaryDirectory() as temporary:
             runner = _Runner(_success('{"operations":[]}'))

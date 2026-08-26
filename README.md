@@ -6,7 +6,7 @@
 
 ---
 
-FAM_OS is an agent runtime built above Linux. It gives local models a persistent conversation, a bounded set of real tools, durable long-running goals, isolated engineering workspaces, and evidence-based verification.
+FAM_OS is an agent runtime built above Linux. It gives local models or an authenticated Codex agent persistent task context, real tools, durable long-running goals, isolated engineering workspaces, and evidence-based verification.
 
 It is designed to feel closer to Codex, Claude Code, or Windsurf than to a one-shot chatbot, while keeping inference and execution on the owner's machine.
 
@@ -38,6 +38,7 @@ FAM_OS does not replace the Linux kernel and does not require every selected fol
 - **Automatic recovery.** Transient model disconnections, timeouts, unloading, and stalled requests enter `retry_wait`, run provider health/recovery checks, and resume from the same durable checkpoint and candidate workspace. Confirmed filesystem effects are not blindly repeated.
 - **Compact evidence.** Tool output is summarized and bounded before it returns to a local model; retained observations are compacted around the objective and current work.
 - **Local model routing.** General and engineering work can use different Ollama models. The current workstation configuration has been exercised with `qwen3.8:27b` for engineering work.
+- **Native Codex engineering.** An optional ChatGPT-authenticated Codex provider can inspect, edit, run, test, and self-correct directly inside the isolated candidate while FAM retains verification and final delivery.
 - **Authenticated local Console.** The browser UI exposes workspace selection, conversation, tool evidence, candidate changes, Goal Mode controls, recovery state, and machine status.
 
 ## How the agent loop works
@@ -143,6 +144,7 @@ Review the proposed plan and completion criteria before activation. While it run
 |---|---|
 | `--model` | Default local model for ordinary requests and general reasoning. |
 | `--engineering-model` | Preferred model for iterative workspace engineering and Goal Mode. When omitted, FAM_OS selects the strongest recognized installed coding model and falls back to `--model`. |
+| `--engineering-provider codex-subscription` | Use the owner's authenticated Codex CLI as the native candidate engineering agent. |
 
 `qwen3.8:27b` is the currently exercised engineering configuration in this checkout. Smaller quantized models remain useful for focused reading, classification, and small edits, but reliable autonomous engineering depends heavily on tool-calling quality, context capacity, and available RAM/VRAM.
 
@@ -182,6 +184,7 @@ Useful implementation guides:
 - [Installed operation](docs/operations/INSTALLED_OPERATION.md)
 - [Application weaving](docs/architecture/APPLICATION_WEAVING.md)
 - [Safe service recovery](docs/architecture/SAFE_SERVICE_RECOVERY.md)
+- [Native Codex engineering](docs/operations/CODEX_SUBSCRIPTION_ENGINEERING.md)
 
 Architecture decisions and implementation handoffs are retained under `docs/decisions/` and `handoffs/`. They are engineering history, not a substitute for this current operator guide.
 

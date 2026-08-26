@@ -61,7 +61,7 @@ def run(argv=None) -> int:
         choices=("low", "medium", "high", "xhigh", "max", "ultra"),
         default="medium",
     )
-    parser.add_argument("--codex-timeout-seconds", type=float, default=600.0)
+    parser.add_argument("--codex-timeout-seconds", type=float, default=7_200.0)
     parser.add_argument(
         "--sandbox-apparmor-profile",
         default=required_sandbox_apparmor_profile(),

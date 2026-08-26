@@ -15,7 +15,7 @@ from fam_os.core.ports.inference import InferenceRequest, InferenceResponse
 from fam_os.telemetry.contracts import InferenceMetrics
 
 from .errors import CodexSubscriptionError
-from .responses import parse_effect_free_turn
+from .responses import CodexAgentTurnResult, parse_agent_turn, parse_effect_free_turn
 from .settings import CodexSubscriptionSettings
 
 
@@ -91,6 +91,38 @@ class CodexSubscriptionRuntime:
             "--json", "-",
         )
 
+    def execute_engineering_agent(
+        self, prompt: str, workspace: Path, *, writable: bool,
+    ) -> CodexAgentTurnResult:
+        """Run the authenticated Codex CLI as a native workspace agent."""
+        workspace = workspace.resolve(strict=True)
+        if not workspace.is_dir() or workspace.is_symlink():
+            raise CodexSubscriptionError("codex_agent_workspace_invalid")
+        encoded = prompt.encode("utf-8")
+        if len(encoded) > self._settings.maximum_prompt_bytes:
+            raise CodexSubscriptionError("codex_prompt_bound_exceeded")
+        command = (
+            str(self._settings.executable), "exec", "--ephemeral",
+            "--skip-git-repo-check", "-C", str(workspace),
+            "-m", self._settings.model_ref,
+            "-c", f'model_reasoning_effort="{self._settings.reasoning_effort}"',
+            "-c", 'approval_policy="never"',
+            "--sandbox", "workspace-write" if writable else "read-only",
+            "--json", "-",
+        )
+        result = self._runner.run(
+            command, cwd=workspace,
+            environment=_agent_environment(self._settings.home),
+            input_bytes=encoded,
+        )
+        if result.timed_out:
+            raise CodexSubscriptionError("codex_runtime_timed_out")
+        if result.output_limited:
+            raise CodexSubscriptionError("codex_runtime_output_limited")
+        if result.exit_code != 0:
+            raise CodexSubscriptionError("codex_runtime_failed")
+        return parse_agent_turn(result.stdout)
+
 
 def _prompt(request: InferenceRequest) -> str:
     if any(message.images for message in request.messages):
@@ -137,3 +169,14 @@ def _environment(home: Path) -> dict[str, str]:
         "NO_COLOR": "1",
         "TERM": "dumb",
     }
+
+
+def _agent_environment(home: Path) -> dict[str, str]:
+    """Give native Codex the owner's real development toolchain environment."""
+    environment = dict(os.environ)
+    environment["HOME"] = str(home)
+    environment.setdefault("LANG", "C.UTF-8")
+    environment.setdefault("LC_ALL", "C.UTF-8")
+    environment.setdefault("NO_COLOR", "1")
+    environment.pop("OPENAI_API_KEY", None)
+    return environment

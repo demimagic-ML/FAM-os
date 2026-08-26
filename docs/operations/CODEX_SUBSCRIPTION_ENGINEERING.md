@@ -1,95 +1,84 @@
-# Codex subscription engineering provider
+# Native Codex engineering provider
 
-This optional provider uses the owner's existing ChatGPT sign-in in the
-official Codex client for FAM_OS candidate generation. It does not turn a
-ChatGPT subscription into an OpenAI Platform API key. OpenAI documents the
-ChatGPT and API-key login modes separately:
-<https://learn.chatgpt.com/docs/auth>.
+FAM_OS can use the owner's existing ChatGPT login from the official Codex CLI
+as its primary engineering agent. Codex inspects, edits, and tests FAM's
+isolated candidate workspace with its native coding tools. FAM still owns the
+durable task, candidate ledger, independent verification, approval, and final
+application to the owner's workspace.
 
-## Owner setup
+This is not an OpenAI Platform API-key integration. Repository evidence and
+candidate content used by Codex are processed under the owner's ChatGPT plan
+and workspace controls.
 
-Install the official Codex CLI, sign in interactively, and verify the owner
-session:
+## Sign in
+
+Install the official Codex CLI and authenticate it as the same OS user that
+runs FAM:
 
 ```bash
 codex login
 codex login status
 ```
 
-The expected status for this provider is `Logged in using ChatGPT`. FAM_OS does
-not read or copy the resulting credential file; it launches the authenticated
-Codex client as the same OS owner.
+The expected status is `Logged in using ChatGPT`. FAM does not read, copy, or
+translate OAuth material; it launches the authenticated Codex client.
 
-## Start FAM_OS
+## Start FAM with native Codex engineering
 
-Use the signed installed launchers and an absolute Codex executable path:
+Run from the repository root and use paths appropriate for the current machine:
 
 ```bash
-/home/demimagic/.local/share/fam-os-natural-current/bin/fam-service \
-  --state-root /home/demimagic/.local/share/fam-os-natural-signed \
-  --runtime-root /run/user/1000/fam-os-natural-codex-13 \
+PYTHONPATH=src .venv/bin/python -m fam_os.product.service \
+  --state-root "${XDG_DATA_HOME:-$HOME/.local/share}/fam-os" \
+  --runtime-root "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/fam-os" \
   --external-ollama \
-  --ollama-url http://127.0.0.1:11434 \
-  --model qwen2.5-coder:7b \
+  --ollama-url http://127.0.0.1:11435 \
+  --model qwen3.8:27b \
   --engineering-provider codex-subscription \
-  --codex-executable /home/demimagic/.npm-global/lib/node_modules/@openai/codex/bin/codex.js \
+  --codex-executable "$(command -v codex)" \
   --codex-model gpt-5.6-sol \
-  --codex-reasoning-effort medium \
-  --codex-timeout-seconds 600 \
-  --console-port 8877 \
-  --device-name "FAM natural engineering signed"
+  --codex-reasoning-effort high \
+  --codex-timeout-seconds 7200 \
+  --console-port 8775
 ```
 
-Do not type the base URL into a fresh browser session; that intentionally lacks
-the bootstrap credential and returns 401. Launch the Console through the
-installed owner command:
+Ollama remains available for local-model catalog and fallback duties. Native
+Codex is used for repository questions and engineering execution.
 
-```bash
-/home/demimagic/.local/share/fam-os-natural-current/bin/fam-os \
-  --prefix /home/demimagic/.local/share/fam-os-natural-current \
-  console \
-  --runtime-root /run/user/1000/fam-os-natural-codex-13 \
-  --port 8877
-```
+## Execution lifecycle
 
-The launcher opens <http://127.0.0.1:8877> with a token in the URL fragment,
-exchanges it for an HttpOnly session, and removes the fragment from browser
-history. Select a local repository folder and enter an ordinary engineering
-request. Modification requests still require one bounded grant approval and a
-second exact changeset approval. Commit, rollback, and publication remain
-separate FAM-owned lifecycle steps.
+1. FAM creates or restores the isolated candidate workspace.
+2. Codex runs there with native file, search, shell, planning, and configured
+   web/tool capabilities.
+3. Codex implements, tests, diagnoses failures, and self-corrects.
+4. FAM derives the actual tree changes, restores the pre-turn tree, and replays
+   every effect through its authorized durable candidate-edit ledger.
+5. Successful Codex commands are retained as execution evidence.
+6. FAM independently checks completion before applying anything to the owner
+   workspace.
 
-## Security and privacy boundary
+Interrupted work is reconciled into the candidate ledger when possible, so a
+durable goal can continue from preserved work rather than repeating confirmed
+filesystem effects.
 
-FAM sends only its bounded repository evidence and task envelope to Codex.
-The child is ephemeral, has web disabled, ignores user configuration and
-repository rules, receives an empty FAM-owned working directory, and is denied
-approval-driven tools. FAM rejects output containing tool activity and treats
-all returned text as an untrusted candidate plan. OpenAI documents Codex's
-permission controls at <https://learn.chatgpt.com/docs/permissions> and the
-Codex-owned managed-auth boundary at <https://learn.chatgpt.com/docs/app-server>.
-
-Choosing this provider transmits the bounded prompt and repository excerpts to
-OpenAI under the owner's ChatGPT plan and workspace controls. Ollama remains
-the local runtime for local model catalog and residency duties.
+Codex is told not to stage, commit, or push. Codex owns engineering inside the
+candidate; FAM owns acceptance and delivery.
 
 ## Verification
 
+Unit verification does not consume an external model request:
+
+```bash
+PYTHONPATH=src .venv/bin/python -m unittest -v \
+  tests.unit.test_codex_subscription_runtime \
+  tests.unit.test_candidate_agent_tools \
+  tests.unit.test_engineering_inference_composition \
+  tests.unit.test_product_service_cli
+```
+
+The opt-in live smoke makes a real Codex request:
+
 ```bash
 FAM_RUN_CODEX_SUBSCRIPTION_SMOKE=1 PYTHONPATH=src \
-  python3 -m unittest -v tests.hardware.codex_subscription_smoke
-
-/home/demimagic/.local/share/fam-os-natural-current/bin/fam-shell \
-  --socket /run/user/1000/fam-os-natural-codex-13/shell.sock \
-  --timeout 120
+  .venv/bin/python -m unittest -v tests.hardware.codex_subscription_smoke
 ```
-
-Inside the Shell, use a URI context such as:
-
-```text
-/context add uri file:///absolute/path/to/repository my-project
-Analyze this repository, identify the highest-value safe improvement, implement it, run the relevant tests, show the exact changeset, apply it, reverify, and create a local commit. Do not publish.
-```
-
-Approve the bounded grant, inspect and approve the exact changeset, then deny
-the optional rollback if the verified commit should be kept.
