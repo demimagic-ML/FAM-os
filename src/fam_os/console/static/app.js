@@ -710,12 +710,19 @@ function renderGoalTelemetry(goal) {
   panel.classList.toggle("hidden", !live);
   if (!live) return;
   panel.dataset.active = ["queued", "running", "retry_wait", "pause_requested", "cancel_requested"].includes(goal.status) ? "true" : "false";
+  panel.dataset.startedAt = goal.created_at || "";
   const terminal = ["completed", "failed", "cancelled", "waiting_approval"].includes(goal.status);
   $("#goal-live-phase").textContent = (live.phase || live.node || goal.status).replaceAll("_", " ");
   $("#goal-live-step").textContent = live.step ? String(live.step).padStart(2, "0") : terminal ? "—" : "00";
   $("#goal-live-model").textContent = live.model_ref ? compactModelName(live.model_ref) : terminal ? "Session ended" : "Warming up";
   $("#goal-live-age").textContent = relativeAge(live.last_activity);
   const recovery = goal.recovery || {};
+  $("#goal-live-results").textContent = String(live.result_count || 0);
+  $("#goal-live-tools").textContent = String(live.tool_count || 0);
+  $("#goal-live-epoch").textContent = String(goal.epochs || 0);
+  $("#goal-live-retries").textContent = String(recovery.attempt || 0);
+  updateGoalClock();
+  updateGoalProgress(goal, live);
   const recovering = goal.status === "retry_wait";
   const recoveryLine = $("#goal-recovery");
   recoveryLine.classList.toggle("hidden", !recovering);
@@ -735,6 +742,35 @@ function renderGoalTelemetry(goal) {
     return item;
   }));
   renderGoalToolEvents(live.events || []);
+}
+
+function updateGoalClock() {
+  const panel = $("#goal-live");
+  if (!panel || panel.classList.contains("hidden")) return;
+  const started = Date.parse(panel.dataset.startedAt || "");
+  $("#goal-live-elapsed").textContent = Number.isFinite(started)
+    ? formatDuration(Math.max(0, Date.now() - started)) : "00:00";
+}
+
+function updateGoalProgress(goal, live) {
+  const phase = String(live.phase || live.node || goal.status || "").toLowerCase();
+  let progress = 8;
+  if (["completed"].includes(goal.status)) progress = 100;
+  else if (phase.includes("apply") || phase.includes("complete")) progress = 88;
+  else if (phase.includes("verif")) progress = 63;
+  else if (phase.includes("build") || phase.includes("edit") || phase.includes("execut")) progress = 38;
+  else if (["running", "retry_wait", "paused", "pause_requested"].includes(goal.status)) progress = 25;
+  $("#goal-progress-fill").style.width = `${progress}%`;
+}
+
+function formatDuration(milliseconds) {
+  const seconds = Math.floor(milliseconds / 1000);
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remainder = seconds % 60;
+  return hours
+    ? `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(remainder).padStart(2, "0")}`
+    : `${String(minutes).padStart(2, "0")}:${String(remainder).padStart(2, "0")}`;
 }
 
 function renderGoalToolEvents(events) {
@@ -840,6 +876,8 @@ function relativeAge(value) {
   if (seconds < 60) return `${seconds}s ago`;
   return `${Math.floor(seconds / 60)}m ago`;
 }
+
+setInterval(updateGoalClock, 1000);
 
 document.querySelectorAll(".nav-item").forEach(
   item => item.onclick = () => selectView(item.dataset.view),

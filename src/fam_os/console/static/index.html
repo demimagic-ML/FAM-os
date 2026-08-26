@@ -142,11 +142,22 @@
         <section class="goal-live hidden" id="goal-live" aria-label="Live goal telemetry">
           <div class="goal-signal" aria-hidden="true"><i></i><span></span></div>
           <p class="goal-recovery hidden" id="goal-recovery" role="status"></p>
+          <div class="goal-chronometer">
+            <span><small>Elapsed</small><strong id="goal-live-elapsed">00:00</strong></span>
+            <div class="goal-progress" aria-label="Goal lifecycle progress">
+              <i id="goal-progress-fill"></i>
+              <span>Plan</span><span>Build</span><span>Verify</span><span>Apply</span>
+            </div>
+          </div>
           <div class="goal-telemetry">
             <span><small>Phase</small><strong id="goal-live-phase">Starting</strong></span>
             <span><small>Model step</small><strong id="goal-live-step">0</strong></span>
             <span><small>Model</small><strong id="goal-live-model">—</strong></span>
             <span><small>Last signal</small><strong id="goal-live-age">Now</strong></span>
+            <span><small>Observations</small><strong id="goal-live-results">0</strong></span>
+            <span><small>Tool calls</small><strong id="goal-live-tools">0</strong></span>
+            <span><small>Execution epoch</small><strong id="goal-live-epoch">1</strong></span>
+            <span><small>Recovery attempts</small><strong id="goal-live-retries">0</strong></span>
           </div>
           <div class="goal-files hidden" id="goal-files">
             <div><p class="kicker">Candidate changes</p><span id="goal-file-count">0 files</span></div>

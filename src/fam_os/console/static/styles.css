@@ -939,6 +939,16 @@ main {
 @keyframes goal-scan { to { transform: translateX(395%); } }
 .goal-recovery { margin: 0; padding: 10px 12px; border-bottom: 1px solid var(--line-soft); color: var(--amber); background: #f8f1e6; font: 700 9px/1.45 "Noto Sans Mono", monospace; }
 
+.goal-chronometer { display: grid; grid-template-columns: 82px minmax(0, 1fr); align-items: stretch; border-bottom: 1px solid var(--line-soft); background: #f7f9f8; }
+.goal-chronometer > span { padding: 12px; border-right: 1px solid var(--line-soft); }
+.goal-chronometer small, .goal-chronometer strong { display: block; font-family: "Noto Sans Mono", monospace; }
+.goal-chronometer small { color: var(--muted); font-size: 7px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+.goal-chronometer strong { margin-top: 4px; color: var(--ink); font-size: 14px; font-variant-numeric: tabular-nums; letter-spacing: -.04em; }
+.goal-progress { position: relative; display: grid; grid-template-columns: repeat(4, 1fr); align-items: end; gap: 0; padding: 12px 10px 9px; overflow: hidden; }
+.goal-progress::before { content: ""; position: absolute; top: 15px; right: 11px; left: 11px; height: 1px; background: var(--line); }
+.goal-progress i { position: absolute; top: 14px; left: 11px; width: 8%; height: 3px; background: var(--signal); transition: width .45s cubic-bezier(.2,.8,.2,1); }
+.goal-progress span { z-index: 1; padding-top: 13px; color: var(--muted); font: 700 6px "Noto Sans Mono", monospace; letter-spacing: .04em; text-align: center; text-transform: uppercase; }
+
 .goal-telemetry { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: var(--line-soft); }
 .goal-telemetry > span { min-width: 0; padding: 11px 12px; background: #f7f9f8; }
 .goal-telemetry small, .goal-telemetry strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: "Noto Sans Mono", monospace; }
