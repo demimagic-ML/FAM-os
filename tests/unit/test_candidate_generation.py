@@ -147,6 +147,28 @@ class CandidateGenerationTests(unittest.TestCase):
                     _candidate(str(root)), "fix feature",
                 )
 
+    def test_context_ignores_dependency_symlinks_outside_authoritative_tree(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "candidate-1" / "workspace"
+            (root / "src").mkdir(parents=True)
+            (root / "src/app.jsx").write_text("export default App\n")
+            binaries = root / "node_modules" / ".bin"
+            package = root / "node_modules" / "vite" / "bin"
+            binaries.mkdir(parents=True)
+            package.mkdir(parents=True)
+            (package / "vite.js").write_text("#!/usr/bin/env node\n")
+            (binaries / "vite").symlink_to("../vite/bin/vite.js")
+
+            context = BoundedCandidateContextReader().read(
+                _candidate(str(root)), "inspect the React application",
+            )
+
+            self.assertIn("src/app.jsx", context.inventory_paths)
+            self.assertFalse(any(
+                path.startswith("node_modules/")
+                for path in context.inventory_paths
+            ))
+
 
 def _candidate(root):
     return CandidateWorkspace(

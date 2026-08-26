@@ -60,7 +60,7 @@ class BoundedCandidateContextReader:
         root = Path(candidate.candidate_workspace)
         if not root.is_absolute() or root.name != "workspace" or root.parent.name != candidate.candidate_id:
             raise PermissionError("candidate context workspace identity is invalid")
-        reject_tree_symlinks(root)
+        reject_tree_symlinks(root, _IGNORED_DIRECTORIES)
         paths, truncated = self._inventory(root)
         documents, document_truncated = self._documents(
             root, paths, query, preferred_paths,
