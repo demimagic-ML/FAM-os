@@ -712,6 +712,7 @@ function renderGoalTelemetry(goal) {
   panel.dataset.active = ["queued", "running", "retry_wait", "pause_requested", "cancel_requested"].includes(goal.status) ? "true" : "false";
   panel.dataset.startedAt = goal.created_at || "";
   const terminal = ["completed", "failed", "cancelled", "waiting_approval"].includes(goal.status);
+  panel.dataset.endedAt = terminal ? goal.updated_at || "" : "";
   $("#goal-live-phase").textContent = (live.phase || live.node || goal.status).replaceAll("_", " ");
   $("#goal-live-step").textContent = live.step ? String(live.step).padStart(2, "0") : terminal ? "—" : "00";
   $("#goal-live-model").textContent = live.model_ref ? compactModelName(live.model_ref) : terminal ? "Session ended" : "Warming up";
@@ -748,8 +749,10 @@ function updateGoalClock() {
   const panel = $("#goal-live");
   if (!panel || panel.classList.contains("hidden")) return;
   const started = Date.parse(panel.dataset.startedAt || "");
+  const ended = Date.parse(panel.dataset.endedAt || "");
+  const clock = Number.isFinite(ended) ? ended : Date.now();
   $("#goal-live-elapsed").textContent = Number.isFinite(started)
-    ? formatDuration(Math.max(0, Date.now() - started)) : "00:00";
+    ? formatDuration(Math.max(0, clock - started)) : "00:00";
 }
 
 function updateGoalProgress(goal, live) {

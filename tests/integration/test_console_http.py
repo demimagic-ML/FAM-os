@@ -457,6 +457,18 @@ class ConsoleHttpTests(unittest.TestCase):
                 self.assertIn(b'control("pause")', application)
                 self.assertIn(b"renderCandidateWorkspace", application)
                 self.assertIn(b"candidate_workspace", application)
+                self.assertIn(
+                    b'["completed", "failed", "cancelled", "waiting_approval"]',
+                    application,
+                )
+                self.assertIn(
+                    b'panel.dataset.endedAt = terminal ? goal.updated_at',
+                    application,
+                )
+                self.assertIn(
+                    b'const clock = Number.isFinite(ended) ? ended : Date.now()',
+                    application,
+                )
                 workspace_style = urllib.request.urlopen(base + "/workspace.css")
                 self.assertEqual("text/css", workspace_style.headers.get_content_type())
                 memory_ui = urllib.request.urlopen(base + "/memory.js").read()
