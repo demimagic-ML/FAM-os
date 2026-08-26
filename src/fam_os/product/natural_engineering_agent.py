@@ -114,7 +114,10 @@ class NaturalEngineeringAgentService:
             self._application_provider, owner_id,
         ).register(registry)
         application_tools = None
-        if profile is AgentAuthorityProfile.APPLICATION_TEST:
+        if profile in {
+            AgentAuthorityProfile.APPLICATION_TEST,
+            AgentAuthorityProfile.FULL_OS,
+        }:
             application_tools = ApplicationTestTools(
                 Path(workspace), objective=objective or definition.task.intent,
             )

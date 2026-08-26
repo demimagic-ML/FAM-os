@@ -54,10 +54,11 @@ class NaturalEngineeringExecutionCoordinator:
             preparation.candidate, task.intent, preferred,
         )
         agent_evidence_ids: tuple[str, ...] = ()
-        application_test = (
+        application_test_profile = (
             EngineeringAuthority.APPLICATION_TEST in task.authorities
+            and EngineeringAuthority.HOST_ADMIN not in task.authorities
         )
-        if application_test:
+        if application_test_profile:
             baseline_requests, baseline_receipts = (), ()
         else:
             try:
@@ -138,7 +139,7 @@ class NaturalEngineeringExecutionCoordinator:
             applied = agent_result.applied_edits
             agent_verified = bool(agent_result.successful_verifications)
             changeset_seed = _applied_digest(applied)
-            if application_test and not applied:
+            if not applied and agent_result.application_test is not None:
                 evidence_id = self._loop.accept_agent_verification(
                     owner_id, task.task_id, producer_id, (),
                 )

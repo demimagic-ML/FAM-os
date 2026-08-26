@@ -5,7 +5,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 import hashlib
+import ipaddress
 import re
+from urllib.parse import urlsplit
 
 from fam_os.core.agent import AgentAuthorityProfile
 
@@ -68,6 +70,11 @@ _HIGH_RISK = (
     (EngineeringAuthority.SECRET_USE, re.compile(r"\b(secret|credential|password|api key|token)\b")),
     (EngineeringAuthority.PRODUCTION_MUTATE, re.compile(r"\b(production|prod environment)\b")),
 )
+_URL = re.compile(r"https?://[^\s<>\"']+")
+_EXTERNAL_NETWORK_ACTION = re.compile(
+    r"\b(fetch|download|internet|registry)\b",
+)
+_NETWORK_ACCESS = re.compile(r"\bnetwork access\b")
 
 
 @dataclass(frozen=True, slots=True)
@@ -150,6 +157,11 @@ class NaturalLanguageEngineeringPlanner:
             operations = (EngineeringOperation.READ,)
             high_risk = ()
         elif authority_profile is AgentAuthorityProfile.APPLICATION_TEST:
+            if not _application_test_requires_external_network(normalized):
+                high_risk = tuple(
+                    item for item in high_risk
+                    if item is not EngineeringAuthority.NETWORK
+                )
             application_authorities = set((
                 *authorities, EngineeringAuthority.OBSERVE,
                 EngineeringAuthority.PROPOSE, EngineeringAuthority.MODIFY,
@@ -173,6 +185,7 @@ class NaturalLanguageEngineeringPlanner:
             full_os_authorities = set((
                 *authorities, EngineeringAuthority.NETWORK,
                 EngineeringAuthority.RAW_SHELL, EngineeringAuthority.HOST_ADMIN,
+                EngineeringAuthority.APPLICATION_TEST,
             ))
             authorities = tuple(
                 item for item in EngineeringAuthority
@@ -273,3 +286,24 @@ def _ordinary_scope(
 def natural_integration_environment_requested(intent: str) -> bool:
     normalized = " ".join(intent.casefold().split())
     return _INTEGRATION_ENVIRONMENT.search(normalized) is not None
+
+
+def _application_test_requires_external_network(normalized: str) -> bool:
+    """Distinguish localhost test diagnostics from real network authority."""
+    if _EXTERNAL_NETWORK_ACTION.search(normalized):
+        return True
+    urls = _URL.findall(normalized)
+    for value in urls:
+        host = urlsplit(value.rstrip(".,;:)])).")).hostname
+        if host is None or not _loopback_host(host):
+            return True
+    return bool(_NETWORK_ACCESS.search(normalized) and not urls)
+
+
+def _loopback_host(host: str) -> bool:
+    if host.casefold() == "localhost":
+        return True
+    try:
+        return ipaddress.ip_address(host).is_loopback
+    except ValueError:
+        return False

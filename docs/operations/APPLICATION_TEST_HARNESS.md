@@ -23,6 +23,10 @@ The `application_test` profile permits candidate edits, workspace commands, a
 project-local development server, localhost browser interaction, diagnostics,
 and test artifacts. It does not imply Full OS or host-administration authority.
 
+The profile is optional, not a routing switch. **Full OS** is a strict superset:
+it exposes the same application-test harness when available, and the model may
+select it from the task intent without another localhost approval ceremony.
+
 Development servers launched by the harness run in a Bubblewrap filesystem
 boundary with the candidate as the writable root. The network namespace remains
 shared so the browser can reach the selected localhost port. Session cleanup

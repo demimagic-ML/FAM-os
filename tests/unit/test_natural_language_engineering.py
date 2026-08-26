@@ -61,6 +61,9 @@ class NaturalLanguageEngineeringPlannerTests(unittest.TestCase):
         self.assertIn(EngineeringAuthority.RAW_SHELL, proposal.grant.authorities)
         self.assertIn(EngineeringAuthority.HOST_ADMIN, proposal.grant.authorities)
         self.assertIn(EngineeringAuthority.NETWORK, proposal.grant.authorities)
+        self.assertIn(
+            EngineeringAuthority.APPLICATION_TEST, proposal.grant.authorities,
+        )
         self.assertEqual((), proposal.separately_confirmed_authorities)
 
     def test_application_test_profile_is_candidate_and_local_app_scoped(self):
@@ -82,6 +85,40 @@ class NaturalLanguageEngineeringPlannerTests(unittest.TestCase):
         )
         self.assertNotIn(EngineeringAuthority.HOST_ADMIN, proposal.grant.authorities)
         self.assertNotIn(EngineeringAuthority.RAW_SHELL, proposal.grant.authorities)
+
+    def test_application_test_localhost_and_network_diagnostics_need_no_network_grant(self):
+        proposal = NaturalLanguageEngineeringPlanner().propose(
+            prompt=(
+                "Start http://127.0.0.1:4173, test the calculator, verify there "
+                "are no failed network requests, and save a network summary."
+            ),
+            workspace_root="/workspace/project", owner_id="owner-1",
+            principal_id="owner-1", task_id="task-app-local",
+            grant_id="grant-app-local", toolchains=("node",), now=NOW,
+            authority_profile=AgentAuthorityProfile.APPLICATION_TEST,
+        )
+
+        self.assertNotIn(
+            EngineeringAuthority.NETWORK,
+            proposal.separately_confirmed_authorities,
+        )
+
+    def test_application_test_external_network_remains_separately_confirmed(self):
+        proposal = NaturalLanguageEngineeringPlanner().propose(
+            prompt=(
+                "Test the local app with network access to "
+                "https://api.example.com/v1/status."
+            ),
+            workspace_root="/workspace/project", owner_id="owner-1",
+            principal_id="owner-1", task_id="task-app-external",
+            grant_id="grant-app-external", toolchains=("node",), now=NOW,
+            authority_profile=AgentAuthorityProfile.APPLICATION_TEST,
+        )
+
+        self.assertIn(
+            EngineeringAuthority.NETWORK,
+            proposal.separately_confirmed_authorities,
+        )
 
     def test_code_request_becomes_exact_non_activated_workspace_proposal(self):
         proposal = NaturalLanguageEngineeringPlanner().propose(

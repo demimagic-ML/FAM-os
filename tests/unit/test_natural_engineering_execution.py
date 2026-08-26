@@ -115,6 +115,31 @@ class NaturalEngineeringExecutionTests(unittest.TestCase):
         self.assertEqual(0, loop.baseline_capture_count)
         self.assertIsNone(loop.changeset_id)
 
+    def test_legacy_full_os_task_can_use_application_harness_as_a_superset(self):
+        definition, preparation, context, record = _values()
+        task = replace(
+            definition.task,
+            authorities=(*definition.task.authorities, EngineeringAuthority.HOST_ADMIN),
+        )
+        definition = replace(
+            definition, task=task, task_sha256=engineering_task_digest(task),
+        )
+        loop = _Loop(preparation)
+        coordinator = NaturalEngineeringExecutionCoordinator(
+            loop, _ContextReader(context), _Generation(record),
+            agent=_ApplicationTestAgent(),
+        )
+
+        result = coordinator.execute(
+            "owner-1", definition, session_id="session-1",
+            principal_id="owner-1", goal_mode=True,
+        )
+
+        self.assertEqual("application_test_completed", result["outcome"])
+        self.assertEqual("completed", result["application_test"]["status"])
+        self.assertEqual(1, loop.baseline_capture_count)
+        self.assertIsNone(loop.changeset_id)
+
 
 class _ApplicationTestAgent:
     def execute(self, *args, **kwargs):

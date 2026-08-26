@@ -89,6 +89,9 @@ class ApplicationTestToolsTests(unittest.TestCase):
                 )
                 tools.register(registry)
                 profile = AgentAuthorityProfile.APPLICATION_TEST
+                self.assertTrue(registry.contains(
+                    "app_start", AgentAuthorityProfile.FULL_OS,
+                ))
                 started = registry.invoke(AgentToolCall(
                     "start", "app_start", {
                         "application_id": "calculator",
