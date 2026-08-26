@@ -21,7 +21,10 @@ User objective
 
 FAM_OS does not replace the Linux kernel and does not require every selected folder to be a Git repository. Ordinary filesystem tasks use direct, task-scaled operations. Repository engineering uses Git only when repository semantics are actually needed.
 
-<img src="FAMOS.png" alt="FAM_OS architecture"/>
+<p align="center">
+  <img src="docs/images/fam-os-goal-mode.png" alt="FAM_OS Console running a durable engineering goal in an isolated candidate workspace"/>
+</p>
+<p align="center"><i>Goal Mode working through a local engineering task with live tool evidence, candidate isolation, progress telemetry, and recovery controls.</i></p>
 
 ## What works today
 
