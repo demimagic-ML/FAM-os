@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Protocol
 
 from fam_os.core.agent.contracts import (
@@ -489,6 +489,33 @@ class IterativeModelAgent:
                 reasoning_effort=_reasoning_effort(active_model_ref, phase),
                 preserve_reasoning=_preserve_reasoning(active_model_ref),
             ))
+            if (
+                not response.content
+                and not response.tool_calls
+                and phase == "finalization"
+                and (
+                    self._completion_validator is None
+                    or self._completion_validator(tuple(results)) is None
+                )
+            ):
+                response = replace(
+                    response,
+                    content=(
+                        "Candidate implementation completed and its verification "
+                        "command passed."
+                    ),
+                )
+                self._checkpoint(
+                    thread_id, turn_id, checkpoint_sequence,
+                    AgentGraphNode.RECOVER, step, phase, {
+                        "category": "verified_finalization_fallback",
+                        "reason": (
+                            "The model emitted no visible closing message after "
+                            "successful verification."
+                        ),
+                        "result_count": len(results),
+                    },
+                )
             if not response.content and not response.tool_calls:
                 signature = "model:empty_visible_response"
                 decision_counts[signature] = decision_counts.get(signature, 0) + 1

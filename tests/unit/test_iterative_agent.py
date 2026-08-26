@@ -398,6 +398,64 @@ class IterativeAgentTests(unittest.TestCase):
         self.assertEqual((), runtime.requests[2].tools)
         self.assertIsNone(runtime.requests[2].tool_choice)
 
+    def test_verified_turn_survives_empty_model_finalization(self):
+        metrics = InferenceMetrics("model", 0, 0, 1, 1)
+        runtime = _NativeRuntime([
+            InferenceResponse("", metrics, (
+                InferenceToolCall("write", "write_file", {"path": "x"}),
+            )),
+            InferenceResponse("", metrics, (
+                InferenceToolCall("verify", "verify_command", {"command": ["test"]}),
+            )),
+            InferenceResponse(
+                "", metrics, finish_reason="stop",
+                reasoning_content="The verification passed.",
+            ),
+        ])
+        tools = AgentToolRegistry()
+        tools.register(
+            AgentToolDescriptor(
+                "write_file", "Write the result.", AgentToolEffect.WORKSPACE_WRITE,
+                {"type": "object", "properties": {
+                    "path": {"type": "string"},
+                }, "required": ["path"]},
+            ), lambda arguments: AgentToolExecution(
+                f"wrote {arguments['path']}", {
+                    "verified": True, "operation": "write_file",
+                    "path": arguments["path"],
+                },
+            ),
+        )
+        tools.register(
+            AgentToolDescriptor(
+                "verify_command", "Verify the result.", AgentToolEffect.COMMAND,
+                {"type": "object", "properties": {
+                    "command": {"type": "array"},
+                }, "required": ["command"]},
+            ), lambda _arguments: "status=completed\nexit_code=0",
+        )
+        store = _CheckpointStore()
+
+        outcome = IterativeModelAgent(
+            runtime, IterativeAgentSettings("qwen3.8:27b"), tools, store,
+            completion_validator=lambda _results: None,
+        ).run(
+            thread_id="thread", turn_id="turn", objective="Verify and finish.",
+            profile=AgentAuthorityProfile.WORKSPACE,
+        )
+
+        self.assertEqual(
+            "Candidate implementation completed and its verification command passed.",
+            outcome.response.content,
+        )
+        self.assertEqual(3, outcome.model_steps)
+        self.assertTrue(store.completed)
+        self.assertTrue(any(
+            item.node is AgentGraphNode.RECOVER
+            and item.state.get("category") == "verified_finalization_fallback"
+            for item in store.checkpoints
+        ))
+
     def test_rejected_early_completion_expands_hidden_capabilities(self):
         metrics = InferenceMetrics("model", 0, 0, 1, 1)
         runtime = _NativeRuntime([
@@ -949,6 +1007,18 @@ class _Store:
     def record_result(self, *args): pass
     def complete_turn(self, *args): pass
     def fail_turn(self, *args): pass
+
+
+class _CheckpointStore(_Store):
+    def __init__(self):
+        self.completed = False
+        self.checkpoints = []
+
+    def complete_turn(self, *args):
+        self.completed = True
+
+    def checkpoint(self, checkpoint):
+        self.checkpoints.append(checkpoint)
 
 
 class _HistoryStore(_Store):
