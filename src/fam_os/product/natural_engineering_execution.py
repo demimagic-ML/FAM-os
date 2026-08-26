@@ -54,20 +54,26 @@ class NaturalEngineeringExecutionCoordinator:
             preparation.candidate, task.intent, preferred,
         )
         agent_evidence_ids: tuple[str, ...] = ()
-        try:
-            baseline_requests, baseline_receipts = (
-                self._loop.capture_runtime_performance_baseline(
-                    owner_id, task.task_id, session_id=session_id,
-                    principal_id=principal_id, preferred_paths=preferred,
+        application_test = (
+            EngineeringAuthority.APPLICATION_TEST in task.authorities
+        )
+        if application_test:
+            baseline_requests, baseline_receipts = (), ()
+        else:
+            try:
+                baseline_requests, baseline_receipts = (
+                    self._loop.capture_runtime_performance_baseline(
+                        owner_id, task.task_id, session_id=session_id,
+                        principal_id=principal_id, preferred_paths=preferred,
+                    )
                 )
-            )
-        except (LookupError, PermissionError, RuntimeError, ValueError):
-            return _failure(
-                self._loop, owner_id,
-                self._loop.inspect(owner_id, task.task_id),
-                "runtime_diagnostic_failed",
-                "performance_baseline_capture_unavailable", (),
-            )
+            except (LookupError, PermissionError, RuntimeError, ValueError):
+                return _failure(
+                    self._loop, owner_id,
+                    self._loop.inspect(owner_id, task.task_id),
+                    "runtime_diagnostic_failed",
+                    "performance_baseline_capture_unavailable", (),
+                )
         if any(
             item.status is not RuntimeDiagnosticStatus.PASSED
             for item in baseline_receipts
@@ -132,6 +138,20 @@ class NaturalEngineeringExecutionCoordinator:
             applied = agent_result.applied_edits
             agent_verified = bool(agent_result.successful_verifications)
             changeset_seed = _applied_digest(applied)
+            if application_test and not applied:
+                evidence_id = self._loop.accept_agent_verification(
+                    owner_id, task.task_id, producer_id, (),
+                )
+                result = self._loop.inspect(owner_id, task.task_id)
+                result.update({
+                    "stage": "verified",
+                    "outcome": "application_test_completed",
+                    "summary": generation_summary,
+                    "application_test": agent_result.application_test,
+                    "agent_verification_evidence_ids": [evidence_id],
+                    "changed_paths": [],
+                })
+                return result
         changeset_id = _changeset_identity(task.task_id, changeset_seed)
         if any(item.status is not CandidateEditStatus.APPLIED for item in applied):
             return _failure(

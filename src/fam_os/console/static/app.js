@@ -193,7 +193,7 @@ function updateScopeSummary() {
   const resource = $("#resource").value.trim();
   const profile = $("#agent-profile").value;
   const profileLabel = {
-    ask: "Ask", workspace: "Workspace", full_os: "Full OS",
+    ask: "Ask", workspace: "Workspace", application_test: "Application test", full_os: "Full OS",
   }[profile];
   const parts = [profileLabel, FamWorkspace.selectedPath() ? "Workspace agent" : "Application task"];
   parts.push(selected ? selected.display_name : "Local machine");
@@ -742,7 +742,7 @@ function renderGoalTelemetry(goal) {
     item.title = path;
     return item;
   }));
-  renderGoalToolEvents(live.events || []);
+  renderGoalToolEvents(live.events || [], live.application_test || null);
 }
 
 function updateGoalClock() {
@@ -776,7 +776,7 @@ function formatDuration(milliseconds) {
     : `${String(minutes).padStart(2, "0")}:${String(remainder).padStart(2, "0")}`;
 }
 
-function renderGoalToolEvents(events) {
+function renderGoalToolEvents(events, applicationTest = null) {
   const results = new Map(events.filter(event => event.event_kind === "result").map(event => [event.call_id, event]));
   const rows = events.filter(event => event.event_kind === "call").slice(-8).map(call => {
     const event = results.get(call.call_id);
@@ -796,6 +796,44 @@ function renderGoalToolEvents(events) {
     return item;
   });
   if (rows.length) $("#tool-activity").replaceChildren(...rows);
+  renderGoalApplicationTest(events, results, applicationTest);
+}
+
+function renderGoalApplicationTest(events, results, summary = null) {
+  const calls = events.filter(event => (
+    event.event_kind === "call" && event.tool_id.startsWith("app_")
+  ));
+  const panel = $("#goal-app-test");
+  panel.classList.toggle("hidden", calls.length === 0 && !summary);
+  if (!calls.length && !summary) return;
+  const parsed = call => parseToolJson(results.get(call.call_id)?.payload?.output);
+  const start = [...calls].reverse().find(call => call.tool_id === "app_start");
+  const stopped = [...calls].reverse().find(call => call.tool_id === "app_stop");
+  const startState = start ? parsed(start) : null;
+  const stopState = stopped ? parsed(stopped) : null;
+  const assertions = calls.filter(call => (
+    call.tool_id === "app_assert" && parsed(call)?.passed === true
+  )).length;
+  const consoleState = [...calls].reverse().find(call => call.tool_id === "app_console_errors");
+  const networkState = [...calls].reverse().find(call => call.tool_id === "app_network_failures");
+  const consoleCount = consoleState ? Number(parsed(consoleState)?.count || 0) : Number(stopState?.console_events?.length || 0);
+  const networkCount = networkState ? Number(parsed(networkState)?.count || 0) : Number(stopState?.network_events?.length || 0);
+  const status = summary?.status || (stopped ? "completed" : start ? "running" : "preparing");
+  const finalAssertions = Number(summary?.assertions_passed ?? assertions);
+  const finalConsole = Number(summary?.console_errors ?? consoleCount);
+  const finalNetwork = Number(summary?.network_failures ?? networkCount);
+  const latest = summary?.latest_action || calls[calls.length - 1]?.tool_id || "app_start";
+  $("#goal-app-status").textContent = status === "running" ? "Live browser" : status;
+  $("#goal-app-session").textContent = summary?.session_id || startState?.session_id || "Starting";
+  $("#goal-app-assertions").textContent = `${finalAssertions} passed`;
+  $("#goal-app-console").textContent = `${finalConsole} ${finalConsole === 1 ? "error" : "errors"}`;
+  $("#goal-app-network").textContent = `${finalNetwork} ${finalNetwork === 1 ? "failure" : "failures"}`;
+  $("#goal-app-action").textContent = `Latest · ${latest.replaceAll("_", " ")}`;
+}
+
+function parseToolJson(value) {
+  try { return JSON.parse(String(value || "")); }
+  catch (_error) { return null; }
 }
 
 function toolEventLabel(call) {

@@ -21,8 +21,8 @@ from fam_os.product.agent_workspace_tools import WorkspaceAgentTools
 
 
 _EPHEMERAL_DIRECTORIES = frozenset({
-    ".mypy_cache", ".pytest_cache", ".ruff_cache", ".tox", ".venv",
-    "__pycache__", "node_modules", "venv",
+    ".fam-test-artifacts", ".mypy_cache", ".pytest_cache", ".ruff_cache",
+    ".tox", ".venv", "__pycache__", "node_modules", "venv",
 })
 
 

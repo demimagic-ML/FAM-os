@@ -31,6 +31,7 @@ FAM_OS does not replace the Linux kernel and does not require every selected fol
 - **Conversational workspace assistance.** Follow-up requests retain the objective, recent decisions, relevant observations, changed files, and unresolved errors instead of treating every prompt as a new conversation.
 - **Adaptive local tool use.** The model starts with the smallest relevant tool set and can request more capabilities as the task develops.
 - **Real filesystem and command execution.** The agent can inspect folders, read and write files, create directories, run project commands, and verify their effects.
+- **Stateful application testing.** An Application test profile can launch or attach to localhost web apps, interact through structured Playwright snapshots, retain console/network evidence, assert outcomes, and capture screenshots, traces, and videos.
 - **Task-scaled execution.** A simple file operation does not enter a heavyweight repository workflow. Larger engineering work receives planning, mutation, and verification phases.
 - **Isolated candidate workspaces.** Engineering changes are built away from the owner's folder. The Console shows created, modified, and deleted paths while the goal runs; verified work is reconciled into the real workspace at the end.
 - **Durable Goal Mode.** A reviewed plan can continue in the background across many model/tool steps. Goals support pause, resume, guidance, cancellation, checkpoints, elapsed time, progress signals, and completion criteria.
@@ -176,6 +177,7 @@ Useful implementation guides:
 
 - [Adaptive agent harness](docs/operations/ADAPTIVE_AGENT_HARNESS.md)
 - [Workspace tool loop](docs/operations/WORKSPACE_TOOL_LOOP.md)
+- [Application test harness](docs/operations/APPLICATION_TEST_HARNESS.md)
 - [Shell and Console](docs/operations/FAM_SHELL_AND_CONSOLE.md)
 - [Installed operation](docs/operations/INSTALLED_OPERATION.md)
 - [Application weaving](docs/architecture/APPLICATION_WEAVING.md)

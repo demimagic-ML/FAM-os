@@ -118,6 +118,17 @@ class IterativeAgentTests(unittest.TestCase):
         metrics = InferenceMetrics("model", 0, 0, 1, 1)
         invocations = []
         tools = AgentToolRegistry()
+        responses = []
+        if tool_id == "verify_command":
+            tools.register(
+                _tool("write_file", AgentToolEffect.WORKSPACE_WRITE),
+                lambda _arguments: AgentToolExecution(
+                    "written", {"verified": True, "operation": "write_file", "path": "x"},
+                ),
+            )
+            responses.append(InferenceResponse("", metrics, (
+                InferenceToolCall("write-1", "write_file", {}),
+            )))
         tools.register(
             _tool(tool_id, effect),
             lambda arguments: invocations.append(dict(arguments)) or "confirmed",
@@ -129,7 +140,7 @@ class IterativeAgentTests(unittest.TestCase):
             database.open()
             try:
                 store = SQLiteAgentTurnStore(database, "/workspace")
-                interrupted_runtime = _SequencedRuntime([
+                interrupted_runtime = _SequencedRuntime([*responses,
                     InferenceResponse("", metrics, (
                         InferenceToolCall("effect-1", tool_id, {}),
                     )),
@@ -158,8 +169,9 @@ class IterativeAgentTests(unittest.TestCase):
                 )
 
                 self.assertEqual([{}], invocations)
-                self.assertEqual(1, len(outcome.tool_results))
-                self.assertEqual(tool_id, outcome.tool_results[0].tool_id)
+                expected_results = 2 if tool_id == "verify_command" else 1
+                self.assertEqual(expected_results, len(outcome.tool_results))
+                self.assertEqual(tool_id, outcome.tool_results[-1].tool_id)
             finally:
                 database.close()
 
@@ -721,7 +733,7 @@ class IterativeAgentTests(unittest.TestCase):
             finally:
                 database.close()
 
-    def test_ask_profile_denies_writes_but_returns_result_to_model(self):
+    def test_ask_profile_never_offers_or_dispatches_write_tools(self):
         runtime = _Runtime([
             {"type": "tool_call", "tool": "write_file", "arguments": {
                 "path": "x", "content": "y",
@@ -745,7 +757,14 @@ class IterativeAgentTests(unittest.TestCase):
 
         self.assertFalse(outcome.tool_results[0].succeeded)
         self.assertEqual([], calls)
-        self.assertIn("does not allow", runtime.requests[1].messages[-1].content)
+        offered = json.loads(runtime.requests[0].messages[-1].content)[
+            "available_tools"
+        ]
+        self.assertEqual([], offered)
+        self.assertIn("not offered", runtime.requests[1].messages[-1].content)
+        self.assertIn(
+            "tool_registry_invariant", runtime.requests[1].messages[-1].content,
+        )
 
     def test_rejected_completion_returns_feedback_and_keeps_agent_running(self):
         runtime = _Runtime([

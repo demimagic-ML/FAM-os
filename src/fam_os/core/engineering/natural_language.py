@@ -149,6 +149,26 @@ class NaturalLanguageEngineeringPlanner:
             )
             operations = (EngineeringOperation.READ,)
             high_risk = ()
+        elif authority_profile is AgentAuthorityProfile.APPLICATION_TEST:
+            application_authorities = set((
+                *authorities, EngineeringAuthority.OBSERVE,
+                EngineeringAuthority.PROPOSE, EngineeringAuthority.MODIFY,
+                EngineeringAuthority.EXECUTE,
+                EngineeringAuthority.APPLICATION_TEST,
+            ))
+            authorities = tuple(
+                item for item in EngineeringAuthority
+                if item in application_authorities
+            )
+            application_operations = set((
+                *operations, EngineeringOperation.READ,
+                EngineeringOperation.CREATE, EngineeringOperation.REPLACE,
+                EngineeringOperation.RUN_TOOL,
+            ))
+            operations = tuple(
+                item for item in EngineeringOperation
+                if item in application_operations
+            )
         elif authority_profile is AgentAuthorityProfile.FULL_OS:
             full_os_authorities = set((
                 *authorities, EngineeringAuthority.NETWORK,
@@ -174,6 +194,7 @@ class NaturalLanguageEngineeringPlanner:
         )
         scoped_toolchains = tuple(dict.fromkeys((
             *toolchains, *integration_toolchains,
+            *(("application-test",) if authority_profile is AgentAuthorityProfile.APPLICATION_TEST else ()),
         )))
         scope = EngineeringGrantScope(
             EngineeringGrantScopeKind.TASK, task_id, (workspace_root,), (),

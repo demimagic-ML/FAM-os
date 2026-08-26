@@ -63,6 +63,26 @@ class NaturalLanguageEngineeringPlannerTests(unittest.TestCase):
         self.assertIn(EngineeringAuthority.NETWORK, proposal.grant.authorities)
         self.assertEqual((), proposal.separately_confirmed_authorities)
 
+    def test_application_test_profile_is_candidate_and_local_app_scoped(self):
+        proposal = NaturalLanguageEngineeringPlanner().propose(
+            prompt="Test the calculator application in a browser.",
+            workspace_root="/workspace/project", owner_id="owner-1",
+            principal_id="owner-1", task_id="task-app-test",
+            grant_id="grant-app-test", toolchains=("node",), now=NOW,
+            authority_profile=AgentAuthorityProfile.APPLICATION_TEST,
+        )
+
+        self.assertIn(
+            EngineeringAuthority.APPLICATION_TEST, proposal.grant.authorities,
+        )
+        self.assertIn(EngineeringAuthority.EXECUTE, proposal.grant.authorities)
+        self.assertIn(
+            EngineeringOperation.RUN_TOOL,
+            proposal.definition.task.permitted_operations,
+        )
+        self.assertNotIn(EngineeringAuthority.HOST_ADMIN, proposal.grant.authorities)
+        self.assertNotIn(EngineeringAuthority.RAW_SHELL, proposal.grant.authorities)
+
     def test_code_request_becomes_exact_non_activated_workspace_proposal(self):
         proposal = NaturalLanguageEngineeringPlanner().propose(
             prompt=(

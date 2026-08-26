@@ -85,23 +85,40 @@ class AgentTurnCancelled(RuntimeError):
 class AgentToolRegistry:
     def __init__(self) -> None:
         self._tools: dict[
-            str, tuple[AgentToolDescriptor, Callable[[dict[str, object]], str]]
+            str, tuple[
+                AgentToolDescriptor, Callable[[dict[str, object]], str],
+                Callable[[], bool],
+            ]
         ] = {}
 
     def register(
         self,
         descriptor: AgentToolDescriptor,
         implementation: Callable[[dict[str, object]], str],
+        *, available: Callable[[], bool] = lambda: True,
     ) -> None:
         if descriptor.tool_id in self._tools:
             raise ValueError("agent tool is already registered")
-        self._tools[descriptor.tool_id] = (descriptor, implementation)
+        self._tools[descriptor.tool_id] = (descriptor, implementation, available)
 
-    def descriptors(self) -> tuple[AgentToolDescriptor, ...]:
-        return tuple(self._tools[key][0] for key in sorted(self._tools))
+    def descriptors(
+        self, profile: AgentAuthorityProfile | None = None,
+    ) -> tuple[AgentToolDescriptor, ...]:
+        return tuple(
+            descriptor
+            for key in sorted(self._tools)
+            for descriptor, _implementation, available in (self._tools[key],)
+            if available() and (
+                profile is None or _profile_allows(profile, descriptor.effect)
+            )
+        )
 
-    def contains(self, tool_id: str) -> bool:
-        return tool_id in self._tools
+    def contains(
+        self, tool_id: str, profile: AgentAuthorityProfile | None = None,
+    ) -> bool:
+        return any(
+            item.tool_id == tool_id for item in self.descriptors(profile)
+        )
 
     def invoke(
         self,
@@ -113,7 +130,12 @@ class AgentToolRegistry:
             return AgentToolResult(
                 call.call_id, call.tool_id, False, "Unknown agent tool.",
             )
-        descriptor, implementation = registered
+        descriptor, implementation, available = registered
+        if not available():
+            return AgentToolResult(
+                call.call_id, call.tool_id, False,
+                "Agent tool is unavailable in the current runtime state.",
+            )
         if not _profile_allows(profile, descriptor.effect):
             return AgentToolResult(
                 call.call_id, call.tool_id, False,
@@ -198,7 +220,7 @@ class IterativeModelAgent:
             raise ValueError("agent turn identity and objective are required")
         history_reader = getattr(self._store, "conversation_context", None)
         history = history_reader(thread_id) if callable(history_reader) else ""
-        self._install_capability_discovery()
+        self._install_capability_discovery(profile)
         completed_reader = getattr(self._store, "completed_turn", None)
         completed = (
             completed_reader(thread_id, turn_id)
@@ -227,8 +249,11 @@ class IterativeModelAgent:
             else AgentGoalLedger(objective, "", objective)
         )
         native_tools = bool(getattr(self._runtime, "supports_native_tools", False))
+        initial_descriptors = _phase_tools(
+            self._tools.descriptors(profile), (), False,
+        )
         messages = list(_initial_messages(
-            objective, prior_context, history, profile, self._tools.descriptors(),
+            objective, prior_context, history, profile, initial_descriptors,
             native_tools=native_tools,
         ))
         results: list[AgentToolResult] = []
@@ -355,8 +380,8 @@ class IterativeModelAgent:
             )
             raise
 
-    def _install_capability_discovery(self) -> None:
-        descriptors = self._tools.descriptors()
+    def _install_capability_discovery(self, profile) -> None:
+        descriptors = self._tools.descriptors(profile)
         if len(descriptors) <= 8 or self._tools.contains("request_capabilities"):
             return
         available = tuple(item.tool_id for item in descriptors)
@@ -407,7 +432,7 @@ class IterativeModelAgent:
                         }, sort_keys=True, separators=(",", ":")),
                     ))
             descriptors = _phase_tools(
-                self._tools.descriptors(), results, capabilities_expanded,
+                self._tools.descriptors(profile), results, capabilities_expanded,
             )
             phase = _agent_phase(results)
             active_model_ref = _active_model_ref(
@@ -523,7 +548,7 @@ class IterativeModelAgent:
                     )
                     result, repeated, blocked = self._invoke_tool(
                         thread_id, turn_id, profile, decision, decision_counts,
-                        retry_limits,
+                        retry_limits, frozenset(item.tool_id for item in descriptors),
                     )
                     results.append(result)
                     self._record_observation_checkpoint(
@@ -610,7 +635,7 @@ class IterativeModelAgent:
             )
             result, repeated, blocked = self._invoke_tool(
                 thread_id, turn_id, profile, decision, decision_counts,
-                retry_limits,
+                retry_limits, frozenset(item.tool_id for item in descriptors),
             )
             results.append(result)
             self._record_observation_checkpoint(
@@ -669,18 +694,25 @@ class IterativeModelAgent:
 
     def _invoke_tool(
         self, thread_id, turn_id, profile, decision, decision_counts,
-        retry_limits,
+        retry_limits, offered_tools,
     ):
         self._store.record_call(thread_id, turn_id, decision)
         signature = _decision_signature(decision)
         decision_counts[signature] = decision_counts.get(signature, 0) + 1
         repeated = decision_counts[signature]
-        blocked = repeated > retry_limits.get(signature, 1) + 1
+        default_retry_limit = 10 if decision.tool_id == "app_start" else 1
+        blocked = repeated > retry_limits.get(signature, default_retry_limit) + 1
         if blocked:
             result = AgentToolResult(
                 decision.call_id, decision.tool_id, False,
                 "Repeated-call loop detected. This action has already produced the "
                 "same result; inspect different evidence or choose another strategy.",
+            )
+        elif decision.tool_id not in offered_tools:
+            result = AgentToolResult(
+                decision.call_id, decision.tool_id, False,
+                "Harness invariant: model selected a tool that was not offered for "
+                "this step. available_tools=" + json.dumps(sorted(offered_tools)),
             )
         else:
             result = self._tools.invoke(decision, profile)
@@ -882,7 +914,8 @@ def _phase_tools(descriptors, results, expand=False):
         return tuple(item for item in descriptors if item.tool_id != "verify_command")
     core = {
         "list_directory", "read_file", "search_text", "write_file",
-        "create_directory", "observe_application", "request_capabilities",
+        "create_directory", "list_application_capabilities",
+        "observe_application", "app_start", "request_capabilities",
     }
     selected = tuple(
         item for item in descriptors
@@ -939,6 +972,12 @@ def _profile_allows(
         return effect in {
             AgentToolEffect.WORKSPACE_WRITE,
             AgentToolEffect.COMMAND,
+        }
+    if profile is AgentAuthorityProfile.APPLICATION_TEST:
+        return effect in {
+            AgentToolEffect.WORKSPACE_WRITE,
+            AgentToolEffect.COMMAND,
+            AgentToolEffect.APPLICATION_TEST,
         }
     return True
 

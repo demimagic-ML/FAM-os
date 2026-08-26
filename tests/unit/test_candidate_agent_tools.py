@@ -17,6 +17,10 @@ class _CommandTools:
     def run_command(self, arguments):
         (self.root / "src/app.py").write_text("value = 3\n")
         (self.root / "generated.py").write_text("generated = True\n")
+        (self.root / ".fam-test-artifacts/session-1").mkdir(parents=True)
+        (self.root / ".fam-test-artifacts/session-1/trace.zip").write_bytes(
+            b"application-test-evidence",
+        )
         (self.root / ".venv/bin").mkdir(parents=True)
         (self.root / ".venv/bin/python").write_bytes(b"\x00binary")
         return "status=completed\nexit_code=0"
@@ -137,6 +141,13 @@ class CandidateAgentToolsTests(unittest.TestCase):
                 "generated = True\n", (workspace / "generated.py").read_text(),
             )
             self.assertTrue((workspace / ".venv/bin/python").exists())
+            self.assertTrue(
+                (workspace / ".fam-test-artifacts/session-1/trace.zip").exists(),
+            )
+            self.assertNotIn(
+                ".fam-test-artifacts",
+                {record.operation.path.split("/", 1)[0] for record in loop.records},
+            )
             self.assertGreaterEqual(len(loop.records), 3)
             self.assertEqual(len(loop.records), len(tools.applied_edits))
             self.assertEqual(1, len(tools.successful_verifications))

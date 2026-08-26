@@ -635,7 +635,8 @@ class GoalModeService:
             turns[-1],
         )
         checkpoint = thread.get("latest_checkpoint") or {}
-        raw_events = active.get("events", [])[-16:]
+        all_events = active.get("events", [])
+        raw_events = all_events[-16:]
         events = [_compact_event(event) for event in raw_events]
         changed_files = sorted({
             path for event in raw_events
@@ -660,6 +661,7 @@ class GoalModeService:
             "tool_count": state.get("tool_count", 0),
             "last_activity": last_activity,
             "changed_files": changed_files,
+            "application_test": _application_test_progress(all_events),
             "events": events,
         }
 
@@ -704,6 +706,61 @@ def _document(row: sqlite3.Row) -> dict[str, object]:
             "watchdog_trips": row["watchdog_trips"],
             "stage": row["execution_stage"],
         },
+    }
+
+
+def _application_test_progress(
+    events: list[dict[str, object]],
+) -> dict[str, object] | None:
+    calls = [
+        event for event in events
+        if event.get("event_kind") == "call"
+        and str(event.get("tool_id", "")).startswith("app_")
+    ]
+    if not calls:
+        return None
+    results = {
+        event.get("call_id"): event for event in events
+        if event.get("event_kind") == "result"
+    }
+
+    def output(call):
+        result = results.get(call.get("call_id"), {})
+        payload = result.get("payload") or {}
+        value = payload.get("output") if isinstance(payload, dict) else None
+        if not isinstance(value, str):
+            return {}
+        try:
+            document = json.loads(value)
+        except json.JSONDecodeError:
+            return {}
+        return document if isinstance(document, dict) else {}
+
+    start = next((item for item in reversed(calls) if item.get("tool_id") == "app_start"), None)
+    stop = next((item for item in reversed(calls) if item.get("tool_id") == "app_stop"), None)
+    started = output(start) if start is not None else {}
+    stopped = output(stop) if stop is not None else {}
+    assertions = sum(
+        output(item).get("passed") is True
+        for item in calls if item.get("tool_id") == "app_assert"
+    )
+    console = next((
+        output(item) for item in reversed(calls)
+        if item.get("tool_id") == "app_console_errors"
+    ), {})
+    network = next((
+        output(item) for item in reversed(calls)
+        if item.get("tool_id") == "app_network_failures"
+    ), {})
+    return {
+        "session_id": started.get("session_id"),
+        "resumed_from": started.get("resumed_from"),
+        "status": "completed" if stop is not None else "running",
+        "assertions_passed": assertions,
+        "planned_checks": len((started.get("plan") or {}).get("checks", [])),
+        "console_errors": console.get("count", len(stopped.get("console_events", []))),
+        "network_failures": network.get("count", len(stopped.get("network_events", []))),
+        "latest_action": str(calls[-1].get("tool_id", "app_start")),
     }
 
 

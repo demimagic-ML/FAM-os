@@ -64,6 +64,14 @@ class AgentOrchestrationTests(unittest.TestCase):
         self.assertEqual("missing_executable", directive.category)
         self.assertEqual(1, directive.retry_limit)
 
+    def test_recovery_router_treats_unoffered_tool_as_harness_invariant(self):
+        directive = RecoveryRouter().classify(AgentToolResult(
+            "call", "run_command", False,
+            "Harness invariant: model selected a tool that was not offered for this step.",
+        ))
+        self.assertEqual("tool_registry_invariant", directive.category)
+        self.assertEqual(1, directive.retry_limit)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -10,6 +10,7 @@ from typing import Any
 class AgentAuthorityProfile(StrEnum):
     ASK = "ask"
     WORKSPACE = "workspace"
+    APPLICATION_TEST = "application_test"
     FULL_OS = "full_os"
 
 
@@ -17,6 +18,7 @@ class AgentToolEffect(StrEnum):
     OBSERVE = "observe"
     WORKSPACE_WRITE = "workspace_write"
     COMMAND = "command"
+    APPLICATION_TEST = "application_test"
     NETWORK = "network"
     OS_WRITE = "os_write"
 

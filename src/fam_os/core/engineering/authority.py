@@ -20,6 +20,7 @@ class EngineeringAuthority(StrEnum):
     PROPOSE = "propose"
     MODIFY = "modify"
     EXECUTE = "execute"
+    APPLICATION_TEST = "application_test"
     NETWORK = "network"
     PUBLISH = "publish"
     RAW_SHELL = "raw_shell"

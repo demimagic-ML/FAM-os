@@ -9,7 +9,7 @@ from fam_os.core.agent import AgentAuthorityProfile
 from fam_os.core.ports.inference import (
     InferenceMetrics, InferenceResponse, TransientInferenceError,
 )
-from fam_os.product.goal_mode import GoalModeService
+from fam_os.product.goal_mode import GoalModeService, _application_test_progress
 
 
 class _Runtime:
@@ -80,6 +80,31 @@ class _NaturalEngineering:
 
 
 class GoalModeTests(unittest.TestCase):
+    def test_application_test_progress_survives_compacted_live_event_window(self):
+        events = [
+            {"call_id": "start", "tool_id": "app_start", "event_kind": "call", "payload": {}},
+            {"call_id": "start", "tool_id": "app_start", "event_kind": "result", "payload": {
+                "output": json.dumps({
+                    "session_id": "app-test-1", "resumed_from": None,
+                    "plan": {"checks": [{"check_id": "addition"}]},
+                }), "succeeded": True,
+            }},
+            {"call_id": "assert", "tool_id": "app_assert", "event_kind": "call", "payload": {}},
+            {"call_id": "assert", "tool_id": "app_assert", "event_kind": "result", "payload": {
+                "output": json.dumps({"passed": True}), "succeeded": True,
+            }},
+        ]
+        events.extend({
+            "call_id": f"other-{index}", "tool_id": "read_file",
+            "event_kind": "result", "payload": {"output": "ok"},
+        } for index in range(20))
+
+        progress = _application_test_progress(events)
+
+        self.assertEqual("app-test-1", progress["session_id"])
+        self.assertEqual(1, progress["assertions_passed"])
+        self.assertEqual(1, progress["planned_checks"])
+
     def test_inspect_exposes_real_isolated_candidate_workspace(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

@@ -397,6 +397,7 @@ class ConsoleHttpTests(unittest.TestCase):
                 self.assertIn(b'id="goal-mode"', page)
                 self.assertIn(b'id="goal-dialog"', page)
                 self.assertIn(b'id="goal-guidance"', page)
+                self.assertIn(b'id="goal-app-test"', page)
                 application = urllib.request.urlopen(base + "/app.js").read()
                 self.assertIn(b"citation.source_locator", application)
                 self.assertIn(b"citation.quoted_text", application)
@@ -457,6 +458,7 @@ class ConsoleHttpTests(unittest.TestCase):
                 self.assertIn(b'control("pause")', application)
                 self.assertIn(b"renderCandidateWorkspace", application)
                 self.assertIn(b"candidate_workspace", application)
+                self.assertIn(b"renderGoalApplicationTest", application)
                 self.assertIn(
                     b'["completed", "failed", "cancelled", "waiting_approval"]',
                     application,

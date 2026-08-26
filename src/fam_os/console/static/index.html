@@ -101,7 +101,7 @@
           <details class="composer-scope" id="task-scope">
             <summary><span>Task scope</span><strong id="scope-summary">Local machine</strong><i aria-hidden="true">⌄</i></summary>
             <div class="task-options">
-              <label class="context-field" for="agent-profile"><span>Agent access</span><select id="agent-profile"><option value="ask">Ask — read only</option><option value="workspace" selected>Workspace — edit and test here</option><option value="full_os">Full OS — current-user host access</option></select></label>
+              <label class="context-field" for="agent-profile"><span>Agent access</span><select id="agent-profile"><option value="ask">Ask — read only</option><option value="workspace" selected>Workspace — edit and test here</option><option value="application_test">Application test — localhost browser and candidate</option><option value="full_os">Full OS — current-user host access</option></select></label>
               <label class="context-field" for="context"><span>Work in</span><select id="context"><option value="">No application context</option></select></label>
               <label class="context-field" for="resource"><span>Specific file or URI (optional)</span><input id="resource" type="text" placeholder="file:///home/you/project/README.md"></label>
               <label class="verify"><input id="verify" type="checkbox"><span>Require deterministic verification</span></label>
@@ -158,6 +158,16 @@
             <span><small>Tool calls</small><strong id="goal-live-tools">0</strong></span>
             <span><small>Execution epoch</small><strong id="goal-live-epoch">1</strong></span>
             <span><small>Recovery attempts</small><strong id="goal-live-retries">0</strong></span>
+          </div>
+          <div class="goal-app-test hidden" id="goal-app-test">
+            <div><p class="kicker">Application test</p><span id="goal-app-status">Starting</span></div>
+            <div>
+              <span><small>Session</small><strong id="goal-app-session">—</strong></span>
+              <span><small>Assertions</small><strong id="goal-app-assertions">0 passed</strong></span>
+              <span><small>Console</small><strong id="goal-app-console">0 errors</strong></span>
+              <span><small>Network</small><strong id="goal-app-network">0 failures</strong></span>
+            </div>
+            <p id="goal-app-action">Waiting for a structured application snapshot.</p>
           </div>
           <div class="goal-files hidden" id="goal-files">
             <div><p class="kicker">Candidate changes</p><span id="goal-file-count">0 files</span></div>

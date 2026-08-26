@@ -25,6 +25,7 @@ from fam_os.product.agent_host_command_tools import HostCommandTools
 from fam_os.product.agent_turn_store import SQLiteAgentTurnStore
 from fam_os.product.agent_workspace_tools import WorkspaceAgentTools
 from fam_os.product.candidate_agent_tools import AuthorizedCandidateAgentTools
+from fam_os.product.application_test_tools import ApplicationTestTools
 
 
 @dataclass(frozen=True, slots=True)
@@ -32,6 +33,7 @@ class NaturalEngineeringAgentResult:
     agent_outcome: AgentTurnOutcome
     applied_edits: tuple[object, ...]
     successful_verifications: tuple[str, ...]
+    application_test: dict[str, object] | None = None
 
     @property
     def producer_id(self) -> str:
@@ -65,6 +67,8 @@ class NaturalEngineeringAgentService:
         profile = (
             AgentAuthorityProfile.FULL_OS
             if EngineeringAuthority.HOST_ADMIN in definition.task.authorities
+            else AgentAuthorityProfile.APPLICATION_TEST
+            if EngineeringAuthority.APPLICATION_TEST in definition.task.authorities
             else AgentAuthorityProfile.WORKSPACE
         )
         registry = AgentToolRegistry()
@@ -109,6 +113,12 @@ class NaturalEngineeringAgentService:
         ApplicationAgentTools(
             self._application_provider, owner_id,
         ).register(registry)
+        application_tools = None
+        if profile is AgentAuthorityProfile.APPLICATION_TEST:
+            application_tools = ApplicationTestTools(
+                Path(workspace), objective=objective or definition.task.intent,
+            )
+            application_tools.register(registry)
         thread_id = _thread_id(
             owner_id, session_id, preparation.candidate.owner_workspace,
         )
@@ -123,12 +133,17 @@ class NaturalEngineeringAgentService:
             registry,
             turn_store,
             completion_validator=lambda _results: (
-                None
-                if candidate_tools.applied_edits
-                and candidate_tools.successful_verifications
-                else (
+                None if (
+                    application_tools is not None
+                    and application_tools.all_checks_passed
+                ) or (
+                    candidate_tools.applied_edits
+                    and candidate_tools.successful_verifications
+                ) else (
                     "Implementation turns require an applied candidate edit and a "
-                    "successful semantic postcondition or verify_command call. If a "
+                    "successful semantic postcondition or verify_command call. "
+                    "Application-test turns require a passed app_assert receipt for "
+                    "every harness-owned check. If a "
                     "check already passed through "
                     "run_command, rerun that same check with verify_command so its "
                     "result becomes verification evidence. Do not stage or commit Git; "
@@ -136,20 +151,38 @@ class NaturalEngineeringAgentService:
                 )
             ),
         )
-        outcome = agent.run(
-            thread_id=thread_id,
-            turn_id=turn_id,
-            objective=objective or definition.task.intent,
-            profile=profile,
-            prior_context=_context(preparation),
-        )
-        if not candidate_tools.applied_edits:
+        completed = False
+        try:
+            outcome = agent.run(
+                thread_id=thread_id,
+                turn_id=turn_id,
+                objective=objective or definition.task.intent,
+                profile=profile,
+                prior_context=_context(preparation),
+            )
+            completed = True
+        finally:
+            if application_tools is not None:
+                application_tools.cleanup(interrupted=not completed)
+        if not candidate_tools.applied_edits and application_tools is None:
             raise ValueError("engineering agent completed without candidate changes")
-        if not candidate_tools.successful_verifications:
+        if (
+            not candidate_tools.successful_verifications
+            and not (
+                application_tools is not None
+                and application_tools.all_checks_passed
+            )
+        ):
             raise ValueError("engineering agent completed without successful verification")
+        successful_verifications = list(candidate_tools.successful_verifications)
+        if application_tools is not None and application_tools.all_checks_passed:
+            successful_verifications.append(
+                "application-test:all-harness-checks-passed"
+            )
         return NaturalEngineeringAgentResult(
             outcome, tuple(candidate_tools.applied_edits),
-            tuple(candidate_tools.successful_verifications),
+            tuple(successful_verifications),
+            None if application_tools is None else application_tools.summary,
         )
 
     def answer(

@@ -20,6 +20,12 @@ from fam_os.core.agent.runtime import (
     IterativeModelAgent,
     parse_agent_decision,
 )
+from fam_os.core.agent.application_testing import (
+    ApplicationAssertionKind,
+    ApplicationTestCheck,
+    ApplicationTestPlan,
+    ApplicationTestingObjectiveCompiler,
+)
 
 __all__ = [
     "AgentAuthorityProfile",
@@ -38,4 +44,8 @@ __all__ = [
     "IterativeAgentSettings",
     "IterativeModelAgent",
     "parse_agent_decision",
+    "ApplicationAssertionKind",
+    "ApplicationTestCheck",
+    "ApplicationTestPlan",
+    "ApplicationTestingObjectiveCompiler",
 ]

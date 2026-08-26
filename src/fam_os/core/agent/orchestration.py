@@ -95,6 +95,13 @@ class RecoveryRouter:
                 "Use a workspace-relative path; use '.' for the selected workspace root.",
                 1, fingerprint,
             )
+        if "harness invariant" in lowered or "not offered for this step" in lowered:
+            return RecoveryDirective(
+                "tool_registry_invariant",
+                "Choose exactly one identifier from available_tools. The harness "
+                "will not dispatch stale, hidden, or invented tools.",
+                1, fingerprint,
+            )
         return RecoveryDirective(
             "tool_failure",
             "Change the arguments or strategy using the concrete error before retrying.",
@@ -159,6 +166,12 @@ class AgentContextCompiler:
             "changed_files": changed_files,
             "latest_observations": latest_observations,
             "unresolved_errors": unresolved_errors,
+            "available_tools": tuple({
+                "tool": item.tool_id,
+                "description": item.description,
+                "effect": item.effect.value,
+                "input_schema": item.input_schema,
+            } for item in descriptors),
         }, sort_keys=True, separators=(",", ":")))
         values = [anchor, state, *event_messages]
         if self._size(values) <= maximum_bytes:

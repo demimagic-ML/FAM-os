@@ -77,7 +77,7 @@ const FamNaturalEngineering = (() => {
   }
 
   function profileLabel(profile) {
-    return {ask: "Ask", workspace: "Workspace", full_os: "Full OS"}[profile]
+    return {ask: "Ask", workspace: "Workspace", application_test: "Application test", full_os: "Full OS"}[profile]
       || profile || "Agent";
   }
 

@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <link rel="icon" href="data:,">
+    <title>FAM calculator test</title>
+  </head>
+  <body>
+    <main>
+      <h1>Calculator</h1>
+      <output aria-label="Result" id="result">0</output>
+      <button aria-label="Add seven and five" id="add">7 + 5</button>
+      <button aria-label="Clear" id="clear">Clear</button>
+    </main>
+    <script>
+      const result = document.querySelector("#result");
+      document.querySelector("#add").onclick = () => { result.textContent = "12"; };
+      document.querySelector("#clear").onclick = () => { result.textContent = "0"; };
+    </script>
+  </body>
+</html>

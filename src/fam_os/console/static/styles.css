@@ -955,6 +955,17 @@ main {
 .goal-telemetry small { color: var(--muted); font-size: 7px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; }
 .goal-telemetry strong { margin-top: 4px; color: var(--signal); font-size: 10px; text-transform: capitalize; }
 
+.goal-app-test { border-top: 1px solid var(--line-soft); background: #f7f9f8; }
+.goal-app-test > div:first-child { display: flex; align-items: center; justify-content: space-between; padding: 11px 12px; }
+.goal-app-test .kicker { margin: 0; }
+.goal-app-test > div:first-child span { color: var(--green); font: 700 8px "Noto Sans Mono", monospace; text-transform: uppercase; }
+.goal-app-test > div:nth-child(2) { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: var(--line-soft); }
+.goal-app-test > div:nth-child(2) span { min-width: 0; padding: 9px 12px; background: #edf2f3; }
+.goal-app-test small, .goal-app-test strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: "Noto Sans Mono", monospace; }
+.goal-app-test small { color: var(--muted); font-size: 7px; font-weight: 700; text-transform: uppercase; }
+.goal-app-test strong { margin-top: 3px; color: var(--signal); font-size: 9px; }
+.goal-app-test > p { margin: 0; padding: 10px 12px; color: var(--muted); font-size: 9px; }
+
 .goal-files { padding: 12px; border-top: 1px solid var(--line-soft); }
 .goal-files > div { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .goal-files .kicker { margin: 0; }
