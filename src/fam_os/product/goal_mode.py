@@ -74,6 +74,14 @@ class GoalModeService:
                 "WHERE status='running'",
                 (_now(),),
             )
+            resumable = self._database.execute(
+                "SELECT owner_id,proposal_id,session_id FROM engineering_goals "
+                "WHERE status IN ('queued','retry_wait','restart_requested')",
+            ).fetchall()
+        restore_grant = getattr(self._api, "restore_goal_grant", None)
+        if callable(restore_grant):
+            for row in resumable:
+                restore_grant(row["owner_id"], row["proposal_id"], row["session_id"])
         if self._thread is None:
             self._thread = threading.Thread(
                 target=self._run, daemon=True, name="fam-goal-supervisor",
@@ -282,7 +290,14 @@ class GoalModeService:
             self._record_failure(row, error)
             return
         task = result.get("engineering_task", {})
-        pending_changeset = task.get("pending_changeset_id")
+        changeset = task.get("changeset") or {}
+        changeset_payload = (
+            changeset.get("payload", {}) if isinstance(changeset, dict) else {}
+        )
+        pending_changeset = (
+            task.get("pending_changeset_id")
+            or changeset_payload.get("changeset_id")
+        )
         if pending_changeset:
             with self._lock, self._database:
                 self._database.execute(

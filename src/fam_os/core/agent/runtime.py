@@ -199,6 +199,27 @@ class IterativeModelAgent:
         history_reader = getattr(self._store, "conversation_context", None)
         history = history_reader(thread_id) if callable(history_reader) else ""
         self._install_capability_discovery()
+        completed_reader = getattr(self._store, "completed_turn", None)
+        completed = (
+            completed_reader(thread_id, turn_id)
+            if callable(completed_reader) else None
+        )
+        if completed is not None:
+            restored_reader = getattr(self._store, "restore_turn", None)
+            restored = (
+                restored_reader(thread_id, turn_id)
+                if callable(restored_reader) else ()
+            )
+            latest_reader = getattr(self._store, "latest_checkpoint", None)
+            latest = (
+                latest_reader(thread_id, turn_id)
+                if callable(latest_reader) else None
+            )
+            return AgentTurnOutcome(
+                thread_id, turn_id, AgentFinalResponse(completed),
+                tuple(result for _call, result in restored),
+                0 if latest is None else latest.step,
+            )
         self._store.begin_turn(thread_id, turn_id, objective, profile)
         ledger_reader = getattr(self._store, "goal_ledger", None)
         ledger = (
@@ -270,6 +291,18 @@ class IterativeModelAgent:
                             "postcondition": result.postcondition,
                         }, sort_keys=True, separators=(",", ":")),
                     ))
+            if native_tools and restored:
+                messages.append(InferenceMessage(
+                    MessageRole.USER,
+                    json.dumps({
+                        "type": "resume_from_checkpoint",
+                        "objective": objective,
+                        "instruction": (
+                            "Continue from the persisted tool evidence. Do not replay "
+                            "confirmed effects; choose the next necessary action."
+                        ),
+                    }, sort_keys=True, separators=(",", ":")),
+                ))
             start_step = max(1, latest.step + 1)
         try:
             return self._run_steps(

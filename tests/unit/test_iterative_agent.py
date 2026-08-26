@@ -585,11 +585,52 @@ class IterativeAgentTests(unittest.TestCase):
 
                 self.assertEqual(2, outcome.model_steps)
                 self.assertEqual((result,), outcome.tool_results)
-                self.assertEqual(MessageRole.TOOL, runtime.requests[0].messages[-1].role)
-                self.assertEqual("create-1-1-1", runtime.requests[0].messages[-1].tool_call_id)
+                self.assertEqual(MessageRole.TOOL, runtime.requests[0].messages[-2].role)
+                self.assertEqual("create-1-1-1", runtime.requests[0].messages[-2].tool_call_id)
+                self.assertEqual(MessageRole.USER, runtime.requests[0].messages[-1].role)
+                resumed = json.loads(runtime.requests[0].messages[-1].content)
+                self.assertEqual("resume_from_checkpoint", resumed["type"])
+                self.assertEqual("Create reports.", resumed["objective"])
                 persisted = store.thread("thread")
                 self.assertEqual("completed", persisted["turns"][0]["status"])
                 self.assertGreater(persisted["latest_checkpoint"]["sequence"], 4)
+            finally:
+                database.close()
+
+    def test_completed_turn_replays_durable_outcome_without_model_call(self):
+        metrics = InferenceMetrics("model", 0, 0, 1, 1)
+        with tempfile.TemporaryDirectory() as directory:
+            database = ProductionDatabase(StorageSettings(
+                Path(directory) / "state.sqlite3", os.geteuid(),
+            ))
+            database.open()
+            try:
+                store = SQLiteAgentTurnStore(database, "/workspace")
+                first = _NativeRuntime([
+                    InferenceResponse("Verified and complete.", metrics),
+                ])
+                original = IterativeModelAgent(
+                    first, IterativeAgentSettings("model"),
+                    AgentToolRegistry(), store,
+                ).run(
+                    thread_id="thread", turn_id="turn",
+                    objective="Finish the work.",
+                    profile=AgentAuthorityProfile.WORKSPACE,
+                )
+                replay_runtime = _NativeRuntime([])
+
+                replayed = IterativeModelAgent(
+                    replay_runtime, IterativeAgentSettings("model"),
+                    AgentToolRegistry(), store,
+                ).run(
+                    thread_id="thread", turn_id="turn",
+                    objective="Finish the work.",
+                    profile=AgentAuthorityProfile.WORKSPACE,
+                )
+
+                self.assertEqual(original.response, replayed.response)
+                self.assertEqual([], replay_runtime.requests)
+                self.assertEqual(original.model_steps, replayed.model_steps)
             finally:
                 database.close()
 

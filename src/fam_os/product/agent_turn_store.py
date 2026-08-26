@@ -130,6 +130,14 @@ class SQLiteAgentTurnStore:
         )
         return (0, 0) if row is None else (int(row[0]), int(row[1]))
 
+    def completed_turn(self, thread_id: str, turn_id: str) -> str | None:
+        row = self._database.fetchone(
+            "SELECT final_response FROM agent_turns WHERE thread_id=? AND turn_id=? "
+            "AND status='completed'",
+            (thread_id, turn_id),
+        )
+        return None if row is None else str(row[0])
+
     def record_compaction(self, thread_id: str, generation: int) -> None:
         self._database.execute(
             "UPDATE agent_goal_ledgers SET context_generation=?,compaction_count="

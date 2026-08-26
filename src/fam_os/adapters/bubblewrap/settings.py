@@ -16,7 +16,9 @@ class BubblewrapSettings:
     require_bubblewrap: bool = True
     require_systemd_cgroup: bool = True
     read_only_paths: tuple[str, ...] = ("/usr", "/lib")
-    optional_read_only_paths: tuple[str, ...] = ("/lib64",)
+    optional_read_only_paths: tuple[str, ...] = (
+        "/lib64", "/etc/hosts", "/etc/nsswitch.conf",
+    )
     temporary_directory: str = "/tmp"
     environment: tuple[tuple[str, str], ...] = (
         ("PATH", "/usr/bin:/bin"),

@@ -26,6 +26,7 @@ class WorkspaceCommandTools:
         settings: BubblewrapSettings = BubblewrapSettings(),
         locator: ExecutableLocator | None = None,
         launcher: ProcessLauncher | None = None,
+        read_only_overlays: tuple[tuple[Path, Path], ...] = (),
         limits: SandboxLimits = SandboxLimits(
             wall_seconds=120,
             memory_bytes=2 * 1024**3,
@@ -45,6 +46,17 @@ class WorkspaceCommandTools:
         self.locator = locator or PathExecutableLocator()
         self.launcher = launcher or SubprocessProcessLauncher()
         self.limits = limits
+        self.read_only_overlays = tuple(
+            (source.resolve(strict=True), destination.absolute())
+            for source, destination in read_only_overlays
+        )
+        if any(
+            not source.is_dir()
+            or destination == root
+            or root not in destination.parents
+            for source, destination in self.read_only_overlays
+        ):
+            raise PermissionError("command overlay must map a directory inside the workspace")
 
     def register(self, registry: AgentToolRegistry) -> None:
         registry.register(AgentToolDescriptor(
@@ -89,6 +101,7 @@ class WorkspaceCommandTools:
             raise RuntimeError("workspace command sandbox requires bubblewrap")
         sandbox_command = _bubblewrap_command(
             bubblewrap, self.root, tuple(command), self.settings,
+            self.read_only_overlays,
         )
         limits = replace(self.limits, wall_seconds=float(timeout))
         result = self.launcher.run(
@@ -137,6 +150,7 @@ def _bubblewrap_command(
     workspace: Path,
     command: tuple[str, ...],
     settings: BubblewrapSettings,
+    read_only_overlays: tuple[tuple[Path, Path], ...] = (),
 ) -> tuple[str, ...]:
     root = str(workspace)
     values = [
@@ -156,6 +170,10 @@ def _bubblewrap_command(
         "--dev", "/dev",
         "--tmpfs", settings.temporary_directory,
         "--bind", root, root,
+    ))
+    for source, destination in read_only_overlays:
+        values.extend(("--ro-bind", str(source), str(destination)))
+    values.extend((
         "--chdir", root,
         "--setenv", "PATH", "/usr/bin:/bin",
         "--setenv", "HOME", settings.temporary_directory,

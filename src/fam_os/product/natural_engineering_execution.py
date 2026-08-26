@@ -145,7 +145,7 @@ class NaturalEngineeringExecutionCoordinator:
             try:
                 database = self._loop.run_database_engineering(
                     owner_id, task.task_id,
-                    tuple(item.operation.path for item in applied), changeset_id,
+                    _changed_paths(applied), changeset_id,
                     session_id=session_id, principal_id=principal_id,
                 )
             except (LookupError, PermissionError, RuntimeError, ValueError):
@@ -203,7 +203,7 @@ class NaturalEngineeringExecutionCoordinator:
                 raise
             agent_evidence_ids = (self._loop.accept_agent_verification(
                 owner_id, task.task_id, producer_id,
-                tuple(item.operation.path for item in applied),
+                _changed_paths(applied),
             ),)
             verifications = ()
         if any(
@@ -331,7 +331,7 @@ class NaturalEngineeringExecutionCoordinator:
             try:
                 integration = self._integration.run_candidate(
                     owner_id, definition, preparation.candidate,
-                    tuple(item.operation.path for item in applied), changeset_id,
+                    _changed_paths(applied), changeset_id,
                     session_id=session_id, principal_id=principal_id,
                 )
             except (LookupError, OSError, PermissionError, RuntimeError, ValueError):
@@ -535,8 +535,10 @@ class NaturalEngineeringExecutionCoordinator:
         if self._agent is None:
             raise LookupError("iterative engineering agent is unavailable")
         workspace = definition.task.workspace_roots[0]
+        candidate = self._loop.current_candidate(owner_id, definition.task.task_id)
         turn_id = self._agent.replay_verification(
             definition.task.task_id, workspace,
+            candidate_workspace=candidate.candidate_workspace,
             full_os=(
                 EngineeringAuthority.HOST_ADMIN in definition.task.authorities
             ),
@@ -685,6 +687,10 @@ def _applied_digest(edits) -> str:
         for item in edits
     )
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def _changed_paths(edits) -> tuple[str, ...]:
+    return tuple(dict.fromkeys(item.operation.path for item in edits))
 
 
 def _verification_feedback(records) -> str:

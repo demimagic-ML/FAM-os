@@ -27,6 +27,22 @@ class UrllibJsonTransportTests(unittest.TestCase):
             UrllibJsonTransport().request("GET", "http://localhost/api/ps", None, 5)
 
     @patch("fam_os.adapters.ollama.transport.urllib.request.urlopen")
+    def test_preserves_bounded_ollama_http_error_detail(self, urlopen: MagicMock) -> None:
+        error = urllib.error.HTTPError(
+            "http://localhost/api/chat", 500, "Internal Server Error", {}, None,
+        )
+        error.read = MagicMock(return_value=b'{"error":"input exceeds context window"}')
+        urlopen.side_effect = error
+
+        with self.assertRaisesRegex(
+            OllamaTransportError,
+            "HTTP 500: input exceeds context window",
+        ):
+            UrllibJsonTransport().request(
+                "POST", "http://localhost/api/chat", {"messages": []}, 5,
+            )
+
+    @patch("fam_os.adapters.ollama.transport.urllib.request.urlopen")
     def test_rejects_non_object_json(self, urlopen: MagicMock) -> None:
         response = MagicMock()
         response.__enter__.return_value.read.return_value = b"[]"

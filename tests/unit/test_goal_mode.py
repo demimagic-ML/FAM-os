@@ -38,6 +38,7 @@ class _NaturalEngineering:
         self.activation_failures = 0
         self.apply_failures = 0
         self.candidate_document = None
+        self.restored_grants = []
 
     def propose(self, owner_id, prompt, workspace, **kwargs):
         return {"proposal_id": "proposal-1"}
@@ -49,7 +50,7 @@ class _NaturalEngineering:
             raise TransientInferenceError("model disconnected")
         return {"engineering_task": {
             "outcome": "changeset_approval_required",
-            "pending_changeset_id": "changeset-1",
+            "changeset": {"payload": {"changeset_id": "changeset-1"}},
         }}
 
     def approve_changeset(
@@ -73,6 +74,9 @@ class _NaturalEngineering:
         if self.candidate_document is None:
             raise LookupError("no candidate")
         return dict(self.candidate_document)
+
+    def restore_goal_grant(self, owner_id, proposal_id, session_id):
+        self.restored_grants.append((owner_id, proposal_id, session_id))
 
 
 class GoalModeTests(unittest.TestCase):
@@ -178,6 +182,10 @@ class GoalModeTests(unittest.TestCase):
 
             self.assertEqual("completed", completed["status"])
             self.assertEqual(1, second_api.activations)
+            self.assertEqual(
+                [("owner", "proposal-1", "session")],
+                second_api.restored_grants,
+            )
             second.stop()
 
     def test_queued_goal_can_pause_resume_and_cancel(self):

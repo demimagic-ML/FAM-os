@@ -198,6 +198,14 @@ class ProductNaturalEngineeringApi:
             owner_id, transport_session_id, str(canonical), kind, content,
         )
 
+    def restore_goal_grant(
+        self, owner_id: str, proposal_id: str, transport_session_id: str,
+    ) -> None:
+        """Restore the exact persisted grant for an already approved durable goal."""
+        self._require_owner(owner_id)
+        proposal = self._require_proposal(proposal_id)
+        self._activate_grant(owner_id, proposal, transport_session_id)
+
     def progress(self, owner_id: str, proposal_id: str) -> dict:
         """Reconstruct the current owner-visible proposal and lifecycle checkpoint."""
         self._require_owner(owner_id)

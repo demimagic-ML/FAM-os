@@ -45,6 +45,22 @@ class UrllibJsonTransport:
         try:
             with urllib.request.urlopen(request, timeout=timeout_seconds) as response:
                 decoded = json.loads(response.read())
+        except urllib.error.HTTPError as exc:
+            try:
+                detail = exc.read(4_097).decode("utf-8", "replace").strip()
+            except OSError:
+                detail = ""
+            if len(detail) > 4_096:
+                detail = detail[:4_096].rstrip() + "…"
+            message = f"Ollama {method} request returned HTTP {exc.code}"
+            if detail:
+                try:
+                    document = json.loads(detail)
+                    detail = str(document.get("error") or detail) if isinstance(document, dict) else detail
+                except json.JSONDecodeError:
+                    pass
+                message += f": {detail}"
+            raise OllamaTransportError(message) from exc
         except (urllib.error.URLError, TimeoutError, UnicodeDecodeError, json.JSONDecodeError) as exc:
             raise OllamaTransportError(f"Ollama {method} request failed") from exc
         if not isinstance(decoded, dict):

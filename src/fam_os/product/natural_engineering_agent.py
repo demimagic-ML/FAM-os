@@ -249,6 +249,7 @@ class NaturalEngineeringAgentService:
 
     def replay_verification(
         self, task_id: str, workspace: str, *, full_os: bool = False,
+        candidate_workspace: str | None = None,
     ) -> str:
         rows = self._database.fetchall(
             "SELECT calls.turn_id,calls.payload_json FROM agent_tool_events calls "
@@ -264,14 +265,24 @@ class NaturalEngineeringAgentService:
         arguments = json.loads(rows[0][1]).get("arguments")
         if not isinstance(arguments, dict):
             raise ValueError("agent verification command arguments are invalid")
+        overlays = ()
+        if candidate_workspace is not None:
+            candidate_root = Path(candidate_workspace).resolve(strict=True)
+            arguments = _postapply_verification_arguments(arguments)
+            overlays = _candidate_toolchain_overlays(
+                arguments, Path(workspace).resolve(strict=True), candidate_root,
+            )
         command_tools = (
             HostCommandTools(Path(workspace))
-            if full_os else WorkspaceCommandTools(Path(workspace))
+            if full_os else WorkspaceCommandTools(
+                Path(workspace), read_only_overlays=overlays,
+            )
         )
         output = command_tools.run_command(arguments)
         if "status=completed" not in output or "exit_code=0" not in output:
             raise RuntimeError(output)
         return rows[0][0]
+
 
     def thread(
         self, owner_id: str, session_id: str, workspace: str,
@@ -293,6 +304,39 @@ class NaturalEngineeringAgentService:
         thread_id = _thread_id(owner_id, session_id, workspace)
         store.request_control(thread_id, kind, content)
         return {"thread_id": thread_id, "accepted": True, "control_kind": kind}
+
+
+def _candidate_toolchain_overlays(
+    arguments: dict[str, object], owner_root: Path, candidate_root: Path,
+) -> tuple[tuple[Path, Path], ...]:
+    command = arguments.get("command")
+    if not isinstance(command, list):
+        return ()
+    overlays = []
+    for value in command:
+        if isinstance(value, str) and "node_modules/" in value:
+            prefix = value.split("node_modules/", 1)[0]
+            relative = Path(prefix) / "node_modules"
+            source, destination = candidate_root / relative, owner_root / relative
+            if source.is_dir():
+                overlays.append((source, destination))
+    return tuple(dict.fromkeys(overlays))
+
+
+def _postapply_verification_arguments(
+    arguments: dict[str, object],
+) -> dict[str, object]:
+    command = arguments.get("command")
+    if (
+        not isinstance(command, list)
+        or not any(
+            isinstance(value, str) and "vitest" in value.casefold()
+            for value in command
+        )
+        or "--no-cache" in command
+    ):
+        return arguments
+    return {**arguments, "command": [*command, "--no-cache"]}
 
 
 def _thread_id(owner_id: str, session_id: str, workspace: str) -> str:
