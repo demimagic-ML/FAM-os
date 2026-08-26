@@ -873,7 +873,7 @@ def _agent_phase(results) -> str:
     if any(item.succeeded and item.postcondition for item in results):
         return "verification"
     if any(item.succeeded and item.tool_id in {
-        "write_file", "create_directory", "delete_path", "move_path",
+        "write_file", "edit_file", "create_directory", "delete_path", "move_path",
         "apply_patch", "run_command",
     } for item in results):
         return "verification"
@@ -913,7 +913,7 @@ def _phase_tools(descriptors, results, expand=False):
     ):
         return tuple(item for item in descriptors if item.tool_id != "verify_command")
     core = {
-        "list_directory", "read_file", "search_text", "write_file",
+        "list_directory", "read_file", "search_text", "write_file", "edit_file",
         "create_directory", "list_application_capabilities",
         "observe_application", "app_start", "request_capabilities",
     }

@@ -51,6 +51,27 @@ class ApplicationAgentToolsTests(unittest.TestCase):
         self.assertEqual("verified", json.loads(executed.output)["status"])
         self.assertEqual("owner-1", provider.confirmation.decided_by)
 
+    def test_discovery_hides_actions_the_active_profile_cannot_execute(self):
+        provider = _MixedProvider()
+        registry = AgentToolRegistry()
+        ApplicationAgentTools(
+            lambda: provider, "owner-1", profile=AgentAuthorityProfile.ASK,
+        ).register(registry)
+
+        listed = registry.invoke(
+            AgentToolCall("call-1", "list_application_capabilities", {}, "Discover."),
+            AgentAuthorityProfile.ASK,
+        )
+
+        payload = json.loads(listed.output)
+        self.assertEqual("ask", payload["authority_profile"])
+        self.assertEqual(1, payload["count"])
+        self.assertEqual(1, payload["hidden_by_authority"])
+        self.assertEqual(
+            ["browser.tabs"],
+            [item["capability_id"] for item in payload["capabilities"]],
+        )
+
 
 class _Provider:
     def __init__(self):
@@ -83,6 +104,24 @@ class _Provider:
     def execute_action(self, _proposal, confirmation):
         self.confirmation = confirmation
         return {"status": "verified", "url": "https://example.invalid"}
+
+
+class _MixedProvider(_Provider):
+    def entries(self):
+        def value(item):
+            return SimpleNamespace(value=item)
+
+        observed = super().entries()[0]
+        action = SimpleNamespace(
+            display_name="Open browser", description="Open a browser URL.",
+            kind=value("action"), required_authority=value("execute"),
+            confirmation=value("always"), reversibility=value("reversible"),
+        )
+        return (observed, SimpleNamespace(
+            instance_id="browser-1", application_id="browser",
+            capability_id="browser.open", capability=action,
+            resource_scopes=("browser://tabs",),
+        ))
 
 
 if __name__ == "__main__":

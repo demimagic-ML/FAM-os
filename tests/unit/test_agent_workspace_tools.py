@@ -83,6 +83,27 @@ class AgentWorkspaceToolsTests(unittest.TestCase):
             self.assertTrue(deleted.postcondition["verified"])
             self.assertEqual("value = 2\n", (root / "src/app.py").read_text())
 
+    def test_edit_file_performs_one_exact_verified_replacement(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            target = root / "calculator.py"
+            target.write_text("def add(a, b):\n    return a - b\n")
+            registry = AgentToolRegistry()
+            WorkspaceAgentTools(root).register(registry)
+
+            edited = _invoke(registry, "edit_file", {
+                "path": "calculator.py",
+                "old_content": "return a - b",
+                "new_content": "return a + b",
+            })
+
+            self.assertTrue(edited.succeeded, edited.output)
+            self.assertEqual("edit_file", edited.postcondition["operation"])
+            self.assertTrue(edited.postcondition["verified"])
+            self.assertEqual(
+                "def add(a, b):\n    return a + b\n", target.read_text(),
+            )
+
     def test_workspace_profile_blocks_escape_and_symlink_traversal(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / "workspace"

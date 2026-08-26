@@ -138,7 +138,7 @@ class AgentContextCompiler:
             for item in tool_results
             if item.succeeded and item.postcondition
             and item.postcondition.get("operation") in {
-                "write_file", "create_directory", "delete_path",
+                "write_file", "edit_file", "create_directory", "delete_path",
             } and item.postcondition.get("path")
         ))
         latest_observations = tuple({

@@ -76,6 +76,19 @@ class WorkspaceAgentTools:
             }, required=("path", "content"),
         ), self.write_file)
         registry.register(_descriptor(
+            "edit_file", (
+                "Replace exactly one occurrence in an existing UTF-8 workspace file. "
+                "Use this for a focused edit; use write_file for complete file content."
+            ),
+            AgentToolEffect.WORKSPACE_WRITE,
+            {
+                "path": {"type": "string"},
+                "old_content": {"type": "string"},
+                "new_content": {"type": "string"},
+                "expected_sha256": {"type": ["string", "null"]},
+            }, required=("path", "old_content", "new_content"),
+        ), self.edit_file)
+        registry.register(_descriptor(
             "create_directory", "Create one relative workspace directory.",
             AgentToolEffect.WORKSPACE_WRITE,
             {"path": {"type": "string"}}, required=("path",),
@@ -212,6 +225,37 @@ class WorkspaceAgentTools:
                 "bytes": len(content),
             },
         )
+
+    def edit_file(self, arguments: dict[str, object]) -> AgentToolExecution:
+        _exact(
+            arguments,
+            {"path", "old_content", "new_content", "expected_sha256"},
+            optional=True,
+        )
+        path = self._path(_text(arguments, "path"), must_exist=True)
+        if not path.is_file() or path.is_symlink():
+            raise ValueError("edit_file target is not a regular file")
+        old = _text(arguments, "old_content")
+        new = _text(arguments, "new_content", allow_empty=True)
+        content = path.read_text(encoding="utf-8")
+        occurrences = content.count(old)
+        if occurrences != 1:
+            raise RuntimeError(
+                "edit_file old_content must match exactly once; "
+                f"matched {occurrences} times"
+            )
+        actual = hashlib.sha256(path.read_bytes()).hexdigest()
+        expected = arguments.get("expected_sha256")
+        if expected is not None and expected != actual:
+            raise RuntimeError("edit_file precondition changed")
+        written = self.write_file({
+            "path": path.relative_to(self.root).as_posix(),
+            "content": content.replace(old, new, 1),
+            "expected_sha256": actual,
+        })
+        postcondition = dict(written.postcondition or {})
+        postcondition["operation"] = "edit_file"
+        return AgentToolExecution(written.output, postcondition)
 
     def create_directory(self, arguments: dict[str, object]) -> AgentToolExecution:
         path = self._path(_text(arguments, "path"), must_exist=False)

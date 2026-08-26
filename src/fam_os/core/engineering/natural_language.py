@@ -42,8 +42,9 @@ from fam_os.core.engineering.task_definition import (
 
 
 _MUTATION = re.compile(
-    r"\b(create|add|write|edit|modify|change|replace|transform|implement|fix|"
-    r"repair|refactor|migrate|redesign|generate|delete|remove|move|rename|update)\b",
+    r"\b(create|add|write|edit|modify|change|replace|transform|implement|"
+    r"implementation|finish|complete|fix|repair|refactor|migrate|redesign|"
+    r"generate|delete|remove|move|rename|update)(?:s|d|ing)?\b",
 )
 _EXECUTION = re.compile(
     r"\b(run|execute|build|test|tests|lint|type[- ]?check|compile|profil(?:e|ing)|"
@@ -183,7 +184,9 @@ class NaturalLanguageEngineeringPlanner:
             )
         elif authority_profile is AgentAuthorityProfile.FULL_OS:
             full_os_authorities = set((
-                *authorities, EngineeringAuthority.NETWORK,
+                *authorities, EngineeringAuthority.OBSERVE,
+                EngineeringAuthority.PROPOSE, EngineeringAuthority.MODIFY,
+                EngineeringAuthority.EXECUTE, EngineeringAuthority.NETWORK,
                 EngineeringAuthority.RAW_SHELL, EngineeringAuthority.HOST_ADMIN,
                 EngineeringAuthority.APPLICATION_TEST,
             ))
@@ -198,6 +201,15 @@ class NaturalLanguageEngineeringPlanner:
                     EngineeringAuthority.HOST_ADMIN,
                     EngineeringAuthority.NETWORK,
                 }
+            )
+            full_os_operations = set((
+                *operations, EngineeringOperation.READ,
+                EngineeringOperation.CREATE, EngineeringOperation.REPLACE,
+                EngineeringOperation.RUN_TOOL,
+            ))
+            operations = tuple(
+                item for item in EngineeringOperation
+                if item in full_os_operations
             )
         expires = now + timedelta(hours=2)
         impact = EngineeringResourceImpact(7_200, 64, 128, 512, 64 * 1024**2, 0)

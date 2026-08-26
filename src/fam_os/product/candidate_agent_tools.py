@@ -93,6 +93,13 @@ class AuthorizedCandidateAgentTools:
                   AgentToolEffect.WORKSPACE_WRITE, self.write_file, {
                       "path": {"type": "string"}, "content": {"type": "string"},
                   }, required=("path", "content"))
+        _register(registry, "edit_file", (
+            "Replace exactly one occurrence in an existing candidate UTF-8 file."
+        ), AgentToolEffect.WORKSPACE_WRITE, self.edit_file, {
+            "path": {"type": "string"},
+            "old_content": {"type": "string"},
+            "new_content": {"type": "string"},
+        }, required=("path", "old_content", "new_content"))
         _register(registry, "create_directory", "Create a candidate directory.",
                   AgentToolEffect.WORKSPACE_WRITE, self.create_directory,
                   {"path": {"type": "string"}}, required=("path",))
@@ -135,6 +142,26 @@ class AuthorizedCandidateAgentTools:
         return self._apply((GeneratedCandidateOperation(
             kind, path, content, media_type=_media_type(path),
         ),), "Agent wrote a file.")
+
+    def edit_file(self, arguments: dict[str, object]) -> str:
+        relative = _text(arguments, "path")
+        path = self._workspace._path(relative, must_exist=True)
+        if not path.is_file() or path.is_symlink():
+            raise ValueError("edit_file target is not a regular file")
+        old = _text(arguments, "old_content")
+        new = _text(arguments, "new_content", allow_empty=True)
+        content = path.read_text(encoding="utf-8")
+        occurrences = content.count(old)
+        if occurrences != 1:
+            raise RuntimeError(
+                "edit_file old_content must match exactly once; "
+                f"matched {occurrences} times"
+            )
+        return self._apply((GeneratedCandidateOperation(
+            GeneratedCandidateOperationKind.REPLACE_FILE,
+            relative, content.replace(old, new, 1),
+            media_type=_media_type(relative),
+        ),), "Agent edited a file.")
 
     def create_directory(self, arguments: dict[str, object]) -> AgentToolExecution:
         relative = _text(arguments, "path")

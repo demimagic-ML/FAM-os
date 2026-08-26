@@ -103,6 +103,44 @@ class NaturalLanguageEngineeringPlannerTests(unittest.TestCase):
             proposal.separately_confirmed_authorities,
         )
 
+    def test_finish_the_implementation_is_classified_as_mutation(self):
+        proposal = NaturalLanguageEngineeringPlanner().propose(
+            prompt=(
+                "Analyze the calculator, check what is already done, and continue "
+                "to finish the implementation."
+            ),
+            workspace_root="/workspace/project", owner_id="owner-1",
+            principal_id="owner-1", task_id="task-finish",
+            grant_id="grant-finish", toolchains=("python",), now=NOW,
+            authority_profile=AgentAuthorityProfile.WORKSPACE,
+        )
+
+        self.assertIn(EngineeringAuthority.MODIFY, proposal.grant.authorities)
+        self.assertIn(
+            EngineeringOperation.REPLACE,
+            proposal.definition.task.permitted_operations,
+        )
+
+    def test_full_os_is_a_complete_execution_profile_without_keyword_routing(self):
+        proposal = NaturalLanguageEngineeringPlanner().propose(
+            prompt="Continue with the selected project.",
+            workspace_root="/workspace/project", owner_id="owner-1",
+            principal_id="owner-1", task_id="task-full-os",
+            grant_id="grant-full-os", toolchains=("python",), now=NOW,
+            authority_profile=AgentAuthorityProfile.FULL_OS,
+        )
+
+        self.assertIn(EngineeringAuthority.MODIFY, proposal.grant.authorities)
+        self.assertIn(EngineeringAuthority.EXECUTE, proposal.grant.authorities)
+        self.assertIn(
+            EngineeringOperation.REPLACE,
+            proposal.definition.task.permitted_operations,
+        )
+        self.assertIn(
+            EngineeringOperation.RUN_TOOL,
+            proposal.definition.task.permitted_operations,
+        )
+
     def test_application_test_external_network_remains_separately_confirmed(self):
         proposal = NaturalLanguageEngineeringPlanner().propose(
             prompt=(

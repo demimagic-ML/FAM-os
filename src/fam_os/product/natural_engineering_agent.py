@@ -111,7 +111,7 @@ class NaturalEngineeringAgentService:
         candidate_tools.restore(prior_edits, prior_verifications)
         candidate_tools.register(registry)
         ApplicationAgentTools(
-            self._application_provider, owner_id,
+            self._application_provider, owner_id, profile=profile,
         ).register(registry)
         application_tools = None
         if profile in {
@@ -196,6 +196,7 @@ class NaturalEngineeringAgentService:
         WorkspaceAgentTools(Path(workspace)).register(registry)
         ApplicationAgentTools(
             self._application_provider, owner_id,
+            profile=AgentAuthorityProfile.ASK,
         ).register(registry)
         thread_id = _thread_id(owner_id, session_id, workspace)
         agent = IterativeModelAgent(

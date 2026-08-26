@@ -181,6 +181,44 @@ class CandidateAgentToolsTests(unittest.TestCase):
             }, result.postcondition)
             self.assertEqual(1, len(tools.successful_verifications))
 
+    def test_edit_file_is_recorded_as_an_authorized_candidate_replacement(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            owner, transactions = root / "owner", root / "transactions"
+            owner.mkdir()
+            (owner / "calculator.py").write_text(
+                "def add(a, b):\n    return a - b\n",
+            )
+            adapter = CandidateWorkspaceAdapter(owner, transactions)
+            candidate = adapter.create("task-edit")
+            loop = _Loop(adapter, candidate)
+            definition = SimpleNamespace(task=SimpleNamespace(
+                task_id="task-edit", max_changed_files=128,
+                max_changed_bytes=64 * 1024**2,
+            ))
+            registry = AgentToolRegistry()
+            tools = AuthorizedCandidateAgentTools(
+                loop, "owner", "task-edit", "session", "principal",
+                definition, SimpleNamespace(candidate=candidate),
+                _CommandTools(Path(candidate.candidate_workspace)),
+            )
+            tools.register(registry)
+
+            edited = _invoke(registry, "edit_file", {
+                "path": "calculator.py",
+                "old_content": "return a - b",
+                "new_content": "return a + b",
+            })
+
+            self.assertTrue(edited.succeeded, edited.output)
+            self.assertEqual(
+                "def add(a, b):\n    return a + b\n",
+                (Path(candidate.candidate_workspace) / "calculator.py").read_text(),
+            )
+            self.assertEqual(
+                "patch_file", loop.records[-1].operation.kind.value,
+            )
+
 
 def _invoke(registry, tool, arguments):
     return registry.invoke(

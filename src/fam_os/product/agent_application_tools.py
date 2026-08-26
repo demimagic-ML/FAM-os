@@ -15,20 +15,30 @@ from fam_os.applications import (
     ConfirmationDecision,
     ObservationRequest,
 )
-from fam_os.core.agent import AgentToolDescriptor, AgentToolEffect, AgentToolRegistry
+from fam_os.core.agent import (
+    AgentAuthorityProfile,
+    AgentToolDescriptor,
+    AgentToolEffect,
+    AgentToolRegistry,
+)
 
 
 class ApplicationAgentTools:
-    def __init__(self, provider_getter, owner_id: str) -> None:
+    def __init__(
+        self, provider_getter, owner_id: str, *,
+        profile: AgentAuthorityProfile = AgentAuthorityProfile.FULL_OS,
+    ) -> None:
         self._provider_getter = provider_getter
         self._owner_id = owner_id
+        self._profile = profile
 
     def register(self, registry: AgentToolRegistry) -> None:
         registry.register(_descriptor(
             "list_application_capabilities",
             "List live application, filesystem, OS-tool, MCP, browser fallback, and "
-            "device-facing capabilities. Use this to discover integrations instead of "
-            "guessing commands or capability names.",
+            "device-facing capabilities executable under the active authority profile. "
+            "Use this to discover integrations instead of guessing commands or "
+            "capability names.",
             AgentToolEffect.OBSERVE, {},
         ), self.list_capabilities)
         registry.register(_descriptor(
@@ -60,7 +70,12 @@ class ApplicationAgentTools:
         ), self.act)
 
     def list_capabilities(self, _arguments: dict[str, object]) -> str:
-        entries = self._provider().entries()
+        all_entries = self._provider().entries()
+        entries = tuple(
+            item for item in all_entries
+            if self._profile is AgentAuthorityProfile.FULL_OS
+            or item.capability.required_authority.value == "observe"
+        )
         values = [{
             "instance_id": item.instance_id,
             "application_id": item.application_id,
@@ -73,7 +88,12 @@ class ApplicationAgentTools:
             "reversibility": item.capability.reversibility.value,
             "resource_scopes": list(item.resource_scopes),
         } for item in entries]
-        return _encode({"capabilities": values, "count": len(values)})
+        return _encode({
+            "capabilities": values,
+            "count": len(values),
+            "hidden_by_authority": len(all_entries) - len(entries),
+            "authority_profile": self._profile.value,
+        })
 
     def observe(self, arguments: dict[str, object]) -> str:
         request = ObservationRequest(
