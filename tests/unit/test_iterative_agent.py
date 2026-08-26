@@ -456,6 +456,55 @@ class IterativeAgentTests(unittest.TestCase):
             for item in store.checkpoints
         ))
 
+    def test_incomplete_verification_keeps_tools_available(self):
+        metrics = InferenceMetrics("model", 0, 0, 1, 1)
+        runtime = _NativeRuntime([
+            InferenceResponse("", metrics, (
+                InferenceToolCall("write", "write_file", {"path": "x"}),
+            )),
+            InferenceResponse("", metrics, (
+                InferenceToolCall("verify", "verify_command", {"command": ["test"]}),
+            )),
+            InferenceResponse("", metrics, (
+                InferenceToolCall("runtime", "runtime_check", {}),
+            )),
+            InferenceResponse("All completion checks passed.", metrics),
+        ])
+        tools = AgentToolRegistry()
+        tools.register(
+            _tool("write_file", AgentToolEffect.WORKSPACE_WRITE),
+            lambda _arguments: AgentToolExecution(
+                "written", {
+                    "verified": True, "operation": "write_file", "path": "x",
+                },
+            ),
+        )
+        tools.register(
+            _tool("verify_command", AgentToolEffect.COMMAND),
+            lambda _arguments: "status=completed\nexit_code=0",
+        )
+        tools.register(
+            _tool("runtime_check", AgentToolEffect.APPLICATION_TEST),
+            lambda _arguments: "runtime verified",
+        )
+
+        outcome = IterativeModelAgent(
+            runtime, IterativeAgentSettings("model"), tools, _Store(),
+            completion_validator=lambda results: (
+                None if any(item.tool_id == "runtime_check" for item in results)
+                else "Run the application-level runtime check before completing."
+            ),
+        ).run(
+            thread_id="thread", turn_id="turn", objective="Build, test, and run it.",
+            profile=AgentAuthorityProfile.APPLICATION_TEST,
+        )
+
+        self.assertEqual("All completion checks passed.", outcome.response.content)
+        self.assertIn(
+            "runtime_check", {item.name for item in runtime.requests[2].tools},
+        )
+        self.assertEqual((), runtime.requests[3].tools)
+
     def test_rejected_early_completion_expands_hidden_capabilities(self):
         metrics = InferenceMetrics("model", 0, 0, 1, 1)
         runtime = _NativeRuntime([

@@ -431,10 +431,17 @@ class IterativeModelAgent:
                             "priority": "Apply this guidance to the current objective.",
                         }, sort_keys=True, separators=(",", ":")),
                     ))
+            phase = _agent_phase(results)
+            if (
+                phase == "finalization"
+                and self._completion_validator is not None
+                and self._completion_validator(tuple(results)) is not None
+            ):
+                phase = "verification"
             descriptors = _phase_tools(
                 self._tools.descriptors(profile), results, capabilities_expanded,
+                phase=phase,
             )
-            phase = _agent_phase(results)
             active_model_ref = _active_model_ref(
                 self._settings, results, escalated[0],
             )
@@ -929,8 +936,8 @@ def _request_context_tokens(messages, maximum: int, output_tokens: int) -> int:
     return maximum
 
 
-def _phase_tools(descriptors, results, expand=False):
-    phase = _agent_phase(results)
+def _phase_tools(descriptors, results, expand=False, *, phase=None):
+    phase = phase or _agent_phase(results)
     if phase == "finalization":
         return ()
     if phase == "verification":
