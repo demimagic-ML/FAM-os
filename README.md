@@ -65,14 +65,16 @@ The original folder remains unchanged while Build and Verify are running. If a g
 - Ollama listening locally (the command below expects port `11435`)
 - the configured model already pulled into Ollama
 
-From the repository root:
+From the repository root, choose state and runtime locations using the standard
+XDG directories:
 
 ```bash
-cd /home/demimagic/Desktop/NewLLM/FAM_OS
+export FAM_STATE_ROOT="${XDG_DATA_HOME:-$HOME/.local/share}/fam-os"
+export FAM_RUNTIME_ROOT="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/fam-os-adaptive-agent"
 
 PYTHONPATH=src .verification-venv/bin/python -m fam_os.product.service \
-  --state-root /home/demimagic/.local/share/fam-os \
-  --runtime-root /run/user/1000/fam-os-adaptive-agent \
+  --state-root "$FAM_STATE_ROOT" \
+  --runtime-root "$FAM_RUNTIME_ROOT" \
   --model qwen3.8:27b \
   --engineering-model qwen3.8:27b \
   --ollama-url http://127.0.0.1:11435 \
@@ -91,12 +93,13 @@ Open a fresh authenticated Console session from another terminal:
 
 ```bash
 PYTHONPATH=src .verification-venv/bin/python -c \
-  "from pathlib import Path; from fam_os.product.console_cli import run_console_command; raise SystemExit(run_console_command(Path('/run/user/1000/fam-os-adaptive-agent'), 8775))"
+  'import os; from pathlib import Path; from fam_os.product.console_cli import run_console_command; raise SystemExit(run_console_command(Path(os.environ["FAM_RUNTIME_ROOT"]), 8775))'
 ```
 
 The launcher opens a tokenized local URL. A bookmarked Console URL can expire; run the launcher again instead of reusing an old token.
 
-> The paths above match the current development workstation. Installed builds use the `fam-service`, `fam-os`, and `fam-console` entry points declared in `pyproject.toml`.
+> Installed builds use the `fam-service`, `fam-os`, and `fam-console` entry
+> points declared in `pyproject.toml`.
 
 ## Try it
 
