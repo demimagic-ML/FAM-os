@@ -27,9 +27,18 @@ index 3e3b7a5..e826111 100755
    command=(omp --auto-approve)
    [[ -n ${prompt:-} ]] && command+=(-- "$prompt")
 diff --git a/bin/omarchy-default-agent b/bin/omarchy-default-agent
-index 1f89b76..7d658f8 100755
+index 1f89b76..4ba1753 100755
 --- a/bin/omarchy-default-agent
 +++ b/bin/omarchy-default-agent
+@@ -1,7 +1,7 @@
+ #!/bin/bash
+ 
+ # omarchy:summary=Set and launch the default coding agent
+-# omarchy:args=[pi|omp|opencode|ori|claude|codex|grok|agy|copilot|crush]
++# omarchy:args=[pi|omp|opencode|ori|claude|codex|grok|agy|copilot|fam|crush]
+ # omarchy:examples=omarchy default agent | omarchy default agent codex | omarchy default agent claude
+ 
+ installing=false
 @@ -34,14 +34,25 @@ crush) agent="crush"; name="Crush" ;;
  grok) agent="grok"; name="Grok"; agent_package="npm:@xai-official/grok" ;;
  agy | antigravity | antigravity-cli | gemini | gemini-cli) agent="agy"; name="Antigravity"; agent_package="antigravity-cli" ;;
@@ -57,3 +66,106 @@ index 1f89b76..7d658f8 100755
  if [[ $installing == "false" ]] && ! mise where "$agent_package" &>/dev/null; then
    exec omarchy-launch-floating-terminal-with-presentation omarchy-default-agent --install "$agent"
  fi
+diff --git a/default/omarchy/omarchy-menu.jsonc b/default/omarchy/omarchy-menu.jsonc
+index 59582db..d4ff763 100644
+--- a/default/omarchy/omarchy-menu.jsonc
++++ b/default/omarchy/omarchy-menu.jsonc
+@@ -140,6 +140,7 @@
+   "setup.default.agent.codex": {"icon":"","iconFont":"omarchy","label":"Codex","checked":"[[ \"$(omarchy-default-agent)\" == \"codex\" ]]","action":"omarchy-default-agent codex"},
+   "setup.default.agent.copilot": {"icon":"","label":"Copilot","checked":"[[ \"$(omarchy-default-agent)\" == \"copilot\" ]]","action":"omarchy-default-agent copilot"},
+   "setup.default.agent.crush": {"icon":"󰋑","label":"Crush","checked":"[[ \"$(omarchy-default-agent)\" == \"crush\" ]]","action":"omarchy-default-agent crush"},
++  "setup.default.agent.fam": {"icon":"󰚩","label":"FAM","checked":"[[ \"$(omarchy-default-agent)\" == \"fam\" ]]","action":"omarchy-default-agent fam"},
+   "setup.default.agent.grok": {"icon":"","iconFont":"omarchy","label":"Grok","checked":"[[ \"$(omarchy-default-agent)\" == \"grok\" ]]","action":"omarchy-default-agent grok"},
+   "setup.default.agent.omp": {"icon":"","iconFont":"omarchy","label":"omp","checked":"[[ \"$(omarchy-default-agent)\" == \"omp\" ]]","action":"omarchy-default-agent omp"},
+   "setup.default.agent.opencode": {"icon":"","iconFont":"omarchy","label":"OpenCode","checked":"[[ \"$(omarchy-default-agent)\" == \"opencode\" ]]","action":"omarchy-default-agent opencode"},
+diff --git a/test/shell.d/default-agent-test.sh b/test/shell.d/default-agent-test.sh
+index db964d9..1871908 100644
+--- a/test/shell.d/default-agent-test.sh
++++ b/test/shell.d/default-agent-test.sh
+@@ -46,6 +46,11 @@ cat >"$mock_bin/opencode" <<'SH'
+ printf '%s\0' opencode "$@" >"$OMARCHY_TEST_AGENT_INLINE_LOG"
+ SH
+ 
++cat >"$mock_bin/omarchy-fam" <<'SH'
++#!/bin/bash
++printf '%s\0' omarchy-fam "$@" >"$OMARCHY_TEST_AGENT_INLINE_LOG"
++SH
++
+ cat >"$mock_bin/omarchy-mise-install" <<'SH'
+ #!/bin/bash
+ printf '%s\n' "$*" >>"$OMARCHY_TEST_STUB_LOG"
+@@ -337,6 +342,18 @@ for selection in "${!expected_agents[@]}"; do
+     fail "default agent opens $selection after selecting it"
+ done
+ pass "default agent selects and opens every supported provider and alias"
++
++for selection in fam fam-os; do
++  : >"$agent_open_log"
++  : >"$mise_log"
++  omarchy-default-agent "$selection"
++  [[ $(omarchy-default-agent) == "fam" ]] || fail "default agent canonicalizes $selection"
++  [[ ! -s $mise_log ]] || fail "default agent keeps FAM outside the mise lifecycle"
++  mapfile -d '' -t agent_open_args <"$agent_open_log"
++  [[ ${#agent_open_args[@]} == 1 && ${agent_open_args[0]} == "omarchy-agent" ]] ||
++    fail "default agent opens $selection after selecting it"
++done
++pass "default agent selects the externally packaged FAM launcher and alias"
+ [[ -f $agent_file && ! -e $test_home/.local/state/omarchy/defaults/agent ]] ||
+   fail "default agent stores its selection in Omarchy user config"
+ pass "default agent stores its selection in Omarchy user config"
+@@ -464,6 +481,7 @@ assert_launch crush crush run "Review this project"
+ assert_launch grok grok --permission-mode bypassPermissions -- "Review this project"
+ assert_launch agy agy --dangerously-skip-permissions --prompt-interactive "Review this project"
+ assert_launch copilot copilot --allow-all --interactive "Review this project"
++assert_launch fam omarchy-fam "Review this project"
+ pass "agent launcher adapts initial prompts for every supported agent"
+ 
+ assert_bypass pi pi
+@@ -476,6 +494,7 @@ assert_bypass crush crush --yolo
+ assert_bypass grok grok --permission-mode bypassPermissions
+ assert_bypass agy agy --dangerously-skip-permissions
+ assert_bypass copilot copilot --allow-all
++assert_bypass fam omarchy-fam
+ pass "agent launcher skips permission prompts for every supported agent"
+ 
+ printf '%s\n' "opencode" >"$agent_file"
+@@ -531,3 +550,11 @@ fi
+ grep -F "missing is not installed" "$test_tmp/missing-output" >/dev/null ||
+   fail "agent launcher explains when the default command is missing"
+ pass "agent launcher reports a missing default command"
++
++printf '%s\n' "fam" >"$agent_file"
++if OMARCHY_TEST_MISSING_COMMAND=omarchy-fam omarchy-agent >"$test_tmp/missing-fam-output" 2>&1; then
++  fail "agent launcher rejects a missing FAM launcher"
++fi
++grep -F "omarchy-fam is not installed" "$test_tmp/missing-fam-output" >/dev/null ||
++  fail "agent launcher checks FAM's packaged launcher name"
++pass "agent launcher maps the FAM provider to its packaged command"
+diff --git a/test/shell.d/menu-test.sh b/test/shell.d/menu-test.sh
+index b339467..105ada4 100644
+--- a/test/shell.d/menu-test.sh
++++ b/test/shell.d/menu-test.sh
+@@ -226,6 +226,7 @@ const expectedAgents = {
+   grok: { icon: '\ue904', iconFont: 'omarchy', label: 'Grok' },
+   copilot: { icon: '', label: 'Copilot' },
+   crush: { icon: '󰋑', label: 'Crush' },
++  fam: { icon: '󰚩', label: 'FAM' },
+ }
+ assert(
+   Object.entries(expectedAgents).every(([agent, expected]) => {
+@@ -238,13 +239,13 @@ assert(
+       && !entry.when
+       && entry.checked.includes(`== \"${agent}\"`)
+   }),
+-  'menu exposes every mise-installable coding agent with its own glyph under Defaults > Agent'
++  'menu exposes every supported coding agent with its own glyph under Defaults > Agent'
+ )
+ assertDeepEqual(
+   defaultItems
+     .filter(item => item.parent === 'setup.default.agent')
+     .map(item => item.label),
+-  ['Antigravity', 'Claude', 'Codex', 'Copilot', 'Crush', 'Grok', 'omp', 'OpenCode', 'Ori', 'Pi'],
++  ['Antigravity', 'Claude', 'Codex', 'Copilot', 'Crush', 'FAM', 'Grok', 'omp', 'OpenCode', 'Ori', 'Pi'],
+   'menu sorts coding agents alphabetically'
+ )
+ const expectedDefaults = {
