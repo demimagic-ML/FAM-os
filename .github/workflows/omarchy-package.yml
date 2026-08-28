@@ -59,6 +59,9 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y bubblewrap
+          if [[ -e /proc/sys/kernel/apparmor_restrict_unprivileged_userns ]]; then
+            sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          fi
           python -m playwright install --with-deps chromium
           FAM_OS_LIVE_OMARCHY_APP=1 python -m unittest \
             tests.live.omarchy.test_application_e2e
