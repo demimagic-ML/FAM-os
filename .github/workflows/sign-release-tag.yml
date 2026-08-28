@@ -1,0 +1,43 @@
+name: Sign FAM release tag
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Semantic release version to tag
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - name: Validate and sign the release tag
+        env:
+          FAM_OS_RELEASE_PRIVATE_KEY: ${{ secrets.FAM_OS_RELEASE_PRIVATE_KEY }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          test "$(python -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')" = "$VERSION"
+          test -z "$(git ls-remote --tags origin "refs/tags/v$VERSION")"
+          test -n "$FAM_OS_RELEASE_PRIVATE_KEY"
+          install -d -m 700 "$RUNNER_TEMP/fam-signing"
+          printf '%s' "$FAM_OS_RELEASE_PRIVATE_KEY" | gpg --batch \
+            --homedir "$RUNNER_TEMP/fam-signing" --import
+          fingerprint=$(gpg --batch --homedir "$RUNNER_TEMP/fam-signing" \
+            --with-colons --list-secret-keys | awk -F: '$1 == "fpr" {print $10; exit}')
+          test "$fingerprint" = "$(cat packaging/keys/fam-os-release.fingerprint)"
+          git config user.name "FAM_OS Release"
+          git config user.email "release@fam-os.dev"
+          git config user.signingkey "$fingerprint"
+          git config gpg.program gpg
+          export GNUPGHOME="$RUNNER_TEMP/fam-signing"
+          git tag -s "v$VERSION" -m "FAM_OS v$VERSION"
+          git verify-tag "v$VERSION"
+          git push origin "refs/tags/v$VERSION"
