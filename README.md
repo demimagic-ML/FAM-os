@@ -2,6 +2,7 @@
 <h1 align="center">FAM_OS</h1>
 <h3 align="center">For All Mankind Operating System</h3>
 <p align="center"><b>A local-first AI agent that can understand a workspace, use Linux tools, edit real projects, and keep working until the result is verified.</b></p>
+<p align="center"><a href="https://fam-os.demimagic.chatgpt.site">Explore the FAM_OS project site</a></p>
 <p align="center">Built by <a href="https://www.linkedin.com/in/ivan-dimitrov-online/">Ivan Dimitrov</a></p>
 
 ---
