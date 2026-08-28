@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link rel="icon" href="data:,">
+    <title>FAM Calculator E2E</title>
+    <style>
+      body { background:#10161c; color:#eef3f5; font:16px system-ui; margin:0; }
+      main { max-width:34rem; margin:10vh auto; padding:2rem; }
+      label { display:block; margin:1rem 0; }
+      input,button { font:inherit; padding:.65rem .8rem; margin-left:.5rem; }
+      output { display:block; margin-top:1.5rem; font-size:1.4rem; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Verified calculator</h1>
+      <label>First number <input aria-label="First number" inputmode="decimal"></label>
+      <label>Second number <input aria-label="Second number" inputmode="decimal"></label>
+      <button type="button">Add</button>
+      <output aria-live="polite">Result: —</output>
+    </main>
+    <script>
+      const inputs = document.querySelectorAll("input");
+      document.querySelector("button").addEventListener("click", () => {
+        document.querySelector("output").textContent =
+          `Result: ${Number(inputs[0].value) + Number(inputs[1].value)}`;
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,59 @@
+diff --git a/bin/omarchy-agent b/bin/omarchy-agent
+index 3e3b7a5..e826111 100755
+--- a/bin/omarchy-agent
++++ b/bin/omarchy-agent
+@@ -46,8 +46,10 @@ if [[ -z $agent ]]; then
+   exit 1
+ fi
+ 
+-if omarchy-cmd-missing "$agent"; then
+-  echo "$agent is not installed. Choose an installed agent with: omarchy default agent <name>" >&2
++agent_command=$agent
++[[ $agent == "fam" ]] && agent_command=omarchy-fam
++if omarchy-cmd-missing "$agent_command"; then
++  echo "$agent_command is not installed. Choose an installed agent with: omarchy default agent <name>" >&2
+   exit 1
+ fi
+ 
+@@ -86,6 +88,10 @@ codex)
+   command=(codex --approve-for-me)
+   [[ -n ${prompt:-} ]] && command+=(-- "$prompt")
+   ;;
++fam)
++  command=(omarchy-fam)
++  [[ -n ${prompt:-} ]] && command+=("$prompt")
++  ;;
+ omp)
+   command=(omp --auto-approve)
+   [[ -n ${prompt:-} ]] && command+=(-- "$prompt")
+diff --git a/bin/omarchy-default-agent b/bin/omarchy-default-agent
+index 1f89b76..7d658f8 100755
+--- a/bin/omarchy-default-agent
++++ b/bin/omarchy-default-agent
+@@ -34,14 +34,25 @@ crush) agent="crush"; name="Crush" ;;
+ grok) agent="grok"; name="Grok"; agent_package="npm:@xai-official/grok" ;;
+ agy | antigravity | antigravity-cli | gemini | gemini-cli) agent="agy"; name="Antigravity"; agent_package="antigravity-cli" ;;
+ copilot | github-copilot) agent="copilot"; name="GitHub Copilot" ;;
++fam | fam-os) agent="fam"; name="FAM_OS" ;;
+ *)
+-  echo "Usage: omarchy-default-agent <pi|omp|opencode|ori|claude|codex|grok|agy|copilot|crush>"
++  echo "Usage: omarchy-default-agent <pi|omp|opencode|ori|claude|codex|grok|agy|copilot|fam|crush>"
+   exit 1
+   ;;
+ esac
+ 
+ agent_package=${agent_package:-$agent}
+ 
++if [[ $agent == "fam" ]]; then
++  if ! command -v omarchy-fam >/dev/null; then
++    echo "FAM_OS is not installed. Install the fam-os package first." >&2
++    exit 1
++  fi
++  mkdir -p "$(dirname "$agent_file")"
++  printf '%s\n' "$agent" >"$agent_file"
++  exec omarchy-agent
++fi
++
+ if [[ $installing == "false" ]] && ! mise where "$agent_package" &>/dev/null; then
+   exec omarchy-launch-floating-terminal-with-presentation omarchy-default-agent --install "$agent"
+ fi

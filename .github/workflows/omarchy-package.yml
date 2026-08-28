@@ -1,0 +1,176 @@
+name: Omarchy package
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+  attestations: write
+
+env:
+  PACKAGE_VERSION: 0.1.0
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: python -m pip install -e '.[verification,application-test]'
+      - run: python -m unittest discover -s tests
+      - run: python tools/omarchy/validate-integration.py
+      - name: Verify independent plugin origin and signed HEAD
+        run: |
+          git clone --depth 1 https://github.com/demimagic-ML/omarchy-fam-plugin.git /tmp/fam-plugin
+          install -d -m 700 /tmp/fam-plugin-gnupg
+          GNUPGHOME=/tmp/fam-plugin-gnupg gpg --batch --import \
+            packaging/keys/fam-os-release.asc
+          GNUPGHOME=/tmp/fam-plugin-gnupg git -C /tmp/fam-plugin verify-commit HEAD
+          python /tmp/fam-plugin/validate.py
+      - name: Run a real browser project build and behavior lifecycle
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bubblewrap
+          python -m playwright install --with-deps chromium
+          FAM_OS_LIVE_OMARCHY_APP=1 python -m unittest \
+            tests.live.omarchy.test_application_e2e
+
+  source:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - run: tools/omarchy/source-archive.sh "$GITHUB_SHA" "$PACKAGE_VERSION" artifacts
+      - uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: artifacts/fam-os-${{ env.PACKAGE_VERSION }}.tar.gz
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fam-os-source
+          path: artifacts/*.tar.gz
+
+  x86_64:
+    needs: source
+    runs-on: ubuntu-latest
+    container: archlinux:base-devel
+    steps:
+      - run: pacman -Syu --noconfirm git gnupg nodejs npm python python-build python-installer python-setuptools python-wheel python-cryptography python-jsonschema python-mcp python-sympy python-playwright chromium bubblewrap systemd xdg-utils curl
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: {name: fam-os-source, path: packaging/arch}
+      - name: Build x86_64 package from the attested source
+        run: |
+          sha=$(sha256sum "packaging/arch/fam-os-$PACKAGE_VERSION.tar.gz" | cut -d' ' -f1)
+          sed -i "s/^sha256sums=.*/sha256sums=('$sha')/" packaging/arch/PKGBUILD
+          useradd -m builder
+          chown -R builder:builder "$GITHUB_WORKSPACE"
+          su builder -c 'cd packaging/arch && makepkg --clean --cleanbuild --force --noconfirm'
+      - name: Install and verify the x86_64 package
+        run: |
+          sed -i '\|^NoExtract.*usr/share/doc|d' /etc/pacman.conf
+          package=$(find packaging/arch -maxdepth 1 -name '*-x86_64.pkg.tar.zst' -print -quit)
+          pacman -U --noconfirm "$package"
+          pacman -Qkk fam-os
+          fam-os --help >/dev/null
+          python -c 'import fam_os; import fam_os.adapters.omarchy; import fam_os.product.widget_api'
+          desktop-file-validate /usr/share/applications/fam-os.desktop
+          systemd-analyze verify /usr/lib/systemd/user/fam-os*.service /usr/lib/systemd/user/fam-os*.timer
+          fam --help >/dev/null
+          test -x /usr/bin/omarchy-fam
+          test -x /usr/bin/omarchy-agent-usage-fam
+          test -s /usr/share/fam-os/keys/fam-os-release.asc
+          test ! -e /usr/share/fam-os/omarchy/plugin
+      - id: package
+        run: echo "path=$(find packaging/arch -maxdepth 1 -name '*-x86_64.pkg.tar.zst' -print -quit)" >> "$GITHUB_OUTPUT"
+      - uses: actions/attest-build-provenance@v2
+        with: {subject-path: '${{ steps.package.outputs.path }}'}
+      - uses: actions/upload-artifact@v4
+        with: {name: fam-os-x86_64, path: 'packaging/arch/*-x86_64.pkg.tar.zst'}
+
+  aarch64:
+    needs: source
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: {name: fam-os-source, path: artifacts/input}
+      - uses: uraimo/run-on-arch-action@v3
+        name: Build aarch64 package on Arch Linux ARM
+        with:
+          arch: aarch64
+          distro: archarm_latest
+          githubToken: ${{ github.token }}
+          setup: mkdir -p "${PWD}/artifacts/output"
+          dockerRunArgs: --volume "${PWD}:/workspace"
+          env: |
+            PACKAGE_VERSION: ${{ env.PACKAGE_VERSION }}
+          run: |
+            set -euo pipefail
+            pacman -Syu --noconfirm base-devel git python python-build python-installer python-setuptools python-wheel python-cryptography python-jsonschema python-mcp python-sympy python-playwright chromium bubblewrap systemd xdg-utils curl
+            cp -a /workspace/packaging/arch /tmp/fam-package
+            cp /workspace/artifacts/input/fam-os-${PACKAGE_VERSION}.tar.gz /tmp/fam-package/
+            sha=$(sha256sum "/tmp/fam-package/fam-os-${PACKAGE_VERSION}.tar.gz" | cut -d' ' -f1)
+            sed -i "s/^sha256sums=.*/sha256sums=('$sha')/" /tmp/fam-package/PKGBUILD
+            useradd -m builder
+            chown -R builder:builder /tmp/fam-package
+            su builder -c 'cd /tmp/fam-package && makepkg --clean --cleanbuild --force --noconfirm'
+            sed -i '\|^NoExtract.*usr/share/doc|d' /etc/pacman.conf
+            pacman -U --noconfirm /tmp/fam-package/*-aarch64.pkg.tar.zst
+            pacman -Qkk fam-os
+            fam-os --help >/dev/null
+            python -c 'import fam_os; import fam_os.adapters.omarchy; import fam_os.product.widget_api'
+            systemd-analyze verify /usr/lib/systemd/user/fam-os*.service /usr/lib/systemd/user/fam-os*.timer
+            cp /tmp/fam-package/*-aarch64.pkg.tar.zst /workspace/artifacts/output/
+      - id: package
+        run: echo "path=$(find artifacts/output -name '*-aarch64.pkg.tar.zst' -print -quit)" >> "$GITHUB_OUTPUT"
+      - uses: actions/attest-build-provenance@v2
+        with: {subject-path: '${{ steps.package.outputs.path }}'}
+      - uses: actions/upload-artifact@v4
+        with: {name: fam-os-aarch64, path: 'artifacts/output/*-aarch64.pkg.tar.zst'}
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [source, x86_64]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: {name: fam-os-source, path: release}
+      - uses: actions/download-artifact@v4
+        with: {name: fam-os-x86_64, path: release}
+      - run: cd release && sha256sum *.tar.gz *.pkg.tar.zst >SHA256SUMS
+      - name: Sign release manifests and artifacts with the pinned FAM key
+        env:
+          FAM_OS_RELEASE_PRIVATE_KEY: ${{ secrets.FAM_OS_RELEASE_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          test -n "$FAM_OS_RELEASE_PRIVATE_KEY"
+          install -d -m 700 "$RUNNER_TEMP/fam-signing"
+          printf '%s' "$FAM_OS_RELEASE_PRIVATE_KEY" | gpg --batch \
+            --homedir "$RUNNER_TEMP/fam-signing" --import
+          fingerprint=$(gpg --batch --homedir "$RUNNER_TEMP/fam-signing" \
+            --with-colons --list-secret-keys | awk -F: '$1 == "fpr" {print $10; exit}')
+          test "$fingerprint" = "$(cat packaging/keys/fam-os-release.fingerprint)"
+          cp packaging/keys/fam-os-release.asc release/fam-os-release.asc
+          gpg --batch --homedir "$RUNNER_TEMP/fam-signing" --armor \
+            --detach-sign --output release/SHA256SUMS.asc release/SHA256SUMS
+          for artifact in release/*.tar.gz release/*.pkg.tar.zst; do
+            gpg --batch --homedir "$RUNNER_TEMP/fam-signing" \
+              --detach-sign --output "$artifact.sig" "$artifact"
+          done
+      - uses: actions/attest-build-provenance@v2
+        with: {subject-path: 'release/SHA256SUMS'}
+      - env: {GH_TOKEN: '${{ github.token }}'}
+        run: gh release create "$GITHUB_REF_NAME" release/* --repo "$GITHUB_REPOSITORY" --verify-tag --generate-notes --title "FAM_OS $GITHUB_REF_NAME"

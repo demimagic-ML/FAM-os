@@ -1,0 +1,11 @@
+#!/bin/sh
+# omarchy:summary=Print the FAM_OS usage record as JSON
+# omarchy:args=[--force] [--limits-only]
+# omarchy:hidden=true
+for option in "$@"; do
+  case "$option" in
+    --force|--limits-only) ;;
+    *) echo "usage: omarchy-agent-usage-fam [--force] [--limits-only]" >&2; exit 2 ;;
+  esac
+done
+exec fam-os usage --omarchy

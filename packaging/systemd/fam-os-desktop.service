@@ -1,0 +1,20 @@
+[Unit]
+Description=FAM_OS Omarchy graphical-session bridge
+Documentation=https://github.com/demimagic-ML/FAM-os
+After=graphical-session.target fam-os.service
+PartOf=graphical-session.target
+Wants=fam-os.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/fam-os session omarchy
+Restart=on-failure
+RestartSec=2
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=%t/fam-os
+
+[Install]
+WantedBy=graphical-session.target

@@ -39,23 +39,32 @@ def run(argv=None) -> int:
     parser = argparse.ArgumentParser(description="FAM_OS local product service")
     parser.add_argument("--state-root", type=Path, default=_state_root())
     parser.add_argument("--runtime-root", type=Path, default=_runtime_root())
-    parser.add_argument("--model", default="qwen3:1.7b")
+    parser.add_argument("--widget-audit-root", type=Path, default=_widget_audit_root())
+    parser.add_argument("--model", default=os.environ.get("FAM_OS_MODEL", "qwen3:1.7b"))
     parser.add_argument(
-        "--engineering-model", default=None,
+        "--engineering-model", default=os.environ.get("FAM_OS_ENGINEERING_MODEL"),
         help=(
             "preferred local model for agentic engineering; when omitted FAM uses "
             "the strongest recognized installed coding model and falls back to --model"
         ),
     )
-    parser.add_argument("--ollama-url", default="http://127.0.0.1:11435")
-    parser.add_argument("--external-ollama", action="store_true")
+    parser.add_argument("--ollama-url", default=os.environ.get("FAM_OS_OLLAMA_URL", "http://127.0.0.1:11435"))
+    runtime_mode = parser.add_mutually_exclusive_group()
+    runtime_mode.add_argument(
+        "--external-ollama", dest="external_ollama", action="store_true",
+        default=_environment_flag("FAM_OS_EXTERNAL_OLLAMA", False),
+    )
+    runtime_mode.add_argument(
+        "--managed-ollama", dest="external_ollama", action="store_false",
+    )
     parser.add_argument(
         "--engineering-provider",
-        choices=("ollama", "codex-subscription"), default="ollama",
+        choices=("ollama", "codex-subscription"),
+        default=os.environ.get("FAM_OS_ENGINEERING_PROVIDER", "ollama"),
         help="provider used only for bounded engineering candidate generation",
     )
     parser.add_argument("--codex-executable", type=Path, default=Path("codex"))
-    parser.add_argument("--codex-model", default="gpt-5.6-sol")
+    parser.add_argument("--codex-model", default=os.environ.get("FAM_OS_CODEX_MODEL", "gpt-5.6-sol"))
     parser.add_argument(
         "--codex-reasoning-effort",
         choices=("low", "medium", "high", "xhigh", "max", "ultra"),
@@ -69,9 +78,11 @@ def run(argv=None) -> int:
     parser.add_argument(
         "--validation-profile", choices=SUPPORTED_VALIDATION_PROFILE_IDS,
     )
-    parser.add_argument("--ollama-executable", type=Path, default=Path("/usr/local/bin/ollama"))
+    parser.add_argument("--ollama-executable", type=Path, default=Path(os.environ.get(
+        "FAM_OS_OLLAMA_EXECUTABLE", shutil.which("ollama") or "/usr/bin/ollama",
+    )))
     parser.add_argument("--source-model-root", type=Path, default=_source_model_root())
-    parser.add_argument("--console-port", type=int, default=8765)
+    parser.add_argument("--console-port", type=int, default=int(os.environ.get("FAM_OS_CONSOLE_PORT", "8765")))
     parser.add_argument("--ready-file", type=Path)
     parser.add_argument("--device-name")
     parser.add_argument("--peer-listen-host")
@@ -134,6 +145,7 @@ def run(argv=None) -> int:
     service = LocalProductService(ProductServiceSettings(
         state_root=state_root,
         runtime_root=args.runtime_root.absolute(),
+        widget_audit_root=args.widget_audit_root.absolute(),
         model_ref=args.model,
         engineering_model_ref=args.engineering_model,
         ollama_url=args.ollama_url,
@@ -186,6 +198,24 @@ def run(argv=None) -> int:
 
 def _state_root() -> Path:
     return Path(os.environ.get("XDG_DATA_HOME", Path.home() / ".local/share")) / "fam-os"
+
+
+def _widget_audit_root() -> Path:
+    return Path(
+        os.environ.get("XDG_STATE_HOME", Path.home() / ".local/state")
+    ) / "fam-os"
+
+
+def _environment_flag(name: str, default: bool) -> bool:
+    value = os.environ.get(name)
+    if value is None:
+        return default
+    normalized = value.strip().casefold()
+    if normalized in {"1", "true", "yes", "on"}:
+        return True
+    if normalized in {"0", "false", "no", "off"}:
+        return False
+    raise ValueError(f"{name} must be a boolean value")
 
 
 def _codex_subscription_settings(args, parser):

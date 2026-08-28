@@ -1,0 +1,44 @@
+name: Omarchy 4 disposable VM release gate
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: SSH target for a disposable Omarchy 4 x86_64 VM with a working FAM inference provider
+        required: true
+        type: string
+      package_url:
+        description: HTTPS URL of the signed x86_64 pkg.tar.zst under test
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    environment: omarchy-release-gate
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure the dedicated disposable VM identity
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.OMARCHY_VM_SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.OMARCHY_VM_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          test -n "$SSH_PRIVATE_KEY" && test -n "$SSH_KNOWN_HOSTS"
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s' "$SSH_PRIVATE_KEY" >"$HOME/.ssh/id_ed25519"
+          printf '%s\n' "$SSH_KNOWN_HOSTS" >"$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/id_ed25519" "$HOME/.ssh/known_hosts"
+      - name: Download package under test
+        run: curl -fsSL '${{ inputs.package_url }}' -o /tmp/fam-os.pkg.tar.zst
+      - name: Run destructive Omarchy lifecycle and browser application gate
+        env:
+          FAM_OS_DISPOSABLE_VM: '1'
+        run: |
+          tools/omarchy/vm-e2e.sh \
+            --target '${{ inputs.target }}' \
+            --package /tmp/fam-os.pkg.tar.zst \
+            --reboot --verify-paused-goal --remove-reinstall

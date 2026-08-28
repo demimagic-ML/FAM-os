@@ -1,0 +1,12 @@
+[Unit]
+Description=Publish FAM_OS usage to the Omarchy agents panel
+After=fam-os.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/fam-os usage --omarchy --state-root=%h/.local/share/fam-os --output=%h/.local/state/omarchy/agents/usage/fam.json
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=-%h/.local/state/omarchy/agents/usage -%h/.local/share/fam-os

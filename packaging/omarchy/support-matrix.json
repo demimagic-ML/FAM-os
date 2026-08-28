@@ -1,0 +1,45 @@
+{
+  "contractVersion": "fam.omarchy.support/v1",
+  "release": "0.1.0",
+  "hosts": [
+    {
+      "platform": "Omarchy",
+      "versions": ">=4.0.0,<5.0.0",
+      "architecture": "x86_64",
+      "support": "supported"
+    },
+    {
+      "platform": "Omarchy-compatible Arch/Hyprland",
+      "versions": ">=4.0.0,<5.0.0",
+      "architecture": "aarch64",
+      "support": "experimental"
+    },
+    {
+      "platform": "Omarchy",
+      "versions": ">=3.0.0,<4.0.0",
+      "architecture": "any",
+      "support": "unsupported"
+    },
+    {
+      "platform": "Arch Linux with Hyprland",
+      "versions": "rolling",
+      "architecture": "x86_64,aarch64",
+      "support": "core-without-omarchy-shell"
+    }
+  ],
+  "components": {
+    "hyprland": {"tested": ">=0.49,<0.60"},
+    "omarchyShell": {"schemaVersion": 1},
+    "python": {"tested": ">=3.12,<3.15"},
+    "systemd": {"tested": ">=255"},
+    "browser": {
+      "provider": "Arch python-playwright with repository chromium",
+      "policy": "installed from the same synchronized Arch package snapshot"
+    },
+    "widgetApi": {
+      "apiVersion": 1,
+      "pluginMinVersion": "0.1.0",
+      "serviceVersion": "0.1.0"
+    }
+  }
+}

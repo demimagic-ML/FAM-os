@@ -26,6 +26,7 @@ from fam_os.product.agent_turn_store import SQLiteAgentTurnStore
 from fam_os.product.agent_workspace_tools import WorkspaceAgentTools
 from fam_os.product.candidate_agent_tools import AuthorizedCandidateAgentTools
 from fam_os.product.application_test_tools import ApplicationTestTools
+from fam_os.product.native_application_test_tools import NativeApplicationTestTools
 
 
 @dataclass(frozen=True, slots=True)
@@ -114,6 +115,7 @@ class NaturalEngineeringAgentService:
             self._application_provider, owner_id, profile=profile,
         ).register(registry)
         application_tools = None
+        native_application_tools = None
         if profile in {
             AgentAuthorityProfile.APPLICATION_TEST,
             AgentAuthorityProfile.FULL_OS,
@@ -122,6 +124,8 @@ class NaturalEngineeringAgentService:
                 Path(workspace), objective=objective or definition.task.intent,
             )
             application_tools.register(registry)
+            native_application_tools = NativeApplicationTestTools(Path(workspace))
+            native_application_tools.register(registry)
         thread_id = _thread_id(
             owner_id, session_id, preparation.candidate.owner_workspace,
         )
@@ -150,6 +154,8 @@ class NaturalEngineeringAgentService:
                     candidate_tools.discard_workspace_changes(before)
                 if application_tools is not None:
                     application_tools.cleanup(interrupted=True)
+                if native_application_tools is not None:
+                    native_application_tools.cleanup()
                 raise
             candidate_tools.record_native_verifications(native.successful_commands)
             application_test = None
@@ -172,6 +178,8 @@ class NaturalEngineeringAgentService:
                 )
             if application_tools is not None:
                 application_tools.cleanup(interrupted=False)
+            if native_application_tools is not None:
+                native_application_tools.cleanup()
             return NaturalEngineeringAgentResult(
                 AgentTurnOutcome(
                     thread_id, turn_id, AgentFinalResponse(native.content), (),
@@ -194,6 +202,9 @@ class NaturalEngineeringAgentService:
                 None if (
                     application_tools is not None
                     and application_tools.all_checks_passed
+                ) or (
+                    native_application_tools is not None
+                    and native_application_tools.all_checks_passed
                 ) or (
                     candidate_tools.applied_edits
                     and candidate_tools.successful_verifications
@@ -222,6 +233,8 @@ class NaturalEngineeringAgentService:
         finally:
             if application_tools is not None:
                 application_tools.cleanup(interrupted=not completed)
+            if native_application_tools is not None:
+                native_application_tools.cleanup()
         if not candidate_tools.applied_edits and application_tools is None:
             raise ValueError("engineering agent completed without candidate changes")
         if (
@@ -230,6 +243,10 @@ class NaturalEngineeringAgentService:
                 application_tools is not None
                 and application_tools.all_checks_passed
             )
+            and not (
+                native_application_tools is not None
+                and native_application_tools.all_checks_passed
+            )
         ):
             raise ValueError("engineering agent completed without successful verification")
         successful_verifications = list(candidate_tools.successful_verifications)
@@ -237,10 +254,22 @@ class NaturalEngineeringAgentService:
             successful_verifications.append(
                 "application-test:all-harness-checks-passed"
             )
+        if (
+            native_application_tools is not None
+            and native_application_tools.all_checks_passed
+        ):
+            successful_verifications.append(
+                "native-application-test:all-harness-checks-passed"
+            )
         return NaturalEngineeringAgentResult(
             outcome, tuple(candidate_tools.applied_edits),
             tuple(successful_verifications),
-            None if application_tools is None else application_tools.summary,
+            (
+                native_application_tools.summary
+                if native_application_tools is not None
+                and native_application_tools.summary is not None
+                else None if application_tools is None else application_tools.summary
+            ),
         )
 
     def answer(

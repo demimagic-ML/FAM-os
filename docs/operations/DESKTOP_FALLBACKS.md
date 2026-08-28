@@ -11,6 +11,18 @@ The file must be owned by the FAM_OS service user and mode `0600`. Restart the
 service after changing it. Enabling either mechanism without
 `privacy_acknowledged: true` is rejected.
 
+Inspect or change the global switches without editing target grants by hand:
+
+```bash
+fam-os permissions desktop
+fam-os permissions desktop --screen-capture off
+fam-os permissions desktop --screen-capture on --input-control on
+fam-os permissions desktop --input-control off
+```
+
+Enabling capture still requires an existing exact-window target in the private
+policy file. These commands never add, broaden, or auto-discover a target.
+
 ## Exact-target example
 
 ```json

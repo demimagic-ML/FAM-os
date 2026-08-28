@@ -22,11 +22,19 @@ from fam_os.product.factory_runtime_configuration import (
     FactoryRuntimeConfigurationStore,
 )
 from fam_os.product.host_security import diagnose_verifier_sandbox
+from fam_os.product.omarchy_setup import OmarchySetup
+from fam_os.adapters.omarchy.diagnostics import diagnose_omarchy
+from fam_os.product.omarchy_session_bridge import run_omarchy_session_bridge
+from fam_os.product.agent_usage import print_omarchy_usage
+from fam_os.product.desktop_permissions import DesktopPermissionStore
+from fam_os.product.omarchy_agent_client import (
+    default_runtime_root, submit_from_omarchy,
+)
 
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(prog="fam-os")
-    parser.add_argument("--prefix", type=Path, required=True)
+    parser.add_argument("--prefix", type=Path, default=_installation_prefix())
     parser.add_argument(
         "--trusted-key", action="append", default=[], metavar="KEY_ID=PUBLIC_KEY_PEM",
     )
@@ -34,12 +42,52 @@ def main(argv=None) -> int:
     for name in ("install", "update"):
         command = commands.add_parser(name)
         command.add_argument("--bundle", type=Path, required=True)
-    commands.add_parser("diagnose")
+    diagnose = commands.add_parser("diagnose")
+    diagnose.add_argument("target", nargs="?", choices=("omarchy",))
+    doctor = commands.add_parser("doctor")
+    doctor.add_argument("--omarchy", action="store_true", required=True)
+    doctor.add_argument("--json", action="store_true")
+    setup = commands.add_parser("setup")
+    setup.add_argument("target", choices=("omarchy",))
+    setup.add_argument("--enable-widget", action=argparse.BooleanOptionalAction, default=True)
+    setup.add_argument("--no-start", action="store_true")
+    setup.add_argument("--yes", action="store_true")
+    setup.add_argument("--allow-experimental", action="store_true")
+    session = commands.add_parser("session")
+    session.add_argument("target", choices=("omarchy",))
+    usage = commands.add_parser("usage")
+    usage.add_argument("--state-root", type=Path, default=_state_root())
+    usage.add_argument("--omarchy", action="store_true", required=True)
+    usage.add_argument("--output", type=Path)
+    agent = commands.add_parser("agent")
+    agent.add_argument("prompt", nargs="*")
+    agent.add_argument("--goal", action="store_true")
+    agent.add_argument("--authority", choices=("workspace", "application_test", "full_os"), default="workspace")
+    agent.add_argument("--workspace", type=Path, default=Path.cwd())
+    agent.add_argument("--runtime-root", type=Path, default=default_runtime_root())
     rollback = commands.add_parser("rollback")
     rollback.add_argument("--release-id", required=True)
     commands.add_parser("enable")
     commands.add_parser("disable")
-    commands.add_parser("repair")
+    repair = commands.add_parser("repair")
+    repair.add_argument("target", nargs="?", choices=("omarchy",))
+    repair.add_argument("--widget", action="store_true")
+    repair.add_argument("--service", action="store_true")
+    repair.add_argument("--yes", action="store_true")
+    purge = commands.add_parser("purge")
+    purge.add_argument("--user-data", action="store_true", required=True)
+    purge.add_argument("--yes", action="store_true")
+    permissions = commands.add_parser("permissions")
+    permissions.add_argument("target", choices=("desktop",))
+    permissions.add_argument("--state-root", type=Path, default=_state_root())
+    permissions.add_argument(
+        "--screen-capture", choices=("on", "off"),
+        help="globally enable or disable configured exact-window capture targets",
+    )
+    permissions.add_argument(
+        "--input-control", choices=("on", "off"),
+        help="globally enable or disable configured exact-window input targets",
+    )
     remove = commands.add_parser("remove")
     remove.add_argument("--state-root", type=Path, default=_state_root())
     remove.add_argument("--runtime-root", type=Path, default=_runtime_root())
@@ -48,6 +96,7 @@ def main(argv=None) -> int:
         default=Path.home() / ".vscode/extensions",
     )
     remove.add_argument("--confirm", action="store_true")
+    remove.add_argument("target", nargs="?", choices=("omarchy-integration",))
     host_security = commands.add_parser("host-security")
     host_security.add_argument("action", choices=("diagnose",))
     console = commands.add_parser("console")
@@ -96,6 +145,76 @@ def main(argv=None) -> int:
     _factory_runtime_inputs(factory_configure)
     factory_configure.add_argument("--confirm", action="store_true")
     args = parser.parse_args(argv)
+    if args.command == "usage":
+        return print_omarchy_usage(
+            args.state_root.absolute(),
+            None if args.output is None else args.output.absolute(),
+        )
+    if args.command == "agent":
+        prompt = " ".join(args.prompt).strip()
+        if not prompt:
+            prompt = input("What should FAM do? ").strip()
+        if not prompt:
+            raise ValueError("agent prompt must not be empty")
+        result = submit_from_omarchy(
+            prompt, args.workspace, goal_mode=args.goal,
+            authority_profile=args.authority,
+            runtime_root=args.runtime_root.absolute(),
+        )
+        print(json.dumps(result, default=str, sort_keys=True))
+        return 0
+    if args.command == "session":
+        return run_omarchy_session_bridge()
+    if args.command == "setup":
+        if args.enable_widget:
+            _confirm_unsandboxed_plugin(args.yes)
+        receipt = OmarchySetup().setup(
+            enable_widget=args.enable_widget, start=not args.no_start,
+            allow_experimental=args.allow_experimental,
+        )
+        print(json.dumps(asdict(receipt), default=str, sort_keys=True))
+        return 0 if receipt.configured else 1
+    if args.command == "doctor" or (
+        args.command == "diagnose" and args.target == "omarchy"
+    ):
+        receipt = diagnose_omarchy()
+        if args.command == "doctor" and not args.json:
+            for check in receipt.checks:
+                print(f"{check.status.value.upper():8} {check.detail}")
+                if check.status.value != "pass" and check.fix:
+                    print(f"FIX      {check.fix}")
+        else:
+            print(json.dumps(receipt.document(), default=str, sort_keys=True))
+        return 0 if receipt.healthy else 1
+    if args.command == "repair" and args.target == "omarchy":
+        if args.widget:
+            _confirm_unsandboxed_plugin(args.yes)
+        receipt = OmarchySetup().repair(widget=args.widget, service=args.service)
+        print(json.dumps(asdict(receipt), default=str, sort_keys=True))
+        return 0 if receipt.configured else 1
+    if args.command == "remove" and args.target == "omarchy-integration":
+        receipt = OmarchySetup().remove()
+        print(json.dumps(asdict(receipt), default=str, sort_keys=True))
+        return 0
+    if args.command == "purge":
+        receipt = OmarchySetup().purge_user_data(
+            confirmed=args.user_data and args.yes,
+        )
+        print(json.dumps(receipt, sort_keys=True))
+        return 0
+    if args.command == "permissions":
+        store = DesktopPermissionStore(
+            args.state_root.absolute() / "config/fallbacks.json",
+        )
+        if args.screen_capture is None and args.input_control is None:
+            receipt = store.status()
+        else:
+            receipt = store.update(
+                screen_capture=_on_off(args.screen_capture),
+                input_control=_on_off(args.input_control),
+            )
+        print(json.dumps(receipt, sort_keys=True))
+        return 0
     if args.command == "mcp":
         if not (args.prefix.absolute() / "active").is_dir():
             raise RuntimeError("signed FAM_OS installation is not active")
@@ -107,9 +226,10 @@ def main(argv=None) -> int:
         args.prefix.absolute(), _trusted_keys(args.trusted_key),
     )
     if args.command == "console":
-        diagnosis = installation.diagnose()
-        if not diagnosis.healthy:
-            raise RuntimeError("signed FAM_OS installation is not healthy")
+        if not _system_package_installed():
+            diagnosis = installation.diagnose()
+            if not diagnosis.healthy:
+                raise RuntimeError("signed FAM_OS installation is not healthy")
         runtime_root = args.runtime_root or _runtime_root(args.prefix)
         return run_console_command(runtime_root, args.port)
     if args.command == "host-security":
@@ -208,6 +328,40 @@ def _runtime_root(prefix: Path | None = None) -> Path:
 
 def _state_root() -> Path:
     return Path(os.environ.get("XDG_DATA_HOME", Path.home() / ".local/share")) / "fam-os"
+
+
+def _installation_prefix() -> Path:
+    return Path(os.environ.get(
+        "FAM_OS_PREFIX", Path.home() / ".local/share/fam-os-installation",
+    ))
+
+
+def _system_package_installed() -> bool:
+    marker = Path("/usr/share/fam-os/arch-package.json")
+    configured = os.environ.get("FAM_OS_SYSTEM_PACKAGE_MARKER")
+    return marker.is_file() or bool(configured and Path(configured).is_file())
+
+
+def _confirm_unsandboxed_plugin(assume_yes: bool) -> None:
+    if assume_yes:
+        return
+    if not os.isatty(0):
+        raise PermissionError(
+            "Omarchy plugins run unsandboxed inside the desktop shell; "
+            "rerun with --yes after reviewing the plugin source",
+        )
+    response = input(
+        "Install the Git-backed FAM plugin inside Omarchy's unsandboxed shell? "
+        "[y/N] ",
+    ).strip().casefold()
+    if response not in {"y", "yes"}:
+        raise PermissionError("Omarchy plugin installation was not confirmed")
+
+
+def _on_off(value: str | None) -> bool | None:
+    if value is None:
+        return None
+    return value == "on"
 
 
 def _pairing_inputs(parser) -> None:

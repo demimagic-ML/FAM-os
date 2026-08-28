@@ -56,9 +56,13 @@ class ApplicationAgentTools:
         registry.register(_descriptor(
             "act_on_application",
             "Prepare and execute one discovered application action through the live "
-            "connector, returning its verified postcondition receipt. Available only "
-            "under Full OS authority.",
-            AgentToolEffect.OS_WRITE,
+            "connector, returning its verified postcondition receipt. Application-test "
+            "authority permits connector-scoped app actions; Full OS also permits them.",
+            (
+                AgentToolEffect.APPLICATION_TEST
+                if self._profile is AgentAuthorityProfile.APPLICATION_TEST
+                else AgentToolEffect.OS_WRITE
+            ),
             {
                 "instance_id": {"type": "string"},
                 "capability_id": {"type": "string"},
@@ -73,7 +77,10 @@ class ApplicationAgentTools:
         all_entries = self._provider().entries()
         entries = tuple(
             item for item in all_entries
-            if self._profile is AgentAuthorityProfile.FULL_OS
+            if self._profile in {
+                AgentAuthorityProfile.FULL_OS,
+                AgentAuthorityProfile.APPLICATION_TEST,
+            }
             or item.capability.required_authority.value == "observe"
         )
         values = [{

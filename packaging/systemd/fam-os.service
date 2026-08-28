@@ -1,19 +1,24 @@
 [Unit]
 Description=FAM_OS local intelligence service
+Documentation=https://github.com/demimagic-ML/FAM-os
 After=network.target
 
 [Service]
 Type=simple
-NoNewPrivileges=true
-PrivateTmp=true
-ProtectSystem=strict
-ProtectHome=read-only
-ReadWritePaths=%h/.local/share/fam-os %t/fam-os
-Environment=PYTHONPATH=@FAM_PREFIX@/active/python
-EnvironmentFile=-%h/.config/fam-os/network-client.env
-ExecStart=@PYTHON@ -m fam_os.product.service
+ExecStart=/usr/bin/fam-service --state-root=%h/.local/share/fam-os --runtime-root=%t/fam-os
 Restart=on-failure
 RestartSec=2
+TimeoutStopSec=30
+# FAM is intentionally a current-user OS and engineering agent. It never runs
+# as root and cannot acquire setuid privileges. The selected authority profile,
+# exact workspace grants, candidate lifecycle, and command audit are the user
+# filesystem boundary.
+NoNewPrivileges=true
+PrivateTmp=false
+ProtectSystem=false
+ProtectHome=false
+EnvironmentFile=-%h/.config/fam-os/service.env
+EnvironmentFile=-%h/.config/fam-os/network-client.env
 
 [Install]
 WantedBy=default.target

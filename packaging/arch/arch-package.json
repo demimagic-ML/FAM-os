@@ -1,0 +1,17 @@
+{
+  "contractVersion": "fam.arch.package/v1",
+  "package": "fam-os",
+  "version": "0.1.0",
+  "architectures": ["x86_64", "aarch64"],
+  "pythonDependencies": {
+    "source": "signed-arch-repository",
+    "runtimeInstallation": false,
+    "constraints": {
+      "cryptography": ">=48.0.1,<51",
+      "jsonschema": ">=4.10,<5",
+      "mcp": ">=1.27,<2",
+      "sympy": ">=1.13,<2",
+      "playwright": ">=1.58,<2"
+    }
+  }
+}

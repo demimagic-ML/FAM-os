@@ -5,6 +5,7 @@ import os
 import socket
 import threading
 import hashlib
+import json
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -18,7 +19,7 @@ from fam_os.core.production.turn_resolution import (
     ConversationTurnResolverSettings,
     ModelConversationTurnResolver,
 )
-from fam_os.console.service import load_or_create_token
+from fam_os.console.service import load_or_create_token, rotate_token
 from fam_os.console.tasks import ConsoleTaskApi
 from fam_os.core.production.gateway import ProductionTaskGateway
 from fam_os.core.production.model_selection import ResourceAwareModelSelector
@@ -88,6 +89,9 @@ from fam_os.product.natural_engineering_agent import (
     NaturalEngineeringAgentService,
 )
 from fam_os.product.goal_mode import GoalModeService
+from fam_os.adapters.omarchy.snapshots import OmarchySnapshots
+from fam_os.product.widget_api import WidgetStatusApi
+from fam_os.product.agent_usage import AgentUsageRepository, UsageTelemetryRuntime
 from fam_os.product.natural_engineering_documentation import (
     NaturalEngineeringDocumentationCoordinator,
     UnavailableNaturalEngineeringDocumentationCoordinator,
@@ -197,6 +201,7 @@ class ProductServiceSettings:
     git_publication_remote_name: str | None = None
     git_publication_credential_ref: str | None = None
     codex_subscription: CodexSubscriptionSettings | None = None
+    widget_audit_root: Path | None = None
 
     def __post_init__(self) -> None:
         for socket_name in ("shell.sock", "applications.sock", "mcp-ingress.sock"):
@@ -206,6 +211,11 @@ class ProductServiceSettings:
                     "FAM_OS runtime socket path exceeds the Linux AF_UNIX bound: "
                     + str(socket_path)
                 )
+        if (
+            self.widget_audit_root is not None
+            and not self.widget_audit_root.is_absolute()
+        ):
+            raise ValueError("widget audit root must be absolute")
         if (
             self.integration_network_broker_socket is not None
             and not self.integration_network_broker_socket.is_absolute()
@@ -292,7 +302,14 @@ class LocalProductService:
         engineering_runtime=None,
     ) -> None:
         self.settings = settings
-        self._runtime = runtime
+        self._usage_repository = AgentUsageRepository(
+            self.settings.state_root / "state/agent-usage.sqlite3",
+        )
+        self._runtime = (
+            None
+            if runtime is None
+            else UsageTelemetryRuntime(runtime, self._usage_repository, "ollama")
+        )
         self._engineering_runtime = engineering_runtime
         self._engineering_model_ref: str | None = None
         self._adaptation_health_sampler = adaptation_health_sampler
@@ -411,6 +428,10 @@ class LocalProductService:
             ),
         )
         token = load_or_create_token(self.settings.runtime_root / "console.token")
+        widget_token = rotate_token(self.settings.runtime_root / "widget.token")
+        _write_widget_runtime_descriptor(
+            self.settings.runtime_root, self.settings.console_port,
+        )
         storage = None if self._storage_unit is None else self._storage_unit.result
         if storage is None:
             raise RuntimeError("Console requires secure storage state")
@@ -495,6 +516,24 @@ class LocalProductService:
                 )
             ),
             goal_mode_service=self.goal_mode_service,
+            widget_api=(
+                None if self.goal_mode_service is None else WidgetStatusApi(
+                    self.goal_mode_service,
+                    console_port=self.settings.console_port,
+                    runtime_root=self.settings.runtime_root,
+                    natural_engineering_api=self.natural_engineering_api,
+                    residency=self.model_residency,
+                    state_root=(
+                        self.settings.widget_audit_root
+                        or self.settings.state_root
+                    ),
+                    engineering_provider=(
+                        "codex" if self.settings.codex_subscription is not None
+                        else "ollama"
+                    ),
+                )
+            ),
+            widget_token=widget_token,
         )
         self.shell_server.open()
         self.application_fabric.open()
@@ -559,6 +598,7 @@ class LocalProductService:
                 thread.join(timeout=5)
         if self.settings.ready_file is not None:
             self.settings.ready_file.unlink(missing_ok=True)
+        (self.settings.runtime_root / "widget.json").unlink(missing_ok=True)
         self.document_indexes = document_memory.close_document_index_service(self.document_indexes)
         if self.live_adaptation is not None:
             self.live_adaptation.stop()
@@ -658,6 +698,10 @@ class LocalProductService:
             runtime = self._runtime_unit.start()
         if runtime is None:
             runtime = OllamaRuntime(OllamaSettings(self.settings.ollama_url, 180))
+        if not isinstance(runtime, UsageTelemetryRuntime):
+            runtime = UsageTelemetryRuntime(
+                runtime, self._usage_repository, "ollama", self.settings.model_ref,
+            )
         self._runtime = runtime
         engineering_inference = compose_engineering_inference(
             runtime, _engineering_model_ref(
@@ -666,6 +710,17 @@ class LocalProductService:
                 self.settings.state_root / "agent-model-scorecard.json",
             ), self.settings.codex_subscription,
             self._engineering_runtime,
+        )
+        if engineering_inference.runtime is runtime:
+            engineering_runtime = runtime
+        else:
+            engineering_runtime = UsageTelemetryRuntime(
+                engineering_inference.runtime, self._usage_repository,
+                "codex" if self.settings.codex_subscription is not None else "local",
+                engineering_inference.model_ref,
+            )
+        engineering_inference = type(engineering_inference)(
+            engineering_runtime, engineering_inference.model_ref,
         )
         self._engineering_runtime = engineering_inference.runtime
         self._engineering_model_ref = engineering_inference.model_ref
@@ -894,6 +949,7 @@ class LocalProductService:
                 None if self._runtime_unit is None
                 else self._runtime_unit.recover
             ),
+            system_snapshots=OmarchySnapshots(),
         )
         self.engineering_secret_api = ProductEngineeringSecretApi(
             local_owner_id(os.geteuid()),
@@ -1067,6 +1123,23 @@ def _wake_shell(path: Path) -> None:
             stream.connect(str(path))
     except OSError:
         pass
+
+
+def _write_widget_runtime_descriptor(runtime_root: Path, port: int) -> None:
+    path = runtime_root / "widget.json"
+    temporary = path.with_suffix(".tmp")
+    document = {
+        "contractVersion": "fam.widget-runtime/v1",
+        "endpoint": f"http://127.0.0.1:{port}",
+        "tokenPath": str(runtime_root / "widget.token"),
+        "processId": os.getpid(),
+    }
+    temporary.write_text(
+        json.dumps(document, separators=(",", ":"), sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    os.chmod(temporary, 0o600)
+    os.replace(temporary, path)
 
 
 if __name__ == "__main__":

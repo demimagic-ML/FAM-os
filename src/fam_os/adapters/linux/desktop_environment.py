@@ -18,4 +18,11 @@ def application_discovery_settings(environment, home: Path):
         directories,
         environment.get("XDG_SESSION_TYPE", "unknown"),
         bool(environment.get("DISPLAY")),
+        desktop_names=tuple(
+            item for item in environment.get("XDG_CURRENT_DESKTOP", "").split(":")
+            if item
+        ),
+        hyprland_signature_available=bool(
+            environment.get("HYPRLAND_INSTANCE_SIGNATURE")
+        ),
     )

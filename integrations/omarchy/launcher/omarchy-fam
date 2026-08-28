@@ -1,0 +1,11 @@
+#!/bin/sh
+# omarchy:summary=Launch FAM_OS in the current project or submit a durable goal
+# omarchy:args=[prompt] [--goal] [--authority workspace|application_test|full_os] [text...]
+# omarchy:examples=omarchy-fam | omarchy-fam --goal "Finish and test this application"
+if [ "$#" -eq 0 ]; then
+  exec fam-os console
+fi
+if [ "$1" = "prompt" ]; then
+  shift
+fi
+exec fam-os agent --workspace "$PWD" "$@"

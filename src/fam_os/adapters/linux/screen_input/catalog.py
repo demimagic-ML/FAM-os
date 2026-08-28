@@ -34,6 +34,7 @@ def controlled_input() -> CapabilityDescriptor:
 def build_screen_input_registration(
     connector_id: str, instance_id: str, application_id: str,
     process_id: int, window_id: str, connected_at: datetime,
+    provider_name: str = "x11-pillow-xtest",
 ) -> ConnectorRegistration:
     application = ApplicationIdentity(application_id, "Screen/input fallback")
     instance = ApplicationInstance(
@@ -48,5 +49,5 @@ def build_screen_input_registration(
     )
     return ConnectorRegistration(
         connector_id, ConnectorTransportKind.SCREEN_INPUT,
-        "x11-pillow-xtest", "1.0", instance, entries, connected_at,
+        provider_name, "1.0", instance, entries, connected_at,
     )

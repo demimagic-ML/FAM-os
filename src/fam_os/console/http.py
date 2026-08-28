@@ -7,6 +7,7 @@ from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import ipaddress
 import logging
+import secrets
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
@@ -49,6 +50,7 @@ from fam_os.console.goal_routes import handle_goal_get, handle_goal_post
 from fam_os.console.recipe_routes import handle_recipe_get, handle_recipe_post
 from fam_os.console.tasks import task_document
 from fam_os.console.workspaces import ConsoleWorkspaceApi
+from fam_os.console.widget_routes import handle_widget_get, handle_widget_post
 
 DEFAULT_CONSOLE_JSON_BYTES = 262_144
 MEMORY_CORRECTION_JSON_BYTES = 8_388_608
@@ -70,6 +72,8 @@ class ConsoleHttpServer(ThreadingHTTPServer):
         recipe_library=None,
         conversation_turn_api=None,
         goal_mode_service=None,
+        widget_api=None,
+        widget_token: str | None = None,
     ):
         if not ipaddress.ip_address(address[0]).is_loopback:
             raise ValueError("FAM Console must bind only to loopback")
@@ -91,6 +95,8 @@ class ConsoleHttpServer(ThreadingHTTPServer):
         self.recipe_library = recipe_library
         self.conversation_turn_api = conversation_turn_api
         self.goal_mode_service = goal_mode_service
+        self.widget_api = widget_api
+        self.widget_token = widget_token
         self.workspace_api = workspace_api or ConsoleWorkspaceApi(Path.home())
         super().__init__(address, ConsoleRequestHandler)
 
@@ -100,6 +106,8 @@ class ConsoleRequestHandler(BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:
         path = urlsplit(self.path).path
+        if handle_widget_get(self, path):
+            return
         if path == "/api/v1/session":
             self._session_status()
         elif path == "/api/v1/snapshot":
@@ -204,6 +212,14 @@ class ConsoleRequestHandler(BaseHTTPRequestHandler):
         if path == "/api/v1/session":
             self._exchange_session()
             return
+        if self._widget_authorized():
+            try:
+                document = self._json_body(_json_limit(path))
+                if handle_widget_post(self, path, document):
+                    return
+            except (KeyError, OSError, RuntimeError, ValueError) as error:
+                self._json(400, {"error": str(error)})
+                return
         session = self._mutation_session()
         if session is None:
             return
@@ -461,6 +477,28 @@ class ConsoleRequestHandler(BaseHTTPRequestHandler):
     def _host_allowed(self) -> bool:
         host = self.headers.get("Host", "").split(":", 1)[0]
         return host in {"127.0.0.1", "localhost", "[::1]"}
+
+    def _widget_authorized(self, *, allow_query: bool = False) -> bool:
+        expected = self.server.widget_token
+        supplied = self.headers.get("X-FAM-Widget-Token", "")
+        if allow_query and not supplied:
+            values = parse_qs(urlsplit(self.path).query).get("token", ())
+            supplied = values[0] if len(values) == 1 else ""
+        return bool(
+            expected and supplied and self._host_allowed()
+            and self._widget_origin_allowed()
+            and secrets.compare_digest(expected, supplied)
+        )
+
+    def _widget_origin_allowed(self) -> bool:
+        origin = self.headers.get("Origin")
+        if origin is None:
+            return True
+        return origin in {
+            "qrc://fam.os",
+            f"http://127.0.0.1:{self.server.server_port}",
+            f"http://localhost:{self.server.server_port}",
+        }
 
     def _tasks(self):
         if self.server.task_api is None:

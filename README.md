@@ -40,6 +40,7 @@ FAM_OS does not replace the Linux kernel and does not require every selected fol
 - **Local model routing.** General and engineering work can use different Ollama models. The current workstation configuration has been exercised with `qwen3.8:27b` for engineering work.
 - **Native Codex engineering.** An optional ChatGPT-authenticated Codex provider can inspect, edit, run, test, and self-correct directly inside the isolated candidate while FAM retains verification and final delivery.
 - **Authenticated local Console.** The browser UI exposes workspace selection, conversation, tool evidence, candidate changes, Goal Mode controls, recovery state, and machine status.
+- **First-class Omarchy 4 integration.** FAM_OS ships a signed x86_64 Arch package, unprivileged systemd user lifecycle, UWSM/Hyprland adapters, an independently signed `fam.os` Quickshell plugin, native and browser application testing, compatibility usage telemetry, snapshot-aware system goals, and `doctor`/`repair` commands. aarch64 is experimental and Omarchy 3 is unsupported.
 
 ## How the agent loop works
 
@@ -60,6 +61,40 @@ For Goal Mode, the lifecycle is longer:
 4. **Apply:** reconcile the verified candidate into the owner's workspace, then check the applied result.
 
 The original folder remains unchanged while Build and Verify are running. If a goal pauses, the service restarts, or the model temporarily disappears, the durable goal record and candidate are preserved.
+
+## Install on Omarchy
+
+After inclusion in the Omarchy package repository:
+
+```bash
+omarchy pkg add fam-os
+fam-os setup omarchy --yes --enable-widget
+```
+
+Before repository inclusion, inspect the FAM-owned release installer. It
+confirms Omarchy 4/x86_64 and disk space, verifies the pinned signing key,
+signed checksum manifest, package checksum and detached package signature,
+then installs with pacman:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/demimagic-ML/FAM-os/main/packaging/omarchy/bootstrap.sh | less
+curl -fsSL https://raw.githubusercontent.com/demimagic-ML/FAM-os/main/packaging/omarchy/bootstrap.sh | bash
+```
+
+Open FAM or submit work directly from a project:
+
+```bash
+fam
+fam "Explain this project and run its tests"
+fam goal "Finish this application, test it, and verify the build"
+fam console
+```
+
+Setup is idempotent and uses Omarchy's Git-plugin lifecycle; it does not make
+manual QML copies, edit systemd/Hyprland configuration, or embed owner-specific
+paths. Native `omarchy default agent fam` remains an upstream integration, not
+a current claim. See the complete
+[Omarchy installation guide](docs/installation/omarchy.md).
 
 ## Run the current development service
 
@@ -185,6 +220,10 @@ Useful implementation guides:
 - [Application weaving](docs/architecture/APPLICATION_WEAVING.md)
 - [Safe service recovery](docs/architecture/SAFE_SERVICE_RECOVERY.md)
 - [Native Codex engineering](docs/operations/CODEX_SUBSCRIPTION_ENGINEERING.md)
+- [Omarchy installation and lifecycle](docs/installation/omarchy.md)
+- [Omarchy integration architecture](docs/architecture/OMARCHY_INTEGRATION.md)
+- [Omarchy application testing](docs/operations/OMARCHY_APPLICATION_TESTING.md)
+- [Omarchy plugin and agent security boundary](docs/security/OMARCHY_PLUGIN_AND_AGENT_BOUNDARY.md)
 
 Architecture decisions and implementation handoffs are retained under `docs/decisions/` and `handoffs/`. They are engineering history, not a substitute for this current operator guide.
 
@@ -207,7 +246,15 @@ The active implementation lives entirely under `FAM_OS/`. The sibling RNF protot
 
 ## Project status
 
-FAM_OS is an active Linux prototype, not yet a packaged consumer product. Its broad fabrics and installed lifecycle exist, but autonomous quality still depends on the selected local model, hardware, project toolchain, and completion checks. A successful UI step is not treated as proof by itself: trustworthy completion requires file, command, or semantic evidence from the requested workspace.
+FAM_OS is an active Linux agent runtime with a real Arch/Omarchy packaging and
+release path. Version tags build and sign the official x86_64 package; an
+experimental aarch64 build remains non-gating and is not an Omarchy release.
+Official `omarchy pkg add fam-os` availability still depends on the focused
+package contribution being accepted into `omacom-io/omarchy-pkgs`.
+Autonomous quality depends on the selected model, hardware, project toolchain,
+and completion checks. A successful UI step is not proof by itself:
+trustworthy completion requires file, command, application or semantic evidence
+from the requested workspace.
 
 ## License
 

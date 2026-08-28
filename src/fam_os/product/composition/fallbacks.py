@@ -18,6 +18,9 @@ from fam_os.adapters.linux.screen_input.catalog import build_screen_input_regist
 from fam_os.adapters.linux.screen_input.policy import ScreenInputPolicy
 from fam_os.adapters.linux.screen_input.x11_inspector import X11InspectorSettings
 from fam_os.adapters.linux.screen_input.x11_provider import X11ScreenInputProvider
+from fam_os.adapters.wayland.screen_input import (
+    default_hyprland_screen_input_provider,
+)
 from fam_os.product.composition.fallback_policy import (
     ProductFallbackPolicy, parse_fallback_policy,
 )
@@ -35,7 +38,7 @@ class ProductFallbacks:
         self._registry = registry
         self._policy = policy
         self._accessibility_factory = accessibility_provider_factory
-        self._screen_factory = screen_provider_factory or _x11_provider
+        self._screen_factory = screen_provider_factory or _desktop_screen_provider
         self._transports: dict[str, Any] = {}
         self._issues: dict[str, str | None] = {
             "accessibility": "not_started" if policy.accessibility.enabled else "disabled",
@@ -137,6 +140,7 @@ class ProductFallbacks:
             registration = build_screen_input_registration(
                 item.connector_id, item.instance_id, target.application_id,
                 target.process_id, target.window_id, _now(),
+                getattr(provider, "provider_name", "linux-screen-input"),
             )
             if not actions_active:
                 registration = _without_action(
@@ -216,6 +220,15 @@ def _x11_provider():
     return X11ScreenInputProvider(X11InspectorSettings(
         os.environ.get("XDG_SESSION_TYPE", "unknown"), os.environ.get("DISPLAY", ""),
     ))
+
+
+def _desktop_screen_provider():
+    if (
+        os.environ.get("XDG_SESSION_TYPE", "").casefold() == "wayland"
+        and os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+    ):
+        return default_hyprland_screen_input_provider()
+    return _x11_provider()
 
 
 def _require_private(path: Path) -> None:

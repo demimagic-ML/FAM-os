@@ -6,10 +6,6 @@ from fam_os.adapters.linux.resource_discovery import (
     PrivacyReviewedLinuxResourceDiscovery,
     build_privacy_reviewed_resource_state,
 )
-from fam_os.adapters.linux.application_discovery import (
-    LinuxApplicationDiscovery, LinuxApplicationDiscoverySettings,
-)
-from fam_os.adapters.linux.desktop_environment import application_discovery_settings
 from fam_os.adapters.linux.deterministic_catalog import (
     DeterministicCapabilityDeclaration, build_deterministic_registration,
     file_observation, file_write, mime_observation, portal_open_uri,
@@ -51,3 +47,24 @@ __all__ = [
     "DirectoryStorageRuntimeObserver",
     "NvidiaAcceleratorRuntimeObserver",
 ]
+
+
+def __getattr__(name: str):
+    """Load desktop discovery lazily to avoid compositor-provider cycles."""
+    if name in {"LinuxApplicationDiscovery", "LinuxApplicationDiscoverySettings"}:
+        from fam_os.adapters.linux.application_discovery import (
+            LinuxApplicationDiscovery, LinuxApplicationDiscoverySettings,
+        )
+        values = {
+            "LinuxApplicationDiscovery": LinuxApplicationDiscovery,
+            "LinuxApplicationDiscoverySettings": LinuxApplicationDiscoverySettings,
+        }
+    elif name == "application_discovery_settings":
+        from fam_os.adapters.linux.desktop_environment import (
+            application_discovery_settings,
+        )
+        values = {"application_discovery_settings": application_discovery_settings}
+    else:
+        raise AttributeError(name)
+    globals().update(values)
+    return values[name]

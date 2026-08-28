@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "Hardware-aware operating-system intelligence service"
 requires-python = ">=3.12"
 dependencies = [
-    "cryptography>=48.0.1,<49",
+    "cryptography>=48.0.1,<51",
     "jsonschema>=4.10,<5",
     "mcp>=1.27,<2",
     "sympy>=1.13,<2",
@@ -57,6 +57,7 @@ training = [
 [project.scripts]
 fam-shell = "fam_os.adapters.shell.cli:main"
 fam-os = "fam_os.product.cli:main"
+fam = "fam_os.product.fam_cli:main"
 fam-console = "fam_os.console.service:main"
 fam-service = "fam_os.product.service:main"
 fam-network-broker = "fam_os.product.network_broker_service_cli:main"

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=FAM_OS
+Comment=Work with your machine through durable, verified goals
+Exec=fam-os console
+Icon=fam-os
+Terminal=false
+Categories=Development;
+StartupNotify=true
+X-FAM-Managed=true

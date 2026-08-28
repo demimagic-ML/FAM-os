@@ -34,7 +34,7 @@ class GoalModeService:
         maximum_recovery_seconds: float = 1_800,
         retry_base_seconds: float = 2.0, retry_max_seconds: float = 60.0,
         watchdog_seconds: float = 240.0, provider_recover=None,
-        sleeper=time.sleep,
+        system_snapshots=None, sleeper=time.sleep,
     ) -> None:
         if maximum_recovery_attempts < 1 or maximum_recovery_seconds <= 0:
             raise ValueError("goal recovery budget must be positive")
@@ -59,6 +59,7 @@ class GoalModeService:
         self._retry_max_seconds = retry_max_seconds
         self._watchdog_seconds = watchdog_seconds
         self._provider_recover = provider_recover
+        self._system_snapshots = system_snapshots
         self._sleep = sleeper
         self._prepare()
 
@@ -217,6 +218,10 @@ class GoalModeService:
         document = _document(row)
         document["live"] = self._live_progress(document)
         document["candidate"] = self._candidate_progress(document)
+        document["system_snapshot"] = (
+            None if row["snapshot_json"] is None
+            else json.loads(row["snapshot_json"])
+        )
         return document
 
     def list(self, owner_id: str, *, workspace_root: str | None = None) -> dict[str, object]:
@@ -267,6 +272,7 @@ class GoalModeService:
         try:
             if int(row["retry_attempts"]):
                 self._recover_provider()
+            self._ensure_system_snapshot(row)
             if row["execution_stage"] == "apply":
                 result = json.loads(row["result_json"] or "{}")
             else:
@@ -470,6 +476,35 @@ class GoalModeService:
         ):
             prewarm(self._model_ref, "30m")
 
+    def _ensure_system_snapshot(self, row) -> None:
+        if (
+            row["snapshot_json"] is not None
+            or not _requires_system_snapshot(row)
+            or self._system_snapshots is None
+            or not self._system_snapshots.available()
+        ):
+            return
+        receipt = self._system_snapshots.create(
+            f"FAM_OS preflight for {row['title']} ({row['goal_id']})",
+        )
+        document = {
+            "available": receipt.available,
+            "created": receipt.created,
+            "reference": receipt.reference,
+            "detail": receipt.detail,
+            "created_at": _now(),
+        }
+        if not receipt.created:
+            raise RuntimeError(
+                "Omarchy preflight snapshot failed: " + receipt.detail,
+            )
+        with self._lock, self._database:
+            self._database.execute(
+                "UPDATE engineering_goals SET snapshot_json=?,updated_at=? "
+                "WHERE goal_id=? AND snapshot_json IS NULL",
+                (json.dumps(document, sort_keys=True), _now(), row["goal_id"]),
+            )
+
     def _watched_call(self, row, operation):
         outcomes: queue.Queue = queue.Queue(maxsize=1)
 
@@ -601,6 +636,7 @@ class GoalModeService:
                 "execution_stage": "TEXT NOT NULL DEFAULT 'activation'",
                 "pending_changeset_id": "TEXT",
                 "watchdog_trips": "INTEGER NOT NULL DEFAULT 0",
+                "snapshot_json": "TEXT",
             }
             for name, definition in additions.items():
                 if name not in columns:
@@ -709,13 +745,26 @@ def _document(row: sqlite3.Row) -> dict[str, object]:
     }
 
 
+def _requires_system_snapshot(row: sqlite3.Row) -> bool:
+    if row["authority_profile"] != AgentAuthorityProfile.FULL_OS.value:
+        return False
+    text = " ".join((
+        str(row["prompt"]), str(row["title"]), str(row["plan_json"]),
+    )).casefold()
+    return any(marker in text for marker in (
+        "pacman", "system package", "install package", "remove package",
+        "machine configuration", "system configuration", "systemd",
+        "/etc/", "hyprland config", "quickshell config", "kernel",
+    ))
+
+
 def _application_test_progress(
     events: list[dict[str, object]],
 ) -> dict[str, object] | None:
     calls = [
         event for event in events
         if event.get("event_kind") == "call"
-        and str(event.get("tool_id", "")).startswith("app_")
+        and str(event.get("tool_id", "")).startswith(("app_", "native_app_"))
     ]
     if not calls:
         return None
@@ -736,13 +785,15 @@ def _application_test_progress(
             return {}
         return document if isinstance(document, dict) else {}
 
-    start = next((item for item in reversed(calls) if item.get("tool_id") == "app_start"), None)
-    stop = next((item for item in reversed(calls) if item.get("tool_id") == "app_stop"), None)
+    native = any(str(item.get("tool_id", "")).startswith("native_app_") for item in calls)
+    prefix = "native_app_" if native else "app_"
+    start = next((item for item in reversed(calls) if item.get("tool_id") == prefix + "start"), None)
+    stop = next((item for item in reversed(calls) if item.get("tool_id") == prefix + "stop"), None)
     started = output(start) if start is not None else {}
     stopped = output(stop) if stop is not None else {}
     assertions = sum(
         output(item).get("passed") is True
-        for item in calls if item.get("tool_id") == "app_assert"
+        for item in calls if item.get("tool_id") == prefix + "assert"
     )
     console = next((
         output(item) for item in reversed(calls)
@@ -760,7 +811,8 @@ def _application_test_progress(
         "planned_checks": len((started.get("plan") or {}).get("checks", [])),
         "console_errors": console.get("count", len(stopped.get("console_events", []))),
         "network_failures": network.get("count", len(stopped.get("network_events", []))),
-        "latest_action": str(calls[-1].get("tool_id", "app_start")),
+        "provider": "at-spi" if native else "playwright",
+        "latest_action": str(calls[-1].get("tool_id", prefix + "start")),
     }
 
 

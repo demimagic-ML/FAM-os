@@ -14,6 +14,15 @@ from fam_os.product.agent_model_scorecard import SCORECARD_VERSION
 
 
 class ProductServiceStartupSafetyTests(unittest.TestCase):
+    def test_managed_runtime_remains_uninitialized_until_startup(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            service = LocalProductService(ProductServiceSettings(
+                root / "state", root / "run",
+            ))
+
+            self.assertIsNone(service._runtime)
+
     def test_engineering_prefers_stronger_installed_agent_model(self) -> None:
         runtime = Mock()
         runtime.available_models.return_value = (
@@ -61,6 +70,13 @@ class ProductServiceStartupSafetyTests(unittest.TestCase):
 
         with self.assertRaisesRegex(ValueError, "AF_UNIX"):
             ProductServiceSettings(Path("/tmp/state"), runtime_root)
+
+    def test_widget_audit_root_must_be_absolute(self) -> None:
+        with self.assertRaisesRegex(ValueError, "widget audit root"):
+            ProductServiceSettings(
+                Path("/tmp/state"), Path("/tmp/runtime"),
+                widget_audit_root=Path("relative-state"),
+            )
 
     def test_partial_startup_does_not_shutdown_unserved_console(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

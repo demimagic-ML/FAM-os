@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "fam.os",
+  "name": "FAM",
+  "version": "0.1.0",
+  "author": "FAM OS",
+  "license": "MIT",
+  "description": "Goal progress and controls for FAM",
+  "kinds": ["bar-widget", "panel"],
+  "entryPoints": {"barWidget": "Widget.qml", "panel": "Panel.qml"},
+  "barWidget": {
+    "displayName": "FAM",
+    "description": "Minimal live status for the local FAM_OS service.",
+    "category": "AI",
+    "aliases": ["fam", "ai", "agent", "goals"],
+    "allowMultiple": false,
+    "defaultSection": "right",
+    "defaults": {"activeRefreshMs": 30000, "idleRefreshMs": 30000},
+    "schema": [
+      {"key": "activeRefreshMs", "type": "integer", "label": "Fallback refresh (ms)", "min": 10000, "max": 120000, "step": 5000, "defaultValue": 30000},
+      {"key": "idleRefreshMs", "type": "integer", "label": "Idle refresh (ms)", "min": 15000, "max": 300000, "step": 15000, "defaultValue": 30000}
+    ]
+  }
+}

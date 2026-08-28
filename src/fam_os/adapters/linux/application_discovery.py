@@ -10,6 +10,10 @@ from fam_os.adapters.linux.desktop_entries import (
 )
 from fam_os.adapters.linux.processes import LinuxProcessDiscovery
 from fam_os.adapters.linux.x11_windows import X11WindowDiscovery, X11WindowSettings
+from fam_os.adapters.hyprland.windows import (
+    HyprlandWindowDiscovery, HyprlandWindowSettings,
+)
+from fam_os.adapters.wayland.windows import GenericWaylandWindowDiscovery
 from fam_os.applications import ApplicationDiscoverySnapshot
 
 
@@ -23,6 +27,8 @@ class LinuxApplicationDiscoverySettings:
     session_type: str
     display_available: bool
     include_window_titles: bool = False
+    desktop_names: tuple[str, ...] = ()
+    hyprland_signature_available: bool = False
 
 
 class LinuxApplicationDiscovery:
@@ -41,10 +47,21 @@ class LinuxApplicationDiscovery:
             settings.application_directories
         ))
         processes = LinuxProcessDiscovery()
-        windows = X11WindowDiscovery(X11WindowSettings(
-            settings.session_type, settings.display_available,
-            settings.include_window_titles,
-        ), runner)
+        if settings.session_type.casefold() == "x11":
+            windows = X11WindowDiscovery(X11WindowSettings(
+                settings.session_type, settings.display_available,
+                settings.include_window_titles,
+            ), runner)
+        elif settings.session_type.casefold() == "wayland" and (
+            settings.hyprland_signature_available
+            or any(name.casefold() == "hyprland" for name in settings.desktop_names)
+        ):
+            windows = HyprlandWindowDiscovery(HyprlandWindowSettings(
+                settings.session_type, settings.hyprland_signature_available,
+                settings.include_window_titles,
+            ), runner)
+        else:
+            windows = GenericWaylandWindowDiscovery()
         return cls(applications, processes, windows)
 
     def collect(self) -> ApplicationDiscoverySnapshot:

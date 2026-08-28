@@ -3,6 +3,7 @@ import tempfile
 import threading
 import time
 import unittest
+from types import SimpleNamespace
 from pathlib import Path
 
 from fam_os.core.agent import AgentAuthorityProfile
@@ -79,7 +80,66 @@ class _NaturalEngineering:
         self.restored_grants.append((owner_id, proposal_id, session_id))
 
 
+class _Snapshots:
+    def __init__(self):
+        self.descriptions = []
+
+    def available(self):
+        return True
+
+    def create(self, description):
+        self.descriptions.append(description)
+        return SimpleNamespace(
+            available=True, created=True, reference="snapshot-42", detail="created",
+        )
+
+
 class GoalModeTests(unittest.TestCase):
+    def test_native_application_test_progress_is_projected(self):
+        events = [
+            {"call_id": "start", "tool_id": "native_app_start", "event_kind": "call", "payload": {}},
+            {"call_id": "start", "tool_id": "native_app_start", "event_kind": "result", "payload": {
+                "output": json.dumps({"session_id": "native-1"}), "succeeded": True,
+            }},
+            {"call_id": "assert", "tool_id": "native_app_assert", "event_kind": "call", "payload": {}},
+            {"call_id": "assert", "tool_id": "native_app_assert", "event_kind": "result", "payload": {
+                "output": json.dumps({"passed": True}), "succeeded": True,
+            }},
+            {"call_id": "stop", "tool_id": "native_app_stop", "event_kind": "call", "payload": {}},
+            {"call_id": "stop", "tool_id": "native_app_stop", "event_kind": "result", "payload": {
+                "output": json.dumps({"assertions": 1, "passed_assertions": 1}),
+                "succeeded": True,
+            }},
+        ]
+
+        progress = _application_test_progress(events)
+
+        self.assertEqual("native-1", progress["session_id"])
+        self.assertEqual("at-spi", progress["provider"])
+        self.assertEqual("completed", progress["status"])
+        self.assertEqual(1, progress["assertions_passed"])
+
+    def test_full_os_package_goal_creates_one_durable_preflight_snapshot(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            snapshots = _Snapshots()
+            service = GoalModeService(
+                root / "goals.sqlite3", _NaturalEngineering(), _Runtime(), "model",
+                poll_seconds=.005, system_snapshots=snapshots,
+            )
+            goal = service.prepare(
+                "owner", "Install a system package with pacman", str(root),
+                AgentAuthorityProfile.FULL_OS, "session",
+            )
+            service.start()
+            service.activate("owner", goal["goal_id"], confirmed=True)
+
+            completed = _wait(service, goal["goal_id"], "completed")
+
+            self.assertEqual(1, len(snapshots.descriptions))
+            self.assertEqual("snapshot-42", completed["system_snapshot"]["reference"])
+            service.stop()
+
     def test_application_test_progress_survives_compacted_live_event_window(self):
         events = [
             {"call_id": "start", "tool_id": "app_start", "event_kind": "call", "payload": {}},

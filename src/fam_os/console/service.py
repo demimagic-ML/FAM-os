@@ -34,6 +34,29 @@ def load_or_create_token(path: Path) -> str:
     return token
 
 
+def rotate_token(path: Path) -> str:
+    path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+    os.chmod(path.parent, 0o700)
+    if path.is_symlink():
+        raise PermissionError("rotating token path cannot be a symbolic link")
+    temporary = path.with_name(f".{path.name}.{os.getpid()}.tmp")
+    descriptor = os.open(
+        temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0),
+        0o600,
+    )
+    token = secrets.token_urlsafe(32)
+    try:
+        with os.fdopen(descriptor, "w") as stream:
+            stream.write(token + "\n")
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary, path)
+    except BaseException:
+        temporary.unlink(missing_ok=True)
+        raise
+    return token
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description="FAM Console local service")
     parser.add_argument("--state-root", type=Path, required=True)
