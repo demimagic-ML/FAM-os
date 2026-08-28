@@ -54,6 +54,13 @@ class OmarchyDistributionContractTests(unittest.TestCase):
         self.assertIn("pacman-key --lsign-key", bootstrap)
         self.assertIn("setup omarchy --yes", bootstrap)
         self.assertIn("purge --user-data --yes", bootstrap)
+        self.assertIn('sub(/^\\.\\//, "", name)', bootstrap)
+
+        updater = (
+            ROOT
+            / "packaging/omarchy/omarchy-pkgs/fam-os/.omarchy/upstream.sh"
+        ).read_text()
+        self.assertIn('sub(/^\\.\\//, "", name)', updater)
 
     def test_release_scripts_are_executable_and_do_not_embed_an_owner_path(self):
         for relative in (

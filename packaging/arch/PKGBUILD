@@ -27,9 +27,8 @@ optdepends=(
 makedepends=('python-build' 'python-installer' 'python-setuptools' 'python-wheel')
 options=('docs')
 install=fam-os.install
-# The release workflow replaces SKIP with the SHA-256 of the deterministic
-# source archive before building. Published package recipes always carry the
-# concrete digest produced in SHA256SUMS.
+# Release builds replace SKIP with the SHA-256 of the deterministic source
+# archive. Published package recipes always carry that concrete digest.
 source=("$pkgname-$pkgver.tar.gz::$url/releases/download/v$pkgver/$pkgname-$pkgver.tar.gz")
 sha256sums=('SKIP')
 

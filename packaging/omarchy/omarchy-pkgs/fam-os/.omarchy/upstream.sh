@@ -18,7 +18,9 @@ fi
 checksum_url=$(jq -er '.assets[] | select(.name == "SHA256SUMS") | .browser_download_url' <<<"$release")
 checksums=$(curl -fsSL "$checksum_url")
 asset="fam-os-${version}.tar.gz"
-sha256=$(awk -v asset="$asset" '$2 == asset || $2 == "*" asset { print $1; exit }' <<<"$checksums")
+sha256=$(awk -v asset="$asset" \
+  '{name=$2; sub(/^\*/, "", name); sub(/^\.\//, "", name)} name == asset { print $1; exit }' \
+  <<<"$checksums")
 [[ $sha256 =~ ^[0-9a-f]{64}$ ]] || {
   echo "SHA256SUMS contains no valid digest for $asset" >&2
   exit 1

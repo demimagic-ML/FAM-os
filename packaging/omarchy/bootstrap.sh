@@ -64,7 +64,7 @@ actual_fingerprint=$(gpg --batch --homedir "$work_root/gnupg" --with-colons \
 gpg --batch --homedir "$work_root/gnupg" \
   --verify "$work_root/SHA256SUMS.asc" "$work_root/SHA256SUMS"
 (cd "$work_root" && awk -v asset="$package_name" \
-  '$2 == asset || $2 == "*" asset {print; found=1} END {exit !found}' SHA256SUMS \
+  '{name=$2; sub(/^\*/, "", name); sub(/^\.\//, "", name)} name == asset {print; found=1} END {exit !found}' SHA256SUMS \
   | sha256sum --check -)
 gpg --batch --homedir "$work_root/gnupg" \
   --verify "$work_root/$package_name.sig" "$work_root/$package_name"

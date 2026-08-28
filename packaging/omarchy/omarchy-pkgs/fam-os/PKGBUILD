@@ -27,9 +27,8 @@ optdepends=(
 makedepends=('python-build' 'python-installer' 'python-setuptools' 'python-wheel')
 options=('docs')
 install=fam-os.install
-# The release workflow replaces SKIP with the SHA-256 of the deterministic
-# source archive before building. Published package recipes always carry the
-# concrete digest produced in SHA256SUMS.
+# Omarchy publishes only recipes pinned to the deterministic release archive.
+# The updater refreshes this concrete digest from the signed release manifest.
 source=("$pkgname-$pkgver.tar.gz::$url/releases/download/v$pkgver/$pkgname-$pkgver.tar.gz")
 sha256sums=('SKIP')
 
