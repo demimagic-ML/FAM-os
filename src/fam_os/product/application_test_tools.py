@@ -676,6 +676,11 @@ def _sandboxed_application_command(
             "application launch requires bubblewrap; attach to an existing localhost "
             "URL or install the project sandbox dependency"
         )
+    executable = shutil.which(command[0])
+    if executable is None:
+        raise RuntimeError(f"application launch executable is unavailable: {command[0]}")
+    resolved_executable = Path(executable).resolve()
+    launch_command = (str(resolved_executable), *command[1:])
     root = str(workspace)
     values = [
         bubblewrap, "--unshare-user", "--unshare-ipc", "--unshare-pid",
@@ -687,9 +692,23 @@ def _sandboxed_application_command(
         "--ro-bind-try", "/etc/nsswitch.conf", "/etc/nsswitch.conf",
         "--proc", "/proc", "--dev", "/dev", "--tmpfs", "/tmp",
         "--bind", root, root, "--chdir", root,
-        "--setenv", "PATH", "/usr/bin:/bin", "--setenv", "HOME", "/tmp",
-        "--", *command,
     ]
+    executable_path = "/usr/bin:/bin"
+    if not resolved_executable.is_relative_to(Path("/usr")):
+        toolchain_root = (
+            resolved_executable.parent.parent
+            if resolved_executable.parent.name == "bin"
+            else resolved_executable.parent
+        )
+        for parent in reversed(toolchain_root.parents):
+            if parent != Path("/"):
+                values.extend(("--dir", str(parent)))
+        values.extend(("--ro-bind", str(toolchain_root), str(toolchain_root)))
+        executable_path = f"{resolved_executable.parent}:{executable_path}"
+    values.extend((
+        "--setenv", "PATH", executable_path,
+        "--setenv", "HOME", "/tmp", "--", *launch_command,
+    ))
     return tuple(values)
 
 

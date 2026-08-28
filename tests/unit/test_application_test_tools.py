@@ -12,10 +12,47 @@ from fam_os.core.agent import (
 )
 from fam_os.product.application_test_tools import (
     ApplicationTestTools, PlaywrightBrowserDriver,
+    _sandboxed_application_command,
 )
 
 
 class ApplicationTestToolsTests(unittest.TestCase):
+    def test_sandbox_projects_a_non_system_toolchain_read_only(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            workspace = root / "workspace"
+            executable = root / "toolchains/node/24/bin/node"
+            workspace.mkdir()
+            executable.parent.mkdir(parents=True)
+            executable.write_bytes(b"node")
+            with patch(
+                "fam_os.product.application_test_tools.shutil.which",
+                side_effect=lambda name: (
+                    "/usr/bin/bwrap" if name == "bwrap" else str(executable)
+                ),
+            ):
+                command = _sandboxed_application_command(
+                    ("node", "server.mjs"), workspace,
+                )
+
+        separator = command.index("--")
+        self.assertEqual(str(executable), command[separator + 1])
+        self.assertEqual("server.mjs", command[separator + 2])
+        bind = command.index("--ro-bind", command.index("--bind") + 1)
+        toolchain = str(executable.parent.parent)
+        self.assertEqual((toolchain, toolchain), command[bind + 1:bind + 3])
+        path = command.index("--setenv", bind)
+        self.assertEqual("PATH", command[path + 1])
+        self.assertEqual(f"{executable.parent}:/usr/bin:/bin", command[path + 2])
+
+    def test_sandbox_rejects_an_unavailable_launch_executable(self):
+        with tempfile.TemporaryDirectory() as directory, patch(
+            "fam_os.product.application_test_tools.shutil.which",
+            side_effect=lambda name: "/usr/bin/bwrap" if name == "bwrap" else None,
+        ):
+            with self.assertRaisesRegex(RuntimeError, "executable is unavailable"):
+                _sandboxed_application_command(("missing",), Path(directory))
+
     def test_runtime_availability_requires_a_real_browser_not_only_ffmpeg(self):
         with tempfile.TemporaryDirectory() as directory:
             home = Path(directory)

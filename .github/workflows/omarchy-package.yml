@@ -33,6 +33,7 @@ jobs:
             tests.unit.test_adapter_import_order \
             tests.unit.test_agent_usage \
             tests.unit.test_application_test_authority \
+            tests.unit.test_application_test_tools \
             tests.unit.test_console_contracts \
             tests.unit.test_desktop_permissions \
             tests.unit.test_fam_cli \
