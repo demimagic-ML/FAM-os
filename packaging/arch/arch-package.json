@@ -1,7 +1,7 @@
 {
   "contractVersion": "fam.arch.package/v1",
   "package": "fam-os",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "architectures": ["x86_64", "aarch64"],
   "pythonDependencies": {
     "source": "signed-arch-repository",

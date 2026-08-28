@@ -12,7 +12,7 @@ class OfficialMcpIngressServer:
         except ImportError as error:
             raise RuntimeError("MCP Python SDK v1 is not installed") from error
         self._types = types
-        self.server = Server("FAM_OS", version="0.1.0")
+        self.server = Server("FAM_OS", version="0.1.1")
         self._ingress = ingress
         self._register_handlers()
 

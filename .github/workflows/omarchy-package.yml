@@ -13,7 +13,7 @@ permissions:
   attestations: write
 
 env:
-  PACKAGE_VERSION: 0.1.0
+  PACKAGE_VERSION: 0.1.1
 
 jobs:
   test:
@@ -43,8 +43,12 @@ jobs:
             tests.unit.test_native_application_test_tools \
             tests.unit.test_omarchy_agent_client \
             tests.unit.test_omarchy_commands \
+            tests.unit.test_omarchy_context \
             tests.unit.test_omarchy_detection \
+            tests.unit.test_omarchy_notifications \
             tests.unit.test_omarchy_setup \
+            tests.unit.test_omarchy_snapshots \
+            tests.unit.test_omarchy_tui \
             tests.unit.test_product_service_startup_safety \
             tests.unit.test_widget_api
       - run: python tools/omarchy/validate-integration.py
@@ -56,6 +60,9 @@ jobs:
             packaging/keys/fam-os-release.asc
           GNUPGHOME=/tmp/fam-plugin-gnupg git -C /tmp/fam-plugin verify-commit HEAD
           python /tmp/fam-plugin/validate.py
+          for file in FamService.qml Panel.qml README.md Widget.qml manifest.json validate.py; do
+            cmp "integrations/omarchy/plugin/$file" "/tmp/fam-plugin/$file"
+          done
       - name: Run a real browser project build and behavior lifecycle
         run: |
           sudo apt-get update
@@ -112,6 +119,8 @@ jobs:
           test -x /usr/bin/omarchy-fam
           test -x /usr/bin/omarchy-agent-usage-fam
           test -s /usr/share/fam-os/keys/fam-os-release.asc
+          test -s /usr/share/fam-os/omarchy/menu/omarchy-menu.json
+          test -x /usr/share/fam-os/omarchy/hooks/fam-os
           test ! -e /usr/share/fam-os/omarchy/plugin
       - id: package
         run: echo "path=$(find packaging/arch -maxdepth 1 -name '*-x86_64.pkg.tar.zst' -print -quit)" >> "$GITHUB_OUTPUT"

@@ -6,9 +6,15 @@ core, Goal Mode and application harness used elsewhere on Linux.
 ```text
 Omarchy 4 x86_64
   -> independent signed fam.os Git plugin
+       -> native BarWidget + attached Panel/KeyboardPanel
        -> HTTP GET /api/v1/status
        -> WebSocket /api/v1/events
        -> idempotent HTTP POST named controls
+  -> omarchy-fam interactive/prompt launcher
+       -> current-directory + demand-shaped session context
+       -> FAM agent supervisor -> Codex or local engineering provider
+  -> user menu extension -> Console, Goal, Doctor, Repair
+  -> post-update hook -> diagnose and notify only
   -> unprivileged fam-os.service
        -> durable Goal Mode and candidate workspace
        -> Codex or local-model engineering provider
@@ -32,6 +38,8 @@ The user setup command owns only explicit XDG locations:
 - cache: `$XDG_CACHE_HOME/fam-os/`;
 - per-start token/socket descriptors: `$XDG_RUNTIME_DIR/fam-os/`;
 - Omarchy plugin checkout: `$XDG_CONFIG_HOME/omarchy/plugins/fam.os/`;
+- Omarchy menu extension: `$XDG_CONFIG_HOME/omarchy/extensions/omarchy-menu.jsonc`;
+- Omarchy update hook: `$XDG_CONFIG_HOME/omarchy/hooks/post-update.d/fam-os`;
 - usage compatibility record: `$XDG_STATE_HOME/omarchy/agents/usage/fam.json`.
 
 The plugin checkout is a normal Omarchy-managed Git repository and receives no
@@ -56,10 +64,22 @@ candidate open and agent submission; it has no arbitrary command route.
 
 Capability discovery records Codex, Claude Code, OpenCode, Copilot, Ori,
 Ollama/LM Studio-compatible endpoints, browsers, AT-SPI, Hyprland capture and
-controlled input. Routing belongs to FAM. Omarchy's current default-agent and
-usage collector registries are not general third-party plugin APIs, so the
-standalone launchers and compatibility timer remain explicit boundaries until
-their focused upstream contributions are accepted.
+controlled input. FAM is the supervisory agent boundary: it chooses an
+engineering provider while retaining the objective, plan, evidence, candidate,
+recovery and verification lifecycle. The terminal, widget and Console are
+different presentations of that same durable service state.
+
+The Omarchy launcher always supplies the current directory and a bounded source
+identifier. FAM adds active-window/Hyprland observations only for desktop or
+application tasks and listener/project-command observations only for run,
+server, browser or test tasks. The observed context is persisted separately,
+bounded before model use and explicitly labelled as non-authoritative data.
+
+Omarchy's default-agent registry requires a focused upstream change. The
+checked-in contribution maps FAM scratchpad/default launches to an interactive
+terminal, prompt launches to a normal FAM request and crash diagnosis to a
+source-labelled prompt. The usage collector remains a tested compatibility
+record rather than a general third-party extension API.
 
 Application tests prefer semantics over pixels: Playwright, application/MCP
 capabilities and AT-SPI come before Hyprland capture and controlled input. The
@@ -79,6 +99,12 @@ The package and `omarchy-fam-plugin` repositories have independent signed
 provenance. `fam-os setup omarchy` verifies plugin origin and signed HEAD before
 accepting it. Unsupported future Omarchy/plugin API majors disable only shell
 integration; the core service and durable goals remain available.
+
+System-changing Goal Mode runs inspect configured Snapper roots before calling
+Omarchy's snapshot command and persist the new `<config>:<snapshot-id>` values
+plus the `omarchy snapshot restore` recovery command. Coding and ordinary
+workspace goals never request a system snapshot. A successful command without
+new Snapper IDs is treated as failure, not as recoverable evidence.
 
 See [compatibility and migrations](../compatibility/omarchy.md) and the
 [installation guide](../installation/omarchy.md).

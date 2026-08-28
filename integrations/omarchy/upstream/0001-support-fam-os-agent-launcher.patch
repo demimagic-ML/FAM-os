@@ -1,5 +1,5 @@
 diff --git a/bin/omarchy-agent b/bin/omarchy-agent
-index 3e3b7a5..e826111 100755
+index 3e3b7a5d..595d9016 100755
 --- a/bin/omarchy-agent
 +++ b/bin/omarchy-agent
 @@ -46,8 +46,10 @@ if [[ -z $agent ]]; then
@@ -15,19 +15,32 @@ index 3e3b7a5..e826111 100755
    exit 1
  fi
  
-@@ -86,6 +88,10 @@ codex)
+@@ -86,6 +88,13 @@ codex)
    command=(codex --approve-for-me)
    [[ -n ${prompt:-} ]] && command+=(-- "$prompt")
    ;;
 +fam)
-+  command=(omarchy-fam)
-+  [[ -n ${prompt:-} ]] && command+=("$prompt")
++  if [[ -n ${prompt:-} ]]; then
++    command=(omarchy-fam --prompt "$prompt")
++  else
++    command=(omarchy-fam --interactive)
++  fi
 +  ;;
  omp)
    command=(omp --auto-approve)
    [[ -n ${prompt:-} ]] && command+=(-- "$prompt")
+diff --git a/bin/omarchy-agent-crash b/bin/omarchy-agent-crash
+index 49a1147e..579ae88b 100755
+--- a/bin/omarchy-agent-crash
++++ b/bin/omarchy-agent-crash
+@@ -49,4 +49,4 @@ mechanism, read the skill files directly and follow them instead:
+ PROMPT
+ )
+ 
+-exec omarchy-agent --prompt "$prompt"
++FAM_OMARCHY_SOURCE=omarchy-crash-diagnosis exec omarchy-agent --prompt "$prompt"
 diff --git a/bin/omarchy-default-agent b/bin/omarchy-default-agent
-index 1f89b76..4ba1753 100755
+index 1f89b765..4ba1753f 100755
 --- a/bin/omarchy-default-agent
 +++ b/bin/omarchy-default-agent
 @@ -1,7 +1,7 @@
@@ -67,7 +80,7 @@ index 1f89b76..4ba1753 100755
    exec omarchy-launch-floating-terminal-with-presentation omarchy-default-agent --install "$agent"
  fi
 diff --git a/default/omarchy/omarchy-menu.jsonc b/default/omarchy/omarchy-menu.jsonc
-index 59582db..d4ff763 100644
+index 59582db7..d4ff763e 100644
 --- a/default/omarchy/omarchy-menu.jsonc
 +++ b/default/omarchy/omarchy-menu.jsonc
 @@ -140,6 +140,7 @@
@@ -78,8 +91,88 @@ index 59582db..d4ff763 100644
    "setup.default.agent.grok": {"icon":"","iconFont":"omarchy","label":"Grok","checked":"[[ \"$(omarchy-default-agent)\" == \"grok\" ]]","action":"omarchy-default-agent grok"},
    "setup.default.agent.omp": {"icon":"","iconFont":"omarchy","label":"omp","checked":"[[ \"$(omarchy-default-agent)\" == \"omp\" ]]","action":"omarchy-default-agent omp"},
    "setup.default.agent.opencode": {"icon":"","iconFont":"omarchy","label":"OpenCode","checked":"[[ \"$(omarchy-default-agent)\" == \"opencode\" ]]","action":"omarchy-default-agent opencode"},
+diff --git a/manual/17-ai.md b/manual/17-ai.md
+index 57698f42..6ba575b8 100644
+--- a/manual/17-ai.md
++++ b/manual/17-ai.md
+@@ -1,19 +1,20 @@
+ # AI
+ 
+-Omarchy treats AI coding agents as first-class citizens, but it doesn't pick a favorite for you. Instead, every major coding-agent CLI comes pre-wired as a lazy-loaded launcher. The launchers are tiny [mise](https://mise.jdx.dev/)-managed stubs in `~/.local/bin/`, so nothing is downloaded until the first time you actually run one. Invoke any of these and authenticate when prompted:
+-
+-| Command    | Agent                                                            |
+-|------------|------------------------------------------------------------------|
+-| `claude`   | [Claude Code](https://code.claude.com/docs/en/overview)          |
+-| `codex`    | [OpenAI Codex](https://github.com/openai/codex)                  |
+-| `opencode` | [OpenCode](https://opencode.ai/)                                 |
+-| `agy`      | [Google Antigravity CLI](https://github.com/google-antigravity/antigravity-cli) |
+-| `copilot`  | [GitHub Copilot CLI](https://github.com/github/copilot-cli)      |
+-| `crush`    | [Crush](https://github.com/charmbracelet/crush)                  |
+-| `grok`     | Grok CLI from xAI                                                |
+-| `pi`       | [Mario Zechner's Pi](https://github.com/badlogic/pi-mono)        |
+-| `omp`      | [Oh My Pi](https://github.com/can1357/oh-my-pi)                  |
+-| `ori`      | [Ori](https://openrouter.ai/docs/guides/ori/harness), OpenRouter's harness |
++Omarchy treats AI coding agents as first-class citizens, but it doesn't pick a favorite for you. Most major coding-agent CLIs come pre-wired as lazy-loaded launchers. These launchers are tiny [mise](https://mise.jdx.dev/)-managed stubs in `~/.local/bin/`, so nothing is downloaded until the first time you actually run one. FAM is the exception: its `omarchy-fam` launcher is supplied by the separately installed `fam-os` package. Invoke any installed agent and authenticate when prompted:
++
++| Command       | Agent                                                            |
++|---------------|------------------------------------------------------------------|
++| `claude`      | [Claude Code](https://code.claude.com/docs/en/overview)          |
++| `codex`       | [OpenAI Codex](https://github.com/openai/codex)                  |
++| `opencode`    | [OpenCode](https://opencode.ai/)                                 |
++| `agy`         | [Google Antigravity CLI](https://github.com/google-antigravity/antigravity-cli) |
++| `copilot`     | [GitHub Copilot CLI](https://github.com/github/copilot-cli)      |
++| `crush`       | [Crush](https://github.com/charmbracelet/crush)                  |
++| `omarchy-fam` | [FAM_OS](https://github.com/demimagic-ML/FAM-os) (external `fam-os` package) |
++| `grok`        | Grok CLI from xAI                                                |
++| `pi`          | [Mario Zechner's Pi](https://github.com/badlogic/pi-mono)        |
++| `omp`         | [Oh My Pi](https://github.com/can1357/oh-my-pi)                  |
++| `ori`         | [Ori](https://openrouter.ai/docs/guides/ori/harness), OpenRouter's harness |
+ 
+ `ori` is the odd one out: it runs the other harnesses against OpenRouter's whole model catalog, so `ori claude`, `ori codex`, or `ori opencode` start those agents on whichever model you point them at, and `ori code` is Ori's own agent.
+ 
+@@ -21,7 +22,7 @@ To wrap an additional CLI the same way, run `omarchy-mise-install <package> [com
+ 
+ ### The default agent
+ 
+-Pick your default agent with `omarchy default agent <name>` or under _Setup > Defaults > Agent_ in the Omarchy Menu (`Super + Space`). If the agent isn't installed yet, picking it installs it first. A fresh Omarchy will invite you to make this choice with a one-time notification.
++Pick your default agent with `omarchy default agent <name>` or under _Setup > Defaults > Agent_ in the Omarchy Menu (`Super + Space`). If a mise-managed agent isn't installed yet, picking it installs it first. FAM must be installed separately through the `fam-os` package before it can be selected; Omarchy reports that requirement instead of attempting a mise installation. A fresh Omarchy will invite you to make this choice with a one-time notification.
+ 
+ Once you've chosen, `Super + Shift + Ctrl + A` launches the default agent in a dedicated terminal window (or brings up the picker if you haven't chosen yet). You can also launch it straight into a task with `omarchy agent prompt "Review this project"`. Agents launched this way run unattended in their respective don't-stop-to-ask modes, so be ready for them to actually do things! And since agents refuse to remember trust for your home directory, launches from `$HOME` start in `~/Work` instead.
+ 
+diff --git a/test/shell.d/crash-capture-test.sh b/test/shell.d/crash-capture-test.sh
+index 1b7e93d0..4843825c 100755
+--- a/test/shell.d/crash-capture-test.sh
++++ b/test/shell.d/crash-capture-test.sh
+@@ -378,6 +378,27 @@ grep -Fq 'omarchy-crash-mute' "$skill" ||
+   fail "the diagnosis no longer names the command that mutes, so the offer it makes cannot be carried out"
+ pass "the diagnosis names the command that mutes"
+ 
++CRASH_AGENT_LOG="$TMPDIR/crash-agent-log"
++cat >"$watch_bin/coredumpctl" <<'SH'
++#!/bin/bash
++echo 'Wed 2026-08-28 12:34:56 UTC 4242 1000 1000 SIGSEGV present app'
++SH
++cat >"$watch_bin/omarchy-agent" <<'SH'
++#!/bin/bash
++printf '%s\0' "${FAM_OMARCHY_SOURCE-}" "$@" >"$CRASH_AGENT_LOG"
++SH
++chmod +x "$watch_bin/coredumpctl" "$watch_bin/omarchy-agent"
++
++PATH="$watch_bin:$ROOT/bin:$PATH" \
++  OMARCHY_PATH="$ROOT" CRASH_AGENT_LOG="$CRASH_AGENT_LOG" \
++  "$ROOT/bin/omarchy-agent-crash" 4242 app /usr/bin/app SIGSEGV
++mapfile -d '' -t crash_agent_args <"$CRASH_AGENT_LOG"
++[[ ${crash_agent_args[0]} == "omarchy-crash-diagnosis" ]] ||
++  fail "crash diagnosis does not identify its invocation source to FAM"
++[[ ${crash_agent_args[1]} == "--prompt" && ${crash_agent_args[2]} == *"A process crashed"* ]] ||
++  fail "crash diagnosis no longer forwards the diagnostic prompt"
++pass "crash diagnosis preserves source context for FAM without changing other agents"
++
+ grep -Fq 'GROUP_DESCRIPTIONS[crash]' "$ROOT/bin/omarchy" ||
+   fail "the crash group has no description, so the router lists a group it cannot describe"
+ pass "the crash group is described in the router"
 diff --git a/test/shell.d/default-agent-test.sh b/test/shell.d/default-agent-test.sh
-index db964d9..1871908 100644
+index db964d90..4dc6d7ff 100644
 --- a/test/shell.d/default-agent-test.sh
 +++ b/test/shell.d/default-agent-test.sh
 @@ -46,6 +46,11 @@ cat >"$mock_bin/opencode" <<'SH'
@@ -117,7 +210,7 @@ index db964d9..1871908 100644
  assert_launch grok grok --permission-mode bypassPermissions -- "Review this project"
  assert_launch agy agy --dangerously-skip-permissions --prompt-interactive "Review this project"
  assert_launch copilot copilot --allow-all --interactive "Review this project"
-+assert_launch fam omarchy-fam "Review this project"
++assert_launch fam omarchy-fam --prompt "Review this project"
  pass "agent launcher adapts initial prompts for every supported agent"
  
  assert_bypass pi pi
@@ -125,7 +218,7 @@ index db964d9..1871908 100644
  assert_bypass grok grok --permission-mode bypassPermissions
  assert_bypass agy agy --dangerously-skip-permissions
  assert_bypass copilot copilot --allow-all
-+assert_bypass fam omarchy-fam
++assert_bypass fam omarchy-fam --interactive
  pass "agent launcher skips permission prompts for every supported agent"
  
  printf '%s\n' "opencode" >"$agent_file"
@@ -142,7 +235,7 @@ index db964d9..1871908 100644
 +  fail "agent launcher checks FAM's packaged launcher name"
 +pass "agent launcher maps the FAM provider to its packaged command"
 diff --git a/test/shell.d/menu-test.sh b/test/shell.d/menu-test.sh
-index b339467..105ada4 100644
+index b3394678..105ada47 100644
 --- a/test/shell.d/menu-test.sh
 +++ b/test/shell.d/menu-test.sh
 @@ -226,6 +226,7 @@ const expectedAgents = {

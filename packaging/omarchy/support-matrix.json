@@ -1,6 +1,6 @@
 {
   "contractVersion": "fam.omarchy.support/v1",
-  "release": "0.1.0",
+  "release": "0.1.1",
   "hosts": [
     {
       "platform": "Omarchy",
@@ -39,7 +39,7 @@
     "widgetApi": {
       "apiVersion": 1,
       "pluginMinVersion": "0.1.0",
-      "serviceVersion": "0.1.0"
+      "serviceVersion": "0.1.1"
     }
   }
 }

@@ -1,0 +1,69 @@
+name: Sign Omarchy plugin release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Semantic plugin version to sign
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  bundle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate requested version
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          test "$(python -c 'import json; print(json.load(open("integrations/omarchy/plugin/manifest.json"))["version"])')" = "$VERSION"
+      - name: Prepare the independent plugin repository
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          git clone https://github.com/demimagic-ML/omarchy-fam-plugin.git plugin
+          for file in FamService.qml Panel.qml README.md Widget.qml manifest.json validate.py; do
+            install -m 0644 "integrations/omarchy/plugin/$file" "plugin/$file"
+          done
+          chmod 0755 plugin/validate.py
+          python plugin/validate.py
+          test -z "$(git -C plugin tag --list "v$VERSION")"
+      - name: Sign the plugin commit and release tag
+        env:
+          FAM_OS_RELEASE_PRIVATE_KEY: ${{ secrets.FAM_OS_RELEASE_PRIVATE_KEY }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          test -n "$FAM_OS_RELEASE_PRIVATE_KEY"
+          install -d -m 700 "$RUNNER_TEMP/fam-signing"
+          printf '%s' "$FAM_OS_RELEASE_PRIVATE_KEY" | gpg --batch \
+            --homedir "$RUNNER_TEMP/fam-signing" --import
+          fingerprint=$(gpg --batch --homedir "$RUNNER_TEMP/fam-signing" \
+            --with-colons --list-secret-keys | awk -F: '$1 == "fpr" {print $10; exit}')
+          test "$fingerprint" = "$(cat packaging/keys/fam-os-release.fingerprint)"
+          git -C plugin config user.name "FAM_OS Release"
+          git -C plugin config user.email "release@fam-os.dev"
+          git -C plugin config user.signingkey "$fingerprint"
+          git -C plugin config gpg.program gpg
+          export GNUPGHOME="$RUNNER_TEMP/fam-signing"
+          git -C plugin add FamService.qml Panel.qml README.md Widget.qml manifest.json validate.py
+          ! git -C plugin diff --cached --quiet
+          git -C plugin commit -S -m "release: publish Omarchy plugin v$VERSION"
+          git -C plugin tag -s "v$VERSION" -m "FAM Omarchy plugin v$VERSION"
+          git -C plugin verify-commit HEAD
+          git -C plugin verify-tag "v$VERSION"
+          git -C plugin rev-parse HEAD >plugin-commit.txt
+          git -C plugin bundle create ../omarchy-fam-plugin-v$VERSION.bundle \
+            refs/heads/main "refs/tags/v$VERSION"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: omarchy-fam-plugin-v${{ inputs.version }}-signed
+          path: |
+            omarchy-fam-plugin-v${{ inputs.version }}.bundle
+            plugin-commit.txt
+          if-no-files-found: error

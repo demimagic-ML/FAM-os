@@ -1,7 +1,10 @@
 # FAM for Omarchy 4
 
-This is the independent Git-backed `fam.os` plugin for Omarchy 4 Quattro. It
-shows durable goal progress in the bar and opens a minimal control panel with:
+This is the independent Git-backed `fam.os` plugin for Omarchy 4 Quattro. Its
+entry point is an Omarchy `BarWidget`; it loads an attached native
+`Panel`/`KeyboardPanel` using the shared `qs.Ui` components rather than a
+standalone overlay. It shows durable goal progress in the bar and opens a
+minimal control panel with:
 
 - phase, elapsed time, plan and verification progress;
 - current model, RAM/VRAM and last activity;

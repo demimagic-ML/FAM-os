@@ -1,11 +1,15 @@
 #!/bin/sh
 # omarchy:summary=Launch FAM_OS in the current project or submit a durable goal
-# omarchy:args=[prompt] [--goal] [--authority workspace|application_test|full_os] [text...]
-# omarchy:examples=omarchy-fam | omarchy-fam --goal "Finish and test this application"
+# omarchy:args=[--interactive] [--prompt <text>] [--goal] [--authority workspace|application_test|full_os] [text...]
+# omarchy:examples=omarchy-fam --interactive | omarchy-fam --prompt "Review this project" | omarchy-fam --goal "Finish and test this application"
 if [ "$#" -eq 0 ]; then
-  exec fam-os console
+  exec fam-os agent --interactive --source omarchy-scratchpad --workspace "$PWD"
 fi
-if [ "$1" = "prompt" ]; then
+if [ "$1" = "--interactive" ]; then
+  shift
+  exec fam-os agent --interactive --source omarchy-scratchpad --workspace "$PWD" "$@"
+fi
+if [ "$1" = "prompt" ] || [ "$1" = "--prompt" ]; then
   shift
 fi
-exec fam-os agent --workspace "$PWD" "$@"
+exec fam-os agent --source "${FAM_OMARCHY_SOURCE:-omarchy-agent-prompt}" --workspace "$PWD" "$@"

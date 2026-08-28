@@ -62,9 +62,11 @@ def handle_widget_post(handler, path: str, document: dict) -> bool:
             goal_id=goal_id,
         )
     elif path == "/api/v1/agent/submit":
-        if set(document) != {
+        required = {
             "commandId", "prompt", "workspace_root", "authority_profile", "goal_mode",
-        }:
+        }
+        allowed = required | {"source", "context"}
+        if not required.issubset(document) or not set(document).issubset(allowed):
             raise ValueError("agent submission fields are invalid")
         if not isinstance(document["goal_mode"], bool):
             raise ValueError("goal_mode must be boolean")
@@ -72,6 +74,8 @@ def handle_widget_post(handler, path: str, document: dict) -> bool:
             command_id, "agent.submit", lambda: api.submit(
                 document["prompt"], document["workspace_root"],
                 document["authority_profile"], goal_mode=document["goal_mode"],
+                source=str(document.get("source", "omarchy-agent")),
+                transport_context=document.get("context"),
             ),
         )
     else:

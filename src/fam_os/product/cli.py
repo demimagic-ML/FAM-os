@@ -30,6 +30,7 @@ from fam_os.product.desktop_permissions import DesktopPermissionStore
 from fam_os.product.omarchy_agent_client import (
     default_runtime_root, submit_from_omarchy,
 )
+from fam_os.product.omarchy_tui import run_omarchy_tui
 
 
 def main(argv=None) -> int:
@@ -62,6 +63,8 @@ def main(argv=None) -> int:
     agent = commands.add_parser("agent")
     agent.add_argument("prompt", nargs="*")
     agent.add_argument("--goal", action="store_true")
+    agent.add_argument("--interactive", action="store_true")
+    agent.add_argument("--source", default="omarchy-agent")
     agent.add_argument("--authority", choices=("workspace", "application_test", "full_os"), default="workspace")
     agent.add_argument("--workspace", type=Path, default=Path.cwd())
     agent.add_argument("--runtime-root", type=Path, default=default_runtime_root())
@@ -151,6 +154,12 @@ def main(argv=None) -> int:
             None if args.output is None else args.output.absolute(),
         )
     if args.command == "agent":
+        if args.interactive:
+            return run_omarchy_tui(
+                args.workspace, authority_profile=args.authority,
+                runtime_root=args.runtime_root.absolute(), source=args.source,
+                initial_goal=args.goal,
+            )
         prompt = " ".join(args.prompt).strip()
         if not prompt:
             prompt = input("What should FAM do? ").strip()
@@ -160,6 +169,7 @@ def main(argv=None) -> int:
             prompt, args.workspace, goal_mode=args.goal,
             authority_profile=args.authority,
             runtime_root=args.runtime_root.absolute(),
+            source=args.source,
         )
         print(json.dumps(result, default=str, sort_keys=True))
         return 0

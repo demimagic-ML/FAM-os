@@ -1,0 +1,35 @@
+{
+  "fam": {
+    "icon": "󰚩",
+    "label": "FAM",
+    "description": "Agent supervisor and durable engineering goals"
+  },
+  "fam.console": {
+    "icon": "󰆍",
+    "label": "Open Console",
+    "description": "Open the full FAM workspace and evidence console",
+    "when": "omarchy-cmd-present fam",
+    "action": "fam console"
+  },
+  "fam.goal": {
+    "icon": "󰄬",
+    "label": "Start Goal",
+    "description": "Start a durable engineering goal in the current directory",
+    "when": "omarchy-cmd-present fam",
+    "action": "omarchy-launch-tui fam goal"
+  },
+  "fam.doctor": {
+    "icon": "󰒓",
+    "label": "Check Integration",
+    "description": "Inspect Omarchy, services, provider and widget compatibility",
+    "when": "omarchy-cmd-present fam-os",
+    "action": "omarchy-launch-floating-terminal-with-presentation fam-os doctor --omarchy"
+  },
+  "fam.repair": {
+    "icon": "󰁨",
+    "label": "Repair Integration",
+    "description": "Repair FAM-owned Omarchy services and widget files",
+    "when": "omarchy-cmd-present fam-os",
+    "action": "omarchy-launch-floating-terminal-with-presentation fam-os repair omarchy --widget --service --yes"
+  }
+}

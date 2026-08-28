@@ -43,9 +43,15 @@ class _Commands:
             )
             self.enabled = "--enable" in call
         elif call == ("omarchy", "plugin", "list", "--json"):
-            stdout = json.dumps([
-                {"id": "fam.os", "enabled": self.enabled},
-            ]) if target.is_dir() else "[]"
+            stdout = (
+                json.dumps(
+                    [
+                        {"id": "fam.os", "enabled": self.enabled},
+                    ]
+                )
+                if target.is_dir()
+                else "[]"
+            )
         elif call == ("omarchy", "plugin", "enable", "fam.os"):
             self.enabled = True
         elif call[:4] == ("omarchy", "plugin", "remove", "fam.os"):
@@ -58,53 +64,97 @@ class _Commands:
 
 def _integration(root: Path) -> Path:
     integration = root / "integration"
-    for relative in ("desktop", "launcher", "usage-collector"):
+    for relative in ("desktop", "launcher", "usage-collector", "menu", "hooks"):
         (integration / relative).mkdir(parents=True)
     (integration / "desktop/fam-os.desktop").write_text(
-        "[Desktop Entry]\nX-FAM-Managed=true\n", encoding="utf-8",
+        "[Desktop Entry]\nX-FAM-Managed=true\n",
+        encoding="utf-8",
     )
     for relative in (
         "launcher/omarchy-fam",
         "usage-collector/omarchy-agent-usage-fam",
     ):
         (integration / relative).write_text(
-            "#!/bin/sh\nexit 0\n", encoding="utf-8",
+            "#!/bin/sh\nexit 0\n",
+            encoding="utf-8",
         )
+    (integration / "menu/omarchy-menu.json").write_text(
+        json.dumps(
+            {
+                "fam": {"label": "FAM"},
+                "fam.console": {"label": "Console", "action": "fam console"},
+            }
+        )
+    )
+    (integration / "hooks/fam-os").write_text(
+        "#!/bin/bash\n# X-FAM-Managed=true\nexit 0\n",
+        encoding="utf-8",
+    )
     return integration
 
 
 def _fixture(root: Path, *, version: str = "4.0.0", architecture: str = "x86_64"):
     home = root / "home"
-    paths = omarchy_paths({
-        "HOME": str(home),
-        "XDG_DATA_HOME": str(home / "data"),
-        "XDG_CONFIG_HOME": str(home / "config"),
-        "XDG_STATE_HOME": str(home / "state"),
-        "XDG_RUNTIME_DIR": str(home / "run"),
-        "OMARCHY_PATH": str(root / "omarchy"),
-    }, home=home, uid=1000)
+    paths = omarchy_paths(
+        {
+            "HOME": str(home),
+            "XDG_DATA_HOME": str(home / "data"),
+            "XDG_CONFIG_HOME": str(home / "config"),
+            "XDG_STATE_HOME": str(home / "state"),
+            "XDG_RUNTIME_DIR": str(home / "run"),
+            "OMARCHY_PATH": str(root / "omarchy"),
+        },
+        home=home,
+        uid=1000,
+    )
     support_level = (
-        "supported" if version.startswith("4.") and architecture == "x86_64"
-        else "experimental" if version.startswith("4.") and architecture == "aarch64"
+        "supported"
+        if version.startswith("4.") and architecture == "x86_64"
+        else "experimental"
+        if version.startswith("4.") and architecture == "aarch64"
         else "unsupported"
     )
     capabilities = OmarchyCapabilities(
         HostCapability(
-            "arch", ("arch",), version, "edge", architecture, True,
-            support_level, support_level == "supported",
+            "arch",
+            ("arch",),
+            version,
+            "edge",
+            architecture,
+            True,
+            support_level,
+            support_level == "supported",
         ),
         DesktopCapability(
-            "wayland", ("Hyprland",), "hyprland", "uwsm", "quickshell", True,
+            "wayland",
+            ("Hyprland",),
+            "hyprland",
+            "uwsm",
+            "quickshell",
+            True,
         ),
         FeatureCapability(True, True, True, True, True, True, True),
-        (AgentCapability(
-            "codex", "/usr/bin/codex", True, "hosted-engineering",
-            "authenticated", True,
-        ),),
-        (InferenceEndpoint(
-            "ollama", "http://127.0.0.1:11434", True, "ollama",
-        ),),
-        (), paths, (),
+        (
+            AgentCapability(
+                "codex",
+                "/usr/bin/codex",
+                True,
+                "hosted-engineering",
+                "authenticated",
+                True,
+            ),
+        ),
+        (
+            InferenceEndpoint(
+                "ollama",
+                "http://127.0.0.1:11434",
+                True,
+                "ollama",
+            ),
+        ),
+        (),
+        paths,
+        (),
     )
     commands = _Commands(paths.plugin_root)
     setup = OmarchySetup(
@@ -139,25 +189,90 @@ class OmarchySetupTests(unittest.TestCase):
             self.assertEqual("ollama", second.engineering_provider)
             self.assertTrue((paths.plugin_root / "fam.os/.git").is_dir())
             add_calls = [
-                call for call in commands.calls
+                call
+                for call in commands.calls
                 if call[:3] == ("omarchy", "plugin", "add")
             ]
-            self.assertEqual([
-                (
-                    "omarchy", "plugin", "add", DEFAULT_PLUGIN_URL,
-                    "--enable", "--yes",
-                ),
-            ], add_calls)
-            self.assertFalse(any(
-                call[:3] == ("omarchy", "plugin", "enable")
-                for call in commands.calls
-            ))
+            self.assertEqual(
+                [
+                    (
+                        "omarchy",
+                        "plugin",
+                        "add",
+                        DEFAULT_PLUGIN_URL,
+                        "--enable",
+                        "--yes",
+                    ),
+                ],
+                add_calls,
+            )
+            self.assertFalse(
+                any(
+                    call[:3] == ("omarchy", "plugin", "enable")
+                    for call in commands.calls
+                )
+            )
             manifest = json.loads(setup.manifest_path.read_text())
             self.assertEqual(DEFAULT_PLUGIN_URL, manifest["widget_source"])
             environment = environment_path.read_text()
             self.assertIn("FAM_OS_ENGINEERING_PROVIDER=ollama", environment)
             self.assertIn(
-                "FAM_OS_OLLAMA_URL=http://127.0.0.1:11434", environment,
+                "FAM_OS_OLLAMA_URL=http://127.0.0.1:11434",
+                environment,
+            )
+            menu = json.loads(
+                "\n".join(
+                    line
+                    for line in (
+                        paths.config_home / "omarchy/extensions/omarchy-menu.jsonc"
+                    )
+                    .read_text()
+                    .splitlines()
+                    if not line.startswith("//")
+                )
+            )
+            self.assertEqual("FAM", menu["fam"]["label"])
+            self.assertIn(
+                (
+                    "omarchy",
+                    "hook",
+                    "install",
+                    "post-update",
+                    str(setup.integration_root / "hooks/fam-os"),
+                ),
+                commands.calls,
+            )
+
+    def test_menu_merge_and_remove_preserve_unrelated_user_entries(self):
+        with tempfile.TemporaryDirectory() as directory:
+            paths, _commands, setup = _fixture(Path(directory))
+            menu = paths.config_home / "omarchy/extensions/omarchy-menu.jsonc"
+            menu.parent.mkdir(parents=True)
+            menu.write_text(
+                "// personal entry\n"
+                '{"personal":{/* keep this */"label":"Notes",'
+                '"url":"https://example.test/path",}, // inline\n}\n',
+                encoding="utf-8",
+            )
+
+            setup.setup(start=False)
+            setup.remove()
+
+            value = json.loads(
+                "\n".join(
+                    line
+                    for line in menu.read_text().splitlines()
+                    if not line.startswith("//")
+                )
+            )
+            self.assertEqual(
+                {
+                    "personal": {
+                        "label": "Notes",
+                        "url": "https://example.test/path",
+                    },
+                },
+                value,
             )
 
     def test_repair_updates_and_remove_uses_omarchy_plugin_commands(self):
@@ -194,7 +309,8 @@ class OmarchySetupTests(unittest.TestCase):
 
             self.assertTrue(repaired.widget_enabled)
             self.assertIn(
-                ("omarchy", "plugin", "enable", "fam.os"), commands.calls,
+                ("omarchy", "plugin", "enable", "fam.os"),
+                commands.calls,
             )
             self.assertEqual(expected, placement.read_text(encoding="utf-8"))
 
@@ -209,13 +325,15 @@ class OmarchySetupTests(unittest.TestCase):
     def test_omarchy_three_is_rejected_and_arm_requires_explicit_experimental(self):
         with tempfile.TemporaryDirectory() as directory:
             _paths, _commands, old_setup = _fixture(
-                Path(directory) / "old", version="3.9.9",
+                Path(directory) / "old",
+                version="3.9.9",
             )
             with self.assertRaisesRegex(RuntimeError, "supports Omarchy 4"):
                 old_setup.setup(start=False)
 
             _paths, _commands, arm_setup = _fixture(
-                Path(directory) / "arm", architecture="aarch64",
+                Path(directory) / "arm",
+                architecture="aarch64",
             )
             with self.assertRaisesRegex(RuntimeError, "allow-experimental"):
                 arm_setup.setup(start=False)

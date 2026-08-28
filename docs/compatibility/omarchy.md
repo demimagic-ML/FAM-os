@@ -16,7 +16,7 @@ UWSM and Quickshell independently. Hyprland alone does not identify Omarchy.
 ## Version negotiation
 
 Every widget status response contains `apiVersion`, `pluginMinVersion` and
-`serviceVersion`. Plugin 0.1.0 accepts API version 1. An unknown major API or a
+`serviceVersion`. Plugin 0.1.1 accepts API version 1. An unknown major API or a
 service-required plugin version newer than the checkout makes the plugin quiet
 and unavailable; it does not stop the FAM service or an active goal.
 
@@ -46,7 +46,9 @@ record for Omarchy's current internal usage schema, not a formal third-party
 collector extension point. It is contract-tested for every supported Omarchy
 release.
 
-Likewise, `fam`, `fam goal`, `fam console` and `omarchy-fam` are supported FAM
-launchers. Native `omarchy default agent fam` and unattended
-`omarchy agent prompt` routing require acceptance of the separate upstream
-Omarchy change; FAM does not claim those integrations today.
+`fam`, `fam tui`, `fam chat`, `fam goal`, `fam console` and `omarchy-fam` are
+supported FAM launchers. The FAM package implements explicit interactive and
+prompt contracts. Native `omarchy default agent fam`, scratchpad and
+`omarchy agent prompt` routing become available when the separate upstream
+Omarchy contribution is accepted; the package does not claim that upstream
+merge before it happens.

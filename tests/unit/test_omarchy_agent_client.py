@@ -55,6 +55,8 @@ class OmarchyAgentClientTests(unittest.TestCase):
             self.assertRegex(bodies[0]["commandId"], r"^launcher-[0-9a-f]{32}$")
             self.assertNotEqual(bodies[0]["commandId"], bodies[1]["commandId"])
             self.assertEqual(bodies[0]["workspace_root"], str(workspace))
+            self.assertEqual("omarchy-agent", bodies[0]["source"])
+            self.assertEqual(str(workspace), bodies[0]["context"]["workspace"])
             self.assertEqual(captured[0][0].headers["X-fam-widget-token"], "secret-token")
 
 

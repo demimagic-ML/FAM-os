@@ -51,9 +51,12 @@ home. Setup must run as the actual desktop user.
 ## What user setup does
 
 Setup is idempotent. It detects the host and agent/model ecosystem, installs
-the independent signed Git plugin through Omarchy, enables the unprivileged
-user services, writes the FAM usage compatibility record, runs diagnostics and
-opens the authenticated Console. The public plugin repository is:
+the independent signed Git plugin through Omarchy, merges FAM-owned entries
+into the user menu extension, installs a lightweight post-update diagnostic
+hook, enables the unprivileged user services, writes the FAM usage
+compatibility record, runs diagnostics and opens the authenticated Console.
+Unrelated menu entries are preserved; removal deletes only `fam` and `fam.*`
+entries and the managed FAM hook. The public plugin repository is:
 
 ```text
 https://github.com/demimagic-ML/omarchy-fam-plugin.git
@@ -81,19 +84,33 @@ installation requires an interactive confirmation or explicit `--yes`.
 
 ```bash
 fam
+fam tui
+fam chat
+fam goal
 fam console
 fam "Explain this project and run its focused tests"
 fam goal "Finish this application, test its behavior, and verify the build"
+omarchy-fam --interactive
+omarchy-fam --prompt "Review this project"
 omarchy-fam --goal "Finish this application and verify it"
 ```
 
-These are supported standalone launchers. Native `omarchy default agent fam`
-and `omarchy agent prompt` support remain a separate upstream contribution and
-are not claimed by this release.
+`fam`, `fam tui` and `fam chat` stay in an interactive terminal session. They
+can submit ordinary work, switch into Goal Mode, show compact tool/goal status,
+pause, resume, cancel or guide a goal, open its candidate and open the full
+Console. The session reattaches through durable service state rather than
+owning the goal process.
+
+The focused upstream Omarchy contribution maps no-prompt/default-agent launches
+to `omarchy-fam --interactive`, prompt launches to `omarchy-fam --prompt`, and
+marks crash-diagnosis invocations as `omarchy-crash-diagnosis`. Until that PR
+is accepted, use the packaged `omarchy-fam` command directly.
 
 ## Widget transport and failure behavior
 
-The `fam.os` bar widget summons its panel with:
+The `fam.os` plugin uses a first-party-shaped `BarWidget` entry point and a
+native `Panel`/`KeyboardPanel` attached to the bar icon. Omarchy can summon the
+mounted widget with:
 
 ```bash
 omarchy-shell shell summon fam.os '{}'
@@ -110,6 +127,21 @@ The fallback interval is 30 seconds. WebSocket reconnects back off from one to
 repaired by the next GET. Service unavailability is quiet. Plugin disable,
 update, shell restart, logout and reload do not stop or erase an active goal.
 Shell restart is a recovery action, not part of routine installation.
+
+Goal completion, terminal failure, owner guidance/apply requirements and
+unusually delayed recovery use `omarchy notification send`. A persisted
+replacement ID updates one notification for a goal instead of emitting one
+toast per retry; tool calls and ordinary retries are intentionally silent.
+
+Prompt submissions always carry the current directory and invocation source.
+Desktop/window details and listening development endpoints are captured only
+when the task asks for application, browser, crash, run or test work; the
+observations are stored separately and never become additional instructions or
+authority.
+
+After `omarchy update`, the managed post-update hook runs only
+`fam-os doctor --omarchy`. It sends an actionable Omarchy notification if the
+integration needs attention and never repairs configuration automatically.
 
 ## Application testing
 

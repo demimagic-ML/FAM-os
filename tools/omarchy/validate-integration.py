@@ -19,29 +19,32 @@ def main() -> int:
         "schemaVersion": 1,
         "id": "fam.os",
         "name": "FAM",
-        "version": "0.1.0",
+        "version": "0.1.1",
         "author": "FAM OS",
         "license": "MIT",
         "description": "Goal progress and controls for FAM",
-        "kinds": ["bar-widget", "panel"],
-        "entryPoints": {"barWidget": "Widget.qml", "panel": "Panel.qml"},
+        "kinds": ["bar-widget"],
+        "entryPoints": {"barWidget": "Widget.qml"},
         "barWidget": manifest["barWidget"],
     }
     assert manifest["entryPoints"]["barWidget"] == "Widget.qml"
-    assert manifest["entryPoints"]["panel"] == "Panel.qml"
     plugin_root = ROOT / "integrations/omarchy/plugin"
     assert not any(path.is_symlink() for path in plugin_root.rglob("*"))
-    panel = (plugin_root / "Panel.qml").read_text()
-    assert "function open(payloadJson)" in panel
-    assert "function close()" in panel
     widget = (plugin_root / "Widget.qml").read_text()
-    assert '["omarchy-shell", "shell", "summon", "fam.os", "{}"]' in widget
+    panel = (plugin_root / "Panel.qml").read_text()
+    assert "BarWidget {" in widget
+    assert 'source: Qt.resolvedUrl("Panel.qml")' in widget
+    assert "Panel {" in panel and "KeyboardPanel {" in panel
+    assert "PanelWindow" not in widget and "PanelWindow" not in panel
+    assert manifest["barWidget"]["aliases"] == ["fam", "fam-goals"]
     service = (plugin_root / "FamService.qml").read_text()
     assert "QtWebSockets" in service and "/api/v1/events?token=" in service
     assert "event-stream" not in service and '"curl", "-N' not in service
     for relative in (
         "integrations/omarchy/plugin/Widget.qml",
         "integrations/omarchy/plugin/Panel.qml",
+        "integrations/omarchy/menu/omarchy-menu.json",
+        "integrations/omarchy/hooks/fam-os",
         "integrations/omarchy/plugin/FamService.qml",
         "packaging/systemd/fam-os.service",
         "packaging/systemd/fam-os-desktop.service",
@@ -65,6 +68,7 @@ def main() -> int:
     for relative in (
         "integrations/omarchy/launcher/omarchy-fam",
         "integrations/omarchy/usage-collector/omarchy-agent-usage-fam",
+        "integrations/omarchy/hooks/fam-os",
         "packaging/omarchy/bootstrap.sh",
         "tools/omarchy/vm-e2e.sh",
         "tools/omarchy/release-package.sh",

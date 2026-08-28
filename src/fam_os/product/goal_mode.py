@@ -34,7 +34,7 @@ class GoalModeService:
         maximum_recovery_seconds: float = 1_800,
         retry_base_seconds: float = 2.0, retry_max_seconds: float = 60.0,
         watchdog_seconds: float = 240.0, provider_recover=None,
-        system_snapshots=None, sleeper=time.sleep,
+        system_snapshots=None, goal_notifier=None, sleeper=time.sleep,
     ) -> None:
         if maximum_recovery_attempts < 1 or maximum_recovery_seconds <= 0:
             raise ValueError("goal recovery budget must be positive")
@@ -60,6 +60,7 @@ class GoalModeService:
         self._watchdog_seconds = watchdog_seconds
         self._provider_recover = provider_recover
         self._system_snapshots = system_snapshots
+        self._goal_notifier = goal_notifier
         self._sleep = sleeper
         self._prepare()
 
@@ -121,15 +122,21 @@ class GoalModeService:
     def prepare(
         self, owner_id: str, prompt: str, workspace_root: str,
         authority_profile: AgentAuthorityProfile, session_id: str,
+        transport_context: dict[str, object] | None = None,
     ) -> dict[str, object]:
         self._require_owner(owner_id)
         prompt = _text(prompt, "goal")
         workspace = Path(workspace_root).resolve(strict=True)
         if not workspace.is_dir():
             raise ValueError("goal workspace must be a directory")
+        proposal_arguments = {
+            "transport_session_id": session_id,
+            "authority_profile": authority_profile,
+        }
+        if transport_context is not None:
+            proposal_arguments["transport_context"] = transport_context
         proposal = self._api.propose(
-            owner_id, prompt, str(workspace), transport_session_id=session_id,
-            authority_profile=authority_profile,
+            owner_id, prompt, str(workspace), **proposal_arguments,
         )
         plan = self._plan(prompt, str(workspace))
         identifier, now = f"goal-{uuid4()}", _now()
@@ -138,14 +145,17 @@ class GoalModeService:
                 "INSERT INTO engineering_goals("
                 "goal_id,owner_id,session_id,workspace_root,prompt,title,plan_json,"
                 "criteria_json,proposal_id,authority_profile,status,control,"
-                "result_json,error,epochs,created_at,updated_at) "
-                "VALUES(?,?,?,?,?,?,?,?,?,?,?,'',NULL,NULL,0,?,?)",
+                "result_json,error,epochs,created_at,updated_at,transport_context_json) "
+                "VALUES(?,?,?,?,?,?,?,?,?,?,?,'',NULL,NULL,0,?,?,?)",
                 (
                     identifier, owner_id, session_id, str(workspace), prompt,
                     plan["title"], json.dumps(plan["steps"], sort_keys=True),
                     json.dumps(plan["acceptance_criteria"], sort_keys=True),
                     proposal["proposal_id"], authority_profile.value, "draft",
                     now, now,
+                    None if transport_context is None else json.dumps(
+                        transport_context, separators=(",", ":"), sort_keys=True,
+                    ),
                 ),
             )
         return self.inspect(owner_id, identifier)
@@ -348,6 +358,10 @@ class GoalModeService:
                     _now(), goal_id,
                 ),
             )
+        self._notify(
+            goal_id, status, row["title"],
+            str(task.get("failure_code") or ""),
+        )
 
     def _settle_control(self, goal_id: str) -> None:
         with self._lock, self._database:
@@ -379,6 +393,7 @@ class GoalModeService:
                         _now(), goal_id,
                     ),
                 )
+            self._notify(goal_id, "failed", row["title"], failure)
             return
         now = datetime.now(timezone.utc)
         with self._lock:
@@ -413,6 +428,11 @@ class GoalModeService:
                         sequence, result_count, now.isoformat(), goal_id,
                     ),
                 )
+            self._notify(
+                goal_id, "failed", row["title"],
+                f"Recovery budget exhausted after {attempts} attempts.",
+                recovery_attempt=attempts,
+            )
             return
         delay = self._retry_delay(goal_id, attempts)
         next_retry = now + timedelta(seconds=delay)
@@ -431,6 +451,25 @@ class GoalModeService:
                 ),
             )
         self._wake.set()
+        self._notify(
+            goal_id, "retry_wait", row["title"],
+            f"Recovery attempt {attempts}; retrying after a transient failure.",
+            recovery_attempt=attempts,
+        )
+
+    def _notify(
+        self, goal_id: str, status: str, title: str, detail: str = "", *,
+        recovery_attempt: int = 0,
+    ) -> None:
+        if not callable(self._goal_notifier):
+            return
+        try:
+            self._goal_notifier(
+                goal_id, status, title, detail,
+                recovery_attempt=recovery_attempt,
+            )
+        except (OSError, RuntimeError, ValueError):
+            pass
 
     def _checkpoint_sequence(self, row) -> int:
         return self._checkpoint_progress(row)[0]
@@ -491,6 +530,8 @@ class GoalModeService:
             "available": receipt.available,
             "created": receipt.created,
             "reference": receipt.reference,
+            "references": list(getattr(receipt, "references", ())),
+            "recovery_command": getattr(receipt, "recovery_command", None),
             "detail": receipt.detail,
             "created_at": _now(),
         }
@@ -635,8 +676,9 @@ class GoalModeService:
                 "last_result_count": "INTEGER NOT NULL DEFAULT 0",
                 "execution_stage": "TEXT NOT NULL DEFAULT 'activation'",
                 "pending_changeset_id": "TEXT",
-                "watchdog_trips": "INTEGER NOT NULL DEFAULT 0",
-                "snapshot_json": "TEXT",
+            "watchdog_trips": "INTEGER NOT NULL DEFAULT 0",
+            "snapshot_json": "TEXT",
+            "transport_context_json": "TEXT",
             }
             for name, definition in additions.items():
                 if name not in columns:
@@ -735,6 +777,10 @@ def _document(row: sqlite3.Row) -> dict[str, object]:
         "epochs": row["epochs"], "error": row["error"],
         "created_at": row["created_at"], "updated_at": row["updated_at"],
         "engineering_task": task,
+        "transport_context": (
+            None if row["transport_context_json"] is None
+            else json.loads(row["transport_context_json"])
+        ),
         "recovery": {
             "attempt": row["retry_attempts"],
             "next_retry_at": row["next_retry_at"],

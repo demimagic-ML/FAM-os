@@ -90,6 +90,7 @@ from fam_os.product.natural_engineering_agent import (
 )
 from fam_os.product.goal_mode import GoalModeService
 from fam_os.adapters.omarchy.snapshots import OmarchySnapshots
+from fam_os.product.omarchy_goal_notifications import OmarchyGoalNotifications
 from fam_os.product.widget_api import WidgetStatusApi
 from fam_os.product.agent_usage import AgentUsageRepository, UsageTelemetryRuntime
 from fam_os.product.natural_engineering_documentation import (
@@ -950,6 +951,9 @@ class LocalProductService:
                 else self._runtime_unit.recover
             ),
             system_snapshots=OmarchySnapshots(),
+            goal_notifier=OmarchyGoalNotifications(
+                self.settings.state_root / "omarchy/notification-ids.json",
+            ),
         )
         self.engineering_secret_api = ProductEngineeringSecretApi(
             local_owner_id(os.geteuid()),

@@ -1,0 +1,12 @@
+#!/bin/bash
+# X-FAM-Managed=true
+
+if ! fam-os doctor --omarchy >/dev/null 2>&1; then
+  omarchy notification send \
+    --app-name FAM \
+    -u normal \
+    -i fam-os \
+    "FAM integration needs attention" \
+    "Run FAM Doctor after the Omarchy update" \
+    --exec omarchy-launch-floating-terminal-with-presentation fam-os doctor --omarchy
+fi

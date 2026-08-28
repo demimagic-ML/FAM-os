@@ -1,58 +1,99 @@
 import QtQuick
-import Quickshell.Io
+import qs.Commons
 import qs.Ui
 
 BarWidget {
   id: root
 
   moduleName: "fam.os"
-  visible: fam.available
-  implicitWidth: button.implicitWidth
-  implicitHeight: button.implicitHeight
+
+  function injectPanel() {
+    var target = panelLoader.item
+    if (!target) return
+    if ("bar" in target) target.bar = root.bar
+    if ("settings" in target) target.settings = root.settings
+    if ("anchorItem" in target) target.anchorItem = button
+    if ("hostWidget" in target) target.hostWidget = root
+  }
+
+  function refresh() {
+    if (panelLoader.item && panelLoader.item.refresh)
+      panelLoader.item.refresh()
+  }
+
+  function togglePanel() {
+    if (panelLoader.item && panelLoader.item.toggle)
+      panelLoader.item.toggle()
+  }
+
+  readonly property bool opened: panelLoader.item
+    ? panelLoader.item.opened === true : false
+  readonly property bool popoutSwitchClosing: panelLoader.item
+    ? panelLoader.item.popoutSwitchClosing === true : false
 
   function open() {
-    if (summonProcess.running) return
-    summonProcess.command = ["omarchy-shell", "shell", "summon", "fam.os", "{}"]
-    summonProcess.running = true
+    if (panelLoader.item && panelLoader.item.openFromHotkey)
+      panelLoader.item.openFromHotkey()
   }
 
   function close() {
-    if (summonProcess.running) return
-    summonProcess.command = ["omarchy-shell", "shell", "hide", "fam.os"]
-    summonProcess.running = true
+    if (panelLoader.item && panelLoader.item.close)
+      panelLoader.item.close()
   }
 
-  function refresh() { fam.refresh() }
+  function closeForPopoutSwitch() {
+    if (panelLoader.item && panelLoader.item.closeForPopoutSwitch)
+      panelLoader.item.closeForPopoutSwitch()
+  }
 
-  FamService { id: fam; settings: root.settings }
+  visible: panelLoader.item !== null
+  implicitWidth: button.implicitWidth
+  implicitHeight: button.implicitHeight
 
-  Process { id: summonProcess; running: false; command: [] }
+  onBarChanged: injectPanel()
+  onSettingsChanged: injectPanel()
+
+  Loader {
+    id: panelLoader
+    active: true
+    source: Qt.resolvedUrl("Panel.qml")
+    visible: false
+    onLoaded: {
+      root.injectPanel()
+      Qt.callLater(root.injectPanel)
+    }
+  }
 
   BarIconButton {
     id: button
     anchors.fill: parent
     bar: root.bar
     text: "F"
-    tooltipText: fam.activeGoal
-      ? String(fam.activeGoal.title || "FAM") + " · "
-        + String(fam.activeGoal.status || "idle").replace(/_/g, " ")
+    tooltipText: panelLoader.item && panelLoader.item.goal
+      ? String(panelLoader.item.goal.title || "FAM") + " · "
+        + panelLoader.item.status.replace(/_/g, " ")
       : "FAM · ready"
-    opacity: fam.activeGoal ? pulseOpacity : 0.62
+    opacity: panelLoader.item && panelLoader.item.goal ? pulseOpacity : 0.62
     property real pulseOpacity: 1.0
-    readonly property bool goalActive: fam.activeGoal
-      && ["running", "queued", "retry_wait"].indexOf(
-        String(fam.activeGoal.status)
-      ) >= 0
+    readonly property bool goalActive: panelLoader.item
+      && panelLoader.item.goal
+      && ["running", "queued", "retry_wait"].indexOf(panelLoader.item.status) >= 0
 
     SequentialAnimation {
       running: button.goalActive
       loops: Animation.Infinite
       NumberAnimation {
-        target: button; property: "pulseOpacity"; to: 0.5; duration: 850
+        target: button
+        property: "pulseOpacity"
+        to: 0.5
+        duration: 850
         easing.type: Easing.InOutSine
       }
       NumberAnimation {
-        target: button; property: "pulseOpacity"; to: 1.0; duration: 850
+        target: button
+        property: "pulseOpacity"
+        to: 1.0
+        duration: 850
         easing.type: Easing.InOutSine
       }
     }
@@ -63,8 +104,9 @@ BarWidget {
       width: Math.min(parent.width, parent.height) - 5
       height: width
       antialiasing: true
-      readonly property var goal: fam.activeGoal
-      readonly property string status: goal ? String(goal.status || "idle") : "idle"
+      readonly property var goal: panelLoader.item ? panelLoader.item.goal : null
+      readonly property string status: panelLoader.item
+        ? panelLoader.item.status : "idle"
       readonly property real progress: {
         if (!goal) return 0
         if (status === "completed") return 1
@@ -78,14 +120,16 @@ BarWidget {
       }
       onProgressChanged: requestPaint()
       onStatusChanged: requestPaint()
+      onGoalChanged: requestPaint()
       onPaint: {
         var context = getContext("2d")
         context.reset()
         if (!goal || status === "idle" || status === "draft") return
-        var color = root.bar ? root.bar.foreground : "#d8dee9"
+        var color = root.bar ? root.bar.barForeground : Color.foreground
         if (status === "retry_wait") color = "#d6a64f"
-        else if (status === "paused" || status === "pause_requested") color = "#8f88b8"
-        else if (status === "failed") color = "#d35f4a"
+        else if (status === "paused") color = "#8f88b8"
+        else if (status === "failed")
+          color = root.bar ? root.bar.urgent : Color.urgent
         else if (status === "completed") color = "#4d9b75"
         context.strokeStyle = color
         context.lineWidth = 1.5
@@ -101,7 +145,7 @@ BarWidget {
 
     onPressed: function(code) {
       if (code === Qt.MiddleButton) root.refresh()
-      else root.open()
+      else root.togglePanel()
     }
   }
 }

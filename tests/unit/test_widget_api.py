@@ -20,20 +20,39 @@ class _GoalService:
     def inspect(self, owner_id, goal_id):
         self.assert_owner(owner_id)
         return {
-            "goal_id": goal_id, "status": "running", "title": "Build",
+            "goal_id": goal_id,
+            "status": "running",
+            "title": "Build",
             "created_at": "2026-08-28T10:00:00+00:00",
             "updated_at": "2026-08-28T10:01:00+00:00",
-            "plan": ["one"], "acceptance_criteria": ["done"],
+            "plan": ["one"],
+            "acceptance_criteria": ["done"],
             "candidate": {
                 "candidate_workspace": str(Path(tempfile.gettempdir())),
                 "counts": {"created": 1, "modified": 2, "deleted": 1},
                 "entries": [],
             },
-            "live": {"phase": "implementation", "step": 1, "model_ref": "qwen", "events": []},
+            "live": {
+                "phase": "implementation",
+                "step": 1,
+                "model_ref": "qwen",
+                "events": [],
+            },
         }
 
-    def prepare(self, owner_id, prompt, workspace, profile, session):
-        self.calls.append(("prepare", owner_id, prompt, workspace, profile.value, session))
+    def prepare(
+        self,
+        owner_id,
+        prompt,
+        workspace,
+        profile,
+        session,
+        transport_context=None,
+    ):
+        self.calls.append(
+            ("prepare", owner_id, prompt, workspace, profile.value, session)
+        )
+        self.transport_context = transport_context
         return {"goal_id": "goal-new"}
 
     def activate(self, owner_id, goal_id, *, confirmed):
@@ -41,7 +60,12 @@ class _GoalService:
         return {"goal_id": goal_id, "status": "queued"}
 
     def control(self, owner_id, goal_id, action, content):
-        return {"owner": owner_id, "goal": goal_id, "action": action, "content": content}
+        return {
+            "owner": owner_id,
+            "goal": goal_id,
+            "action": action,
+            "content": content,
+        }
 
     def assert_owner(self, value):
         if value != self.owner_id:
@@ -54,14 +78,17 @@ class WidgetApiTests(unittest.TestCase):
             root = Path(directory)
             service = _GoalService()
             api = WidgetStatusApi(
-                service, console_port=9988, runtime_root=root,
+                service,
+                console_port=9988,
+                runtime_root=root,
                 engineering_provider="ollama",
             )
             status = api.status()
             self.assertEqual(status["contractVersion"], "fam.widget/v1")
             self.assertEqual(status["apiVersion"], 1)
+            self.assertEqual(status["engineeringProvider"], "ollama")
             self.assertEqual(status["pluginMinVersion"], "0.1.0")
-            self.assertEqual(status["serviceVersion"], "0.1.0")
+            self.assertEqual(status["serviceVersion"], "0.1.1")
             self.assertEqual(status["consoleUrl"], "http://127.0.0.1:9988/")
             self.assertEqual(status["goal"]["candidateChanges"], 4)
             self.assertEqual(status["goal"]["provider"], "ollama")
@@ -70,6 +97,8 @@ class WidgetApiTests(unittest.TestCase):
             self.assertEqual(result["status"], "queued")
             self.assertEqual(service.calls[0][0], "prepare")
             self.assertEqual(service.calls[1], ("activate", "owner", "goal-new", True))
+            self.assertEqual("omarchy-agent", service.transport_context["source"])
+            self.assertTrue((root / "omarchy/session-contexts").is_dir())
 
     def test_open_candidate_uses_real_candidate_workspace_field(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -77,7 +106,9 @@ class WidgetApiTests(unittest.TestCase):
             process = type("Process", (), {"pid": 41})()
             calls = []
             api = WidgetStatusApi(
-                service, console_port=9988, runtime_root=Path(directory),
+                service,
+                console_port=9988,
+                runtime_root=Path(directory),
                 popen=lambda command, **kwargs: calls.append(command) or process,
             )
             original = service.inspect
@@ -97,17 +128,21 @@ class WidgetApiTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             api = WidgetStatusApi(
-                _GoalService(), console_port=9988, runtime_root=root,
+                _GoalService(),
+                console_port=9988,
+                runtime_root=root,
                 state_root=root / "state",
             )
             calls = []
             first = api.execute_command(
-                "qml-command-0001", "goal.guidance",
+                "qml-command-0001",
+                "goal.guidance",
                 lambda: calls.append("secret guidance") or {"status": "running"},
                 goal_id="goal-1",
             )
             second = api.execute_command(
-                "qml-command-0001", "goal.guidance",
+                "qml-command-0001",
+                "goal.guidance",
                 lambda: calls.append("must not run") or {"status": "wrong"},
                 goal_id="goal-1",
             )

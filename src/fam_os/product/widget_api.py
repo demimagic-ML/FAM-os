@@ -8,6 +8,7 @@ import json
 import os
 import re
 import threading
+import hashlib
 from collections import OrderedDict
 from datetime import datetime, timezone
 from pathlib import Path
@@ -18,21 +19,37 @@ from fam_os.adapters.linux.command import SubprocessCommandRunner
 from fam_os.adapters.linux.nvidia import query_nvidia_resources
 
 
-_ACTIVE = {"draft", "queued", "running", "retry_wait", "pause_requested", "paused", "cancel_requested", "waiting_approval"}
+_ACTIVE = {
+    "draft",
+    "queued",
+    "running",
+    "retry_wait",
+    "pause_requested",
+    "paused",
+    "cancel_requested",
+    "waiting_approval",
+}
 _COMMAND_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._:-]{7,127}\Z")
 API_VERSION = 1
 PLUGIN_MIN_VERSION = "0.1.0"
-SERVICE_VERSION = "0.1.0"
+SERVICE_VERSION = "0.1.1"
 
 
 class WidgetStatusApi:
     contract_version = "fam.widget/v1"
 
     def __init__(
-        self, goal_service, *, console_port: int, runtime_root: Path,
-        natural_engineering_api=None, residency=None,
-        engineering_provider: str | None = None, popen=subprocess.Popen,
-        state_root: Path | None = None, command_cache_size: int = 256,
+        self,
+        goal_service,
+        *,
+        console_port: int,
+        runtime_root: Path,
+        natural_engineering_api=None,
+        residency=None,
+        engineering_provider: str | None = None,
+        popen=subprocess.Popen,
+        state_root: Path | None = None,
+        command_cache_size: int = 256,
     ) -> None:
         self.goal_service = goal_service
         self.console_port = console_port
@@ -45,6 +62,7 @@ class WidgetStatusApi:
         self._command_cache_size = max(16, command_cache_size)
         self._commands: OrderedDict[str, dict[str, object]] = OrderedDict()
         self._command_lock = threading.Lock()
+        self._state_root = state_root or runtime_root
 
     def status(self) -> dict[str, object]:
         goal = self.active_goal(include_latest=True)
@@ -54,18 +72,22 @@ class WidgetStatusApi:
             "pluginMinVersion": PLUGIN_MIN_VERSION,
             "serviceVersion": SERVICE_VERSION,
             "service": "healthy",
+            "engineeringProvider": self.engineering_provider or "automatic",
             "observedAt": datetime.now(timezone.utc).isoformat(),
             "consoleUrl": f"http://127.0.0.1:{self.console_port}/",
             "goal": (
-                None if goal is None
-                else _project_goal(goal, self.engineering_provider)
+                None if goal is None else _project_goal(goal, self.engineering_provider)
             ),
             "resources": _resources(self.residency),
         }
 
     def execute_command(
-        self, command_id: str, action: str, callback,
-        *, goal_id: str | None = None,
+        self,
+        command_id: str,
+        action: str,
+        callback,
+        *,
+        goal_id: str | None = None,
     ) -> dict[str, object]:
         if not isinstance(command_id, str) or not _COMMAND_ID.fullmatch(command_id):
             raise ValueError("commandId must be 8-128 safe identifier characters")
@@ -89,7 +111,11 @@ class WidgetStatusApi:
             return receipt
 
     def _append_audit(
-        self, command_id: str, action: str, goal_id: str | None, outcome: str,
+        self,
+        command_id: str,
+        action: str,
+        goal_id: str | None,
+        outcome: str,
     ) -> None:
         self.audit_path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
         os.chmod(self.audit_path.parent, 0o700)
@@ -100,7 +126,9 @@ class WidgetStatusApi:
         try:
             details = os.fstat(descriptor)
             if details.st_uid != os.geteuid():
-                raise PermissionError("widget audit log must be owned by the current user")
+                raise PermissionError(
+                    "widget audit log must be owned by the current user"
+                )
             document = {
                 "timestamp": datetime.now(timezone.utc).isoformat(),
                 "commandId": command_id,
@@ -108,7 +136,9 @@ class WidgetStatusApi:
                 "goalId": goal_id,
                 "outcome": outcome,
             }
-            payload = (json.dumps(document, separators=(",", ":"), sort_keys=True) + "\n").encode()
+            payload = (
+                json.dumps(document, separators=(",", ":"), sort_keys=True) + "\n"
+            ).encode()
             os.write(descriptor, payload)
             os.fsync(descriptor)
         finally:
@@ -122,11 +152,18 @@ class WidgetStatusApi:
             selected = goals[0]
         if selected is None:
             return None
-        return self.goal_service.inspect(self.goal_service.owner_id, selected["goal_id"])
+        return self.goal_service.inspect(
+            self.goal_service.owner_id, selected["goal_id"]
+        )
 
-    def control(self, goal_id: str, action: str, content: str = "") -> dict[str, object]:
+    def control(
+        self, goal_id: str, action: str, content: str = ""
+    ) -> dict[str, object]:
         return self.goal_service.control(
-            self.goal_service.owner_id, goal_id, action, content,
+            self.goal_service.owner_id,
+            goal_id,
+            action,
+            content,
         )
 
     def projected_goal(self, goal_id: str) -> dict[str, object]:
@@ -136,37 +173,82 @@ class WidgetStatusApi:
         )
 
     def submit(
-        self, prompt: str, workspace_root: str, authority_profile: str,
-        *, goal_mode: bool,
+        self,
+        prompt: str,
+        workspace_root: str,
+        authority_profile: str,
+        *,
+        goal_mode: bool,
+        source: str = "omarchy-agent",
+        transport_context: object = None,
     ) -> dict[str, object]:
         prompt = _required_text(prompt, "prompt")
-        workspace = Path(_required_text(workspace_root, "workspace_root")).resolve(strict=True)
+        workspace = Path(_required_text(workspace_root, "workspace_root")).resolve(
+            strict=True
+        )
         if not workspace.is_dir():
             raise NotADirectoryError("workspace_root must be a directory")
         profile = AgentAuthorityProfile(authority_profile)
         session_id = "omarchy-agent-launcher"
+        context = _validated_transport_context(
+            transport_context,
+            source,
+            str(workspace),
+        )
+        self._store_transport_context(context)
         if goal_mode:
             draft = self.goal_service.prepare(
-                self.goal_service.owner_id, prompt, str(workspace), profile,
+                self.goal_service.owner_id,
+                prompt,
+                str(workspace),
+                profile,
                 session_id,
+                transport_context=context,
             )
             return self.goal_service.activate(
-                self.goal_service.owner_id, draft["goal_id"], confirmed=True,
+                self.goal_service.owner_id,
+                draft["goal_id"],
+                confirmed=True,
             )
         if self.natural_engineering_api is None:
             raise RuntimeError("natural engineering is unavailable")
         proposal = self.natural_engineering_api.propose(
-            self.natural_engineering_api.owner_id, prompt, str(workspace),
-            transport_session_id=session_id, authority_profile=profile,
+            self.natural_engineering_api.owner_id,
+            prompt,
+            str(workspace),
+            transport_session_id=session_id,
+            authority_profile=profile,
+            transport_context=context,
         )
         return self.natural_engineering_api.activate(
-            self.natural_engineering_api.owner_id, proposal["proposal_id"],
-            session_id, confirmed=True,
+            self.natural_engineering_api.owner_id,
+            proposal["proposal_id"],
+            session_id,
+            confirmed=True,
         )
+
+    def _store_transport_context(self, context: dict[str, object]) -> None:
+        root = self._state_root / "omarchy/session-contexts"
+        root.mkdir(parents=True, exist_ok=True, mode=0o700)
+        os.chmod(root, 0o700)
+        key = hashlib.sha256(
+            (str(context.get("workspace")) + "\0" + str(context.get("source"))).encode()
+        ).hexdigest()[:24]
+        target = root / f"{key}.json"
+        temporary = target.with_suffix(".tmp")
+        temporary.write_text(json.dumps(context, sort_keys=True) + "\n")
+        os.chmod(temporary, 0o600)
+        os.replace(temporary, target)
 
     def open_console(self) -> dict[str, object]:
         command = _desktop_open_command(f"http://127.0.0.1:{self.console_port}/")
-        process = self._popen(command, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+        process = self._popen(
+            command,
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True,
+        )
         return {"opened": True, "processId": process.pid, "target": "console"}
 
     def open_candidate(self, goal_id: str) -> dict[str, object]:
@@ -180,12 +262,19 @@ class WidgetStatusApi:
         if not isinstance(path, str) or not Path(path).is_dir():
             raise FileNotFoundError("candidate workspace is unavailable")
         command = _desktop_open_command(path)
-        process = self._popen(command, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+        process = self._popen(
+            command,
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True,
+        )
         return {"opened": True, "processId": process.pid, "target": path}
 
 
 def _project_goal(
-    goal: dict[str, object], engineering_provider: str | None = None,
+    goal: dict[str, object],
+    engineering_provider: str | None = None,
 ) -> dict[str, object]:
     live = goal.get("live") or {}
     recovery = goal.get("recovery") or {}
@@ -198,7 +287,11 @@ def _project_goal(
     if not isinstance(passed, int):
         passed = application.get("assertions_passed", 0)
     created = _timestamp(goal.get("created_at"))
-    finished = _timestamp(goal.get("updated_at")) if goal.get("status") in {"completed", "failed", "cancelled"} else datetime.now(timezone.utc).timestamp()
+    finished = (
+        _timestamp(goal.get("updated_at"))
+        if goal.get("status") in {"completed", "failed", "cancelled"}
+        else datetime.now(timezone.utc).timestamp()
+    )
     elapsed = max(0, int(finished - created)) if created else 0
     events = live.get("events") or []
     latest = events[-1] if events else {}
@@ -209,10 +302,8 @@ def _project_goal(
         "phase": live.get("phase") or recovery.get("stage") or goal.get("status"),
         "elapsedSeconds": elapsed,
         "model": live.get("model_ref"),
-        "provider": engineering_provider or (
-            "codex" if str(live.get("model_ref", "")).startswith("gpt-")
-            else "local"
-        ),
+        "provider": engineering_provider
+        or ("codex" if str(live.get("model_ref", "")).startswith("gpt-") else "local"),
         "tool": latest.get("tool_id") or latest.get("operation"),
         "latestAction": latest.get("summary") or latest.get("event_kind"),
         "lastActivityAt": live.get("last_activity") or goal.get("updated_at"),
@@ -240,6 +331,25 @@ def _required_text(value: object, name: str) -> str:
     return value.strip()
 
 
+def _validated_transport_context(
+    value: object,
+    source: str,
+    workspace: str,
+) -> dict[str, object]:
+    if value is None:
+        value = {}
+    if not isinstance(value, dict):
+        raise ValueError("transport context must be an object")
+    encoded = json.dumps(value, separators=(",", ":"), sort_keys=True)
+    if len(encoded.encode("utf-8")) > 16_384:
+        raise ValueError("transport context exceeds its bound")
+    result = dict(value)
+    result["source"] = _required_text(source, "source")[:64]
+    result["workspace"] = workspace
+    result.setdefault("contractVersion", "fam.omarchy.invocation/v1")
+    return result
+
+
 def _candidate_change_count(candidate: dict[str, object]) -> int:
     direct = candidate.get("change_count")
     if isinstance(direct, int) and not isinstance(direct, bool):
@@ -247,14 +357,16 @@ def _candidate_change_count(candidate: dict[str, object]) -> int:
     counts = candidate.get("counts")
     if isinstance(counts, dict):
         return sum(
-            max(0, value) for key in ("created", "modified", "deleted")
+            max(0, value)
+            for key in ("created", "modified", "deleted")
             if isinstance((value := counts.get(key)), int)
             and not isinstance(value, bool)
         )
     entries = candidate.get("entries")
     if isinstance(entries, list):
         return sum(
-            1 for item in entries
+            1
+            for item in entries
             if isinstance(item, dict)
             and item.get("status") in {"created", "modified", "deleted"}
         )

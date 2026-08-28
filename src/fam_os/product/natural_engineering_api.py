@@ -42,6 +42,7 @@ from fam_os.product.natural_engineering_review_governance import (
 from fam_os.product.owner_engineering_authentication import (
     break_glass_authentication_digest,
 )
+from fam_os.adapters.omarchy.context import render_omarchy_context
 
 
 class ProductNaturalEngineeringApi:
@@ -82,6 +83,7 @@ class ProductNaturalEngineeringApi:
         self, owner_id: str, prompt: str, workspace_root: str,
         *, transport_session_id: str | None = None,
         authority_profile: AgentAuthorityProfile = AgentAuthorityProfile.WORKSPACE,
+        transport_context: dict[str, object] | None = None,
     ) -> dict:
         self._require_owner(owner_id)
         workspace = Path(workspace_root)
@@ -97,6 +99,10 @@ class ProductNaturalEngineeringApi:
                 owner_id, transport_session_id, str(canonical), prompt,
             )
         )
+        if transport_context:
+            task_intent = task_intent.rstrip() + "\n\n" + render_omarchy_context(
+                transport_context,
+            )
         proposal = self._planner.propose(
             prompt=prompt, workspace_root=str(canonical), owner_id=owner_id,
             principal_id=owner_id, task_id=task_id, grant_id=grant_id,

@@ -11,10 +11,13 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 from uuid import uuid4
 
+from fam_os.adapters.omarchy.context import collect_omarchy_context
+
 
 def submit_from_omarchy(
     prompt: str, workspace: Path, *, goal_mode: bool,
     authority_profile: str, runtime_root: Path,
+    source: str = "omarchy-agent",
 ) -> dict[str, object]:
     descriptor = _descriptor(runtime_root, start=True)
     endpoint = str(descriptor["endpoint"]).rstrip("/")
@@ -26,6 +29,8 @@ def submit_from_omarchy(
         "workspace_root": str(workspace.resolve(strict=True)),
         "authority_profile": authority_profile,
         "goal_mode": goal_mode,
+        "source": source,
+        "context": collect_omarchy_context(workspace, prompt, source),
     }).encode()
     request = Request(
         endpoint + "/api/v1/agent/submit", data=body, method="POST",
@@ -44,6 +49,35 @@ def submit_from_omarchy(
         raise RuntimeError(f"FAM_OS is unavailable: {error.reason}") from error
     if not isinstance(result, dict):
         raise RuntimeError("FAM_OS returned an invalid agent result")
+    return result
+
+
+def widget_request(
+    runtime_root: Path, path: str, *, document: dict[str, object] | None = None,
+) -> dict[str, object]:
+    """Perform one authenticated request against the local desktop API."""
+    descriptor = _descriptor(runtime_root, start=True)
+    endpoint = str(descriptor["endpoint"]).rstrip("/")
+    token = Path(str(descriptor["tokenPath"])).read_text(encoding="ascii").strip()
+    data = None if document is None else json.dumps(document).encode()
+    request = Request(
+        endpoint + path, data=data,
+        method="GET" if document is None else "POST",
+        headers={
+            "Content-Type": "application/json",
+            "X-FAM-Widget-Token": token,
+        },
+    )
+    try:
+        with urlopen(request, timeout=30) as response:
+            result = json.load(response)
+    except HTTPError as error:
+        detail = error.read().decode("utf-8", "replace")
+        raise RuntimeError(f"FAM_OS rejected the request: {detail}") from error
+    except URLError as error:
+        raise RuntimeError(f"FAM_OS is unavailable: {error.reason}") from error
+    if not isinstance(result, dict):
+        raise RuntimeError("FAM_OS returned an invalid response")
     return result
 
 

@@ -14,7 +14,7 @@ Item {
   property string pendingAction: ""
   property int reconnectDelayMs: 1000
   property int commandSequence: 0
-  readonly property string pluginVersion: "0.1.0"
+  readonly property string pluginVersion: "0.1.1"
 
   readonly property string runtimeRoot: Quickshell.env("XDG_RUNTIME_DIR") + "/fam-os"
   readonly property string tokenPath: runtimeRoot + "/widget.token"

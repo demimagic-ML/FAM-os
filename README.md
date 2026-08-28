@@ -84,16 +84,27 @@ curl -fsSL https://raw.githubusercontent.com/demimagic-ML/FAM-os/main/packaging/
 Open FAM or submit work directly from a project:
 
 ```bash
-fam
+fam                       # interactive terminal session
+fam chat                  # same interactive chat surface
+fam goal                  # interactive session starting in Goal Mode
 fam "Explain this project and run its tests"
 fam goal "Finish this application, test it, and verify the build"
 fam console
+omarchy-fam --interactive
+omarchy-fam --prompt "Review this project"
 ```
 
-Setup is idempotent and uses Omarchy's Git-plugin lifecycle; it does not make
-manual QML copies, edit systemd/Hyprland configuration, or embed owner-specific
-paths. Native `omarchy default agent fam` remains an upstream integration, not
-a current claim. See the complete
+FAM is an agent supervisor rather than a direct replacement for one provider:
+it selects and supervises Codex or a configured local engineering model while
+retaining the durable objective, candidate workspace, tool evidence, recovery
+state and verification record across terminal, widget and Console surfaces.
+
+Setup is idempotent and uses Omarchy's Git-plugin, menu-extension and
+post-update-hook lifecycles; it does not make manual QML copies, edit
+systemd/Hyprland configuration, or embed owner-specific paths. The focused
+upstream Omarchy contribution adds `omarchy default agent fam`, interactive
+scratchpad launches and prompt/crash routing; until that PR is merged, the
+packaged `omarchy-fam` command provides the same FAM-side contracts. See the complete
 [Omarchy installation guide](docs/installation/omarchy.md).
 
 ## Run the current development service
@@ -250,7 +261,7 @@ FAM_OS is an active Linux agent runtime with a real Arch/Omarchy packaging and
 release path. Version tags build and sign the official x86_64 package; an
 experimental aarch64 build remains non-gating and is not an Omarchy release.
 Official `omarchy pkg add fam-os` availability still depends on the focused
-package contribution being accepted into `omacom-io/omarchy-pkgs`.
+package contribution being accepted into `omacom/omarchy-pkgs`.
 Autonomous quality depends on the selected model, hardware, project toolchain,
 and completion checks. A successful UI step is not proof by itself:
 trustworthy completion requires file, command, application or semantic evidence
