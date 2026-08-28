@@ -20,6 +20,13 @@ from fam_os.adapters.omarchy.environment import OmarchyPaths, omarchy_paths
 INTEGRATION_CONTRACT = "fam.omarchy.installation/v1"
 PLUGIN_ID = "fam.os"
 DEFAULT_PLUGIN_URL = "https://github.com/demimagic-ML/omarchy-fam-plugin.git"
+FAM_MENU_IDS = frozenset({
+    "fam",
+    "fam.console",
+    "fam.goal",
+    "fam.doctor",
+    "fam.repair",
+})
 
 
 @dataclass(frozen=True, slots=True)
@@ -333,8 +340,7 @@ class OmarchySetup:
         owned = json.loads(source.read_text(encoding="utf-8"))
         if (
             not isinstance(owned, dict)
-            or not owned
-            or any(key != "fam" and not key.startswith("fam.") for key in owned)
+            or set(owned) != FAM_MENU_IDS
         ):
             raise RuntimeError("FAM Omarchy menu source is invalid")
         target = self.paths.config_home / "omarchy/extensions/omarchy-menu.jsonc"
@@ -352,7 +358,7 @@ class OmarchySetup:
         remaining = {
             key: value
             for key, value in current.items()
-            if key != "fam" and not key.startswith("fam.")
+            if key not in FAM_MENU_IDS
         }
         _write_json_object(target, remaining)
 
@@ -700,7 +706,7 @@ def _strip_jsonc_comments(content: str) -> str:
 def _write_json_object(path: Path, value: dict[str, object]) -> None:
     temporary = path.with_suffix(".tmp")
     temporary.write_text(
-        "// FAM updates only entries whose ids are fam or fam.*.\n"
+        "// FAM updates only its five shipped menu entry ids.\n"
         + json.dumps(value, indent=2, ensure_ascii=False)
         + "\n",
         encoding="utf-8",

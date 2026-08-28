@@ -83,6 +83,9 @@ def _integration(root: Path) -> Path:
             {
                 "fam": {"label": "FAM"},
                 "fam.console": {"label": "Console", "action": "fam console"},
+                "fam.goal": {"label": "Goal", "action": "fam goal"},
+                "fam.doctor": {"label": "Doctor", "action": "fam-os doctor"},
+                "fam.repair": {"label": "Repair", "action": "fam-os repair"},
             }
         )
     )
@@ -251,7 +254,8 @@ class OmarchySetupTests(unittest.TestCase):
             menu.write_text(
                 "// personal entry\n"
                 '{"personal":{/* keep this */"label":"Notes",'
-                '"url":"https://example.test/path",}, // inline\n}\n',
+                '"url":"https://example.test/path",}, // inline\n'
+                '"fam.custom":{"label":"My FAM shortcut"},\n}\n',
                 encoding="utf-8",
             )
 
@@ -271,6 +275,7 @@ class OmarchySetupTests(unittest.TestCase):
                         "label": "Notes",
                         "url": "https://example.test/path",
                     },
+                    "fam.custom": {"label": "My FAM shortcut"},
                 },
                 value,
             )
