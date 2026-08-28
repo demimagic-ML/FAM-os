@@ -30,7 +30,7 @@ install=fam-os.install
 # Omarchy publishes only recipes pinned to the deterministic release archive.
 # The updater refreshes this concrete digest from the signed release manifest.
 source=("$pkgname-$pkgver.tar.gz::$url/releases/download/v$pkgver/$pkgname-$pkgver.tar.gz")
-sha256sums=('SKIP')
+sha256sums=('81f1af76184604157be4354b19762d26afc894c32b7d449b87d0f74424218b2c')
 
 build() {
   cd "$pkgname-$pkgver"
